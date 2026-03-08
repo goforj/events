@@ -153,8 +153,6 @@ sh scripts/refresh-bench-snapshot.sh
 ```
 
 <!-- bench:embed:start -->
-### Backend Round-Trip by Driver
-
 These charts compare one publish-plus-delivery round trip for `sync` and each enabled distributed driver fixture.
 
 Note: `gcppubsub` is excluded from the default charts because the Pub/Sub emulator is not representative enough for backend latency comparison. Benchmark it explicitly with `INTEGRATION_DRIVER=gcppubsub` when needed.

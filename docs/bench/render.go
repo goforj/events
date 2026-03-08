@@ -183,9 +183,6 @@ func parseBenchRow(set, name, nStr, nsStr, bStr, allocStr, line string) benchRow
 }
 
 func renderSection(rows []benchRow) string {
-	core := coreRows(rows)
-	drivers := driverRows(rows)
-
 	var buf bytes.Buffer
 	buf.WriteString("These charts compare one publish-plus-delivery round trip for `sync` and each enabled distributed driver fixture.\n\n")
 	buf.WriteString("Note: `gcppubsub` is excluded from the default charts because the Pub/Sub emulator is not representative enough for backend latency comparison. Benchmark it explicitly with `INTEGRATION_DRIVER=gcppubsub` when needed.\n\n")

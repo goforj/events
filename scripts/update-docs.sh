@@ -4,7 +4,7 @@ set -eu
 
 export GOCACHE="${GOCACHE:-/tmp/events-gocache}"
 
-(cd docs && go run ./readme/testcounts)
-(cd docs && go run ./readme)
-(cd docs && go run ./examplegen)
+(cd docs && go run ./readme/testcounts/main.go)
+(cd docs && go run ./readme/main.go)
+(cd docs && go run ./examplegen/main.go)
 (cd docs && BENCH_RENDER_ONLY=1 go test -tags=benchrender ./bench -run TestRenderBenchmarks -count=1)

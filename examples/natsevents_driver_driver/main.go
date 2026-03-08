@@ -3,16 +3,15 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/goforj/events/driver/natsevents"
 )
 
 func main() {
-	// Ready checks that the NATS connection is healthy.
+	// Driver reports the active backend kind.
 
-	// Example: check NATS connectivity
+	// Example: inspect the driver kind
 	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-	fmt.Println(driver.Ready(context.Background()) == nil)
-	// Output: true
+	fmt.Println(driver.Driver())
+	// Output: nats
 }
