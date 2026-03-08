@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="660" viewBox="0 0 1600 660">
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="564" viewBox="0 0 1600 564">
 <rect width="100%" height="100%" fill="#0f172a"/>
 <text x="800" y="44" text-anchor="middle" fill="#f8fafc" font-size="34" font-family="Arial, sans-serif">Events Backend Round-Trip Throughput</text>
 <text x="800" y="80" text-anchor="middle" fill="#94a3b8" font-size="22" font-family="Arial, sans-serif">Snapshot from sync plus enabled distributed driver fixtures; higher is better (ops/s)</text>
@@ -19,8 +19,4 @@
 <rect x="260" y="408" width="1170" height="44" rx="8" fill="#1e293b"/>
 <rect x="260" y="408" width="4" height="44" rx="8" fill="#231F20"/>
 <text x="280" y="438" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">2149 ops/s</text>
-<text x="240" y="534" text-anchor="end" fill="#e2e8f0" font-size="28" font-family="Arial, sans-serif">Google Pub/Sub</text>
-<rect x="260" y="504" width="1170" height="44" rx="8" fill="#1e293b"/>
-<rect x="260" y="504" width="4" height="44" rx="8" fill="#4285F4"/>
-<text x="280" y="534" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">19 ops/s</text>
 </svg>
