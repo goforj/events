@@ -1,0 +1,15 @@
+go 1.25.0
+
+use (
+	.
+	./docs
+	./driver/gcppubsubevents
+	./driver/kafkaevents
+	./driver/natsevents
+	./driver/redisevents
+	./eventscore
+	./eventsfake
+	./eventstest
+	./examples
+	./integration
+)

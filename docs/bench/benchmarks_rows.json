@@ -1,0 +1,50 @@
+[
+  {
+    "set": "Core",
+    "name": "NewRegisteredHandler",
+    "n": 6443896,
+    "ns_op": 187.0,
+    "b_op": 96,
+    "allocs_op": 6
+  },
+  {
+    "set": "Core",
+    "name": "ResolveTopic",
+    "n": 7486428,
+    "ns_op": 158.9,
+    "b_op": 96,
+    "allocs_op": 6
+  },
+  {
+    "set": "Core",
+    "name": "PublishNoSubscribers",
+    "n": 5245180,
+    "ns_op": 215.4,
+    "b_op": 104,
+    "allocs_op": 7
+  },
+  {
+    "set": "Core",
+    "name": "PublishOneSubscriber",
+    "n": 3200918,
+    "ns_op": 372.4,
+    "b_op": 336,
+    "allocs_op": 10
+  },
+  {
+    "set": "Core",
+    "name": "PublishMultipleSubscribers",
+    "n": 1406042,
+    "ns_op": 850.5,
+    "b_op": 1000,
+    "allocs_op": 16
+  },
+  {
+    "set": "Integration",
+    "name": "DistributedPublishRoundTrip/nats",
+    "n": 1,
+    "ns_op": 310000.0,
+    "b_op": 3232,
+    "allocs_op": 56
+  }
+]

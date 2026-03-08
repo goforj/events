@@ -1,0 +1,37 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+          cache: true
+          cache-dependency-path: |
+            go.sum
+            eventscore/go.sum
+            eventstest/go.sum
+            eventsfake/go.sum
+            examples/go.sum
+            docs/go.sum
+            driver/gcppubsubevents/go.sum
+            driver/kafkaevents/go.sum
+            driver/natsevents/go.sum
+            driver/redisevents/go.sum
+            integration/go.sum
+      - name: Test All Modules
+        run: sh scripts/test-all-modules.sh
+      - name: Test Integration
+        run: sh scripts/test-integration.sh
+      - name: Check Docs
+        run: sh scripts/check-docs.sh
+      - name: Aggregate Coverage
+        run: RUN_INTEGRATION=1 sh scripts/coverage-codecov.sh
+      - name: Benchmark Smoke
+        run: sh scripts/check-bench-smoke.sh
