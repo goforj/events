@@ -2,7 +2,7 @@
 
 set -eu
 
-export GOCACHE="${PWD}/tmp/gocache"
+export GOCACHE="${GOCACHE:-/tmp/events-gocache}"
 
 (cd docs && go run ./readme/testcounts)
 (cd docs && go run ./readme)
