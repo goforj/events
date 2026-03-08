@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="660" viewBox="0 0 1600 660">
+<rect width="100%" height="100%" fill="#0f172a"/>
+<text x="800" y="44" text-anchor="middle" fill="#f8fafc" font-size="34" font-family="Arial, sans-serif">Events Backend Round-Trip Allocations</text>
+<text x="800" y="80" text-anchor="middle" fill="#94a3b8" font-size="22" font-family="Arial, sans-serif">Snapshot from sync plus enabled distributed driver fixtures; lower is better (allocs/op)</text>
+<text x="240" y="150" text-anchor="end" fill="#e2e8f0" font-size="28" font-family="Arial, sans-serif">Sync</text>
+<rect x="260" y="120" width="1170" height="44" rx="8" fill="#1e293b"/>
+<rect x="260" y="120" width="32" height="44" rx="8" fill="#546E7A"/>
+<text x="308" y="150" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">10 allocs/op</text>
+<text x="240" y="246" text-anchor="end" fill="#e2e8f0" font-size="28" font-family="Arial, sans-serif">NATS</text>
+<rect x="260" y="216" width="1170" height="44" rx="8" fill="#1e293b"/>
+<rect x="260" y="216" width="60" height="44" rx="8" fill="#27AAE1"/>
+<text x="336" y="246" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">19 allocs/op</text>
+<text x="240" y="342" text-anchor="end" fill="#e2e8f0" font-size="28" font-family="Arial, sans-serif">Redis</text>
+<rect x="260" y="312" width="1170" height="44" rx="8" fill="#1e293b"/>
+<rect x="260" y="312" width="101" height="44" rx="8" fill="#DC382D"/>
+<text x="377" y="342" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">32 allocs/op</text>
+<text x="240" y="438" text-anchor="end" fill="#e2e8f0" font-size="28" font-family="Arial, sans-serif">Kafka</text>
+<rect x="260" y="408" width="1170" height="44" rx="8" fill="#1e293b"/>
+<rect x="260" y="408" width="216" height="44" rx="8" fill="#231F20"/>
+<text x="492" y="438" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">68 allocs/op</text>
+<text x="240" y="534" text-anchor="end" fill="#e2e8f0" font-size="28" font-family="Arial, sans-serif">Google Pub/Sub</text>
+<rect x="260" y="504" width="1170" height="44" rx="8" fill="#1e293b"/>
+<rect x="260" y="504" width="1170" height="44" rx="8" fill="#4285F4"/>
+<text x="1446" y="534" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">369 allocs/op</text>
+</svg>

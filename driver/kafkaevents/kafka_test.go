@@ -50,6 +50,12 @@ func TestNewDefaultsAndCopiesBrokers(t *testing.T) {
 	if driver.writer == nil {
 		t.Fatal("expected New to create a default writer")
 	}
+	if driver.writer.BatchSize != 1 {
+		t.Fatalf("writer BatchSize = %d, want 1", driver.writer.BatchSize)
+	}
+	if driver.writer.BatchTimeout != defaultWriterBatchTimeout {
+		t.Fatalf("writer BatchTimeout = %v, want %v", driver.writer.BatchTimeout, defaultWriterBatchTimeout)
+	}
 
 	cfg.Brokers[0] = "mutated:9092"
 	if got := driver.brokers[0]; got != "127.0.0.1:9092" {
@@ -177,6 +183,22 @@ func TestEnsureTopicReturnsDialError(t *testing.T) {
 	}
 	if strings.TrimSpace(err.Error()) == "" {
 		t.Fatal("expected ensureTopic error to have a message")
+	}
+}
+
+func TestEnsureTopicSkipsDialWhenAlreadyCached(t *testing.T) {
+	driver, err := New(Config{Brokers: []string{"127.0.0.1:1"}})
+	if err != nil {
+		t.Fatalf("New returned error: %v", err)
+	}
+
+	driver.ensuredTopics["orders.created"] = struct{}{}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	if err := driver.ensureTopic(ctx, "orders.created"); err != nil {
+		t.Fatalf("ensureTopic() error = %v, want nil for cached topic", err)
 	}
 }
 

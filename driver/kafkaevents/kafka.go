@@ -6,6 +6,8 @@ import (
 	"io"
 	"net"
 	"strconv"
+	"sync"
+	"time"
 
 	"github.com/goforj/events/eventscore"
 	"github.com/segmentio/kafka-go"
@@ -16,6 +18,9 @@ type Driver struct {
 	brokers []string
 	dialer  *kafka.Dialer
 	writer  *kafka.Writer
+
+	ensuredMu     sync.RWMutex
+	ensuredTopics map[string]struct{}
 }
 
 // Config configures Kafka transport construction.
@@ -24,6 +29,12 @@ type Config struct {
 	Dialer  *kafka.Dialer
 	Writer  *kafka.Writer
 }
+
+const (
+	defaultReaderMaxWait      = 100 * time.Millisecond
+	defaultReaderBatchTimeout = 100 * time.Millisecond
+	defaultWriterBatchTimeout = 10 * time.Millisecond
+)
 
 // New constructs a Kafka-backed driver.
 func New(cfg Config) (*Driver, error) {
@@ -39,14 +50,17 @@ func New(cfg Config) (*Driver, error) {
 		writer = &kafka.Writer{
 			Addr:                   kafka.TCP(cfg.Brokers...),
 			Balancer:               &kafka.LeastBytes{},
+			BatchSize:              1,
+			BatchTimeout:           defaultWriterBatchTimeout,
 			AllowAutoTopicCreation: true,
 			RequiredAcks:           kafka.RequireAll,
 		}
 	}
 	return &Driver{
-		brokers: append([]string(nil), cfg.Brokers...),
-		dialer:  dialer,
-		writer:  writer,
+		brokers:       append([]string(nil), cfg.Brokers...),
+		dialer:        dialer,
+		writer:        writer,
+		ensuredTopics: make(map[string]struct{}),
 	}, nil
 }
 
@@ -91,11 +105,13 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 	}
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:     d.brokers,
-		Topic:       topic,
-		Partition:   0,
-		StartOffset: kafka.LastOffset,
-		MaxAttempts: 3,
+		Brokers:          d.brokers,
+		Topic:            topic,
+		Partition:        0,
+		StartOffset:      kafka.LastOffset,
+		MaxWait:          defaultReaderMaxWait,
+		ReadBatchTimeout: defaultReaderBatchTimeout,
+		MaxAttempts:      3,
 	})
 
 	workerCtx, cancel := context.WithCancel(context.Background())
@@ -137,6 +153,15 @@ func (d *Driver) ensureTopic(ctx context.Context, topic string) error {
 	if ctx != nil && ctx.Err() != nil {
 		return ctx.Err()
 	}
+	if d.topicEnsured(topic) {
+		return nil
+	}
+
+	d.ensuredMu.Lock()
+	defer d.ensuredMu.Unlock()
+	if _, ok := d.ensuredTopics[topic]; ok {
+		return nil
+	}
 
 	conn, err := d.dialer.DialContext(ctx, "tcp", d.brokers[0])
 	if err != nil {
@@ -163,7 +188,15 @@ func (d *Driver) ensureTopic(ctx context.Context, topic string) error {
 	if err != nil && !errors.Is(err, kafka.TopicAlreadyExists) {
 		return err
 	}
+	d.ensuredTopics[topic] = struct{}{}
 	return nil
+}
+
+func (d *Driver) topicEnsured(topic string) bool {
+	d.ensuredMu.RLock()
+	defer d.ensuredMu.RUnlock()
+	_, ok := d.ensuredTopics[topic]
+	return ok
 }
 
 type subscription struct {

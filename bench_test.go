@@ -34,6 +34,35 @@ func BenchmarkPublishOneSubscriber(b *testing.B) {
 	}
 }
 
+func BenchmarkSyncPublishRoundTrip(b *testing.B) {
+	bus, err := NewSync()
+	if err != nil {
+		b.Fatalf("NewSync returned error: %v", err)
+	}
+	delivered := make(chan struct{}, 1)
+	_, err = bus.Subscribe(func(userCreated) {
+		select {
+		case delivered <- struct{}{}:
+		default:
+		}
+	})
+	if err != nil {
+		b.Fatalf("Subscribe returned error: %v", err)
+	}
+	event := userCreated{}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if err := bus.Publish(event); err != nil {
+			b.Fatalf("Publish returned error: %v", err)
+		}
+		select {
+		case <-delivered:
+		default:
+			b.Fatal("expected sync round-trip delivery")
+		}
+	}
+}
+
 func BenchmarkPublishMultipleSubscribers(b *testing.B) {
 	bus, err := NewSync()
 	if err != nil {

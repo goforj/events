@@ -2,6 +2,7 @@ package bench
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -53,22 +54,33 @@ func BenchmarkDistributedPublishRoundTrip(b *testing.B) {
 			}
 			b.Cleanup(func() { _ = sub.Close() })
 
+			if err := publishAndAwait(ctx, bus, delivered, "warmup"); err != nil {
+				b.Fatalf("warmup round-trip failed: %v", err)
+			}
+
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				payload := benchEvent{ID: "bench"}
-				if err := bus.PublishContext(ctx, payload); err != nil {
-					b.Fatalf("PublishContext returned error: %v", err)
-				}
-				select {
-				case event := <-delivered:
-					if event.ID != "bench" {
-						b.Fatalf("event ID = %q, want %q", event.ID, "bench")
-					}
-				case <-ctx.Done():
-					b.Fatal("timed out waiting for distributed delivery")
+				if err := publishAndAwait(ctx, bus, delivered, "bench"); err != nil {
+					b.Fatalf("timed round-trip failed: %v", err)
 				}
 			}
 		})
+	}
+}
+
+func publishAndAwait(ctx context.Context, bus events.API, delivered <-chan benchEvent, id string) error {
+	payload := benchEvent{ID: id}
+	if err := bus.PublishContext(ctx, payload); err != nil {
+		return err
+	}
+	select {
+	case event := <-delivered:
+		if event.ID != id {
+			return fmt.Errorf("event ID = %q, want %q", event.ID, id)
+		}
+		return nil
+	case <-ctx.Done():
+		return fmt.Errorf("timed out waiting for distributed delivery: %w", ctx.Err())
 	}
 }
 

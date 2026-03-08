@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"sync/atomic"
+	"time"
 
 	gpubsub "cloud.google.com/go/pubsub"
 	"github.com/goforj/events/eventscore"
@@ -21,6 +23,9 @@ type Driver struct {
 	client     *gpubsub.Client
 	conn       *grpc.ClientConn
 	ownsClient bool
+
+	topicsMu sync.RWMutex
+	topics   map[string]*gpubsub.Topic
 }
 
 // Config configures Google Pub/Sub transport construction.
@@ -29,6 +34,11 @@ type Config struct {
 	URI       string
 	Client    *gpubsub.Client
 }
+
+const (
+	defaultPublishDelayThreshold = 1 * time.Millisecond
+	defaultPublishCountThreshold = 1
+)
 
 // New constructs a Google Pub/Sub-backed driver.
 func New(ctx context.Context, cfg Config) (*Driver, error) {
@@ -39,6 +49,7 @@ func New(ctx context.Context, cfg Config) (*Driver, error) {
 		return &Driver{
 			projectID: cfg.ProjectID,
 			client:    cfg.Client,
+			topics:    make(map[string]*gpubsub.Topic),
 		}, nil
 	}
 	if cfg.ProjectID == "" {
@@ -62,6 +73,7 @@ func New(ctx context.Context, cfg Config) (*Driver, error) {
 		client:     client,
 		conn:       conn,
 		ownsClient: true,
+		topics:     make(map[string]*gpubsub.Topic),
 	}, nil
 }
 
@@ -139,6 +151,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 
 // Close closes the underlying Pub/Sub client.
 func (d *Driver) Close() error {
+	d.stopTopics()
 	if d.ownsClient && d.client != nil {
 		if err := d.client.Close(); err != nil {
 			return err
@@ -154,19 +167,59 @@ func (d *Driver) ensureTopic(ctx context.Context, topic string) (*gpubsub.Topic,
 	if ctx != nil && ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
-	pubTopic := d.client.Topic(topic)
+	if pubTopic, ok := d.cachedTopic(topic); ok {
+		return pubTopic, nil
+	}
+
+	d.topicsMu.Lock()
+	defer d.topicsMu.Unlock()
+	if pubTopic, ok := d.topics[topic]; ok {
+		return pubTopic, nil
+	}
+
+	pubTopic := d.newTopic(topic)
 	exists, err := pubTopic.Exists(ctx)
 	if err != nil {
 		return nil, err
 	}
 	if exists {
+		d.topics[topic] = pubTopic
 		return pubTopic, nil
 	}
 	created, err := d.client.CreateTopic(ctx, topic)
 	if err != nil {
 		return nil, err
 	}
+	d.configureTopic(created)
+	d.topics[topic] = created
 	return created, nil
+}
+
+func (d *Driver) cachedTopic(topic string) (*gpubsub.Topic, bool) {
+	d.topicsMu.RLock()
+	defer d.topicsMu.RUnlock()
+	pubTopic, ok := d.topics[topic]
+	return pubTopic, ok
+}
+
+func (d *Driver) newTopic(topic string) *gpubsub.Topic {
+	pubTopic := d.client.Topic(topic)
+	d.configureTopic(pubTopic)
+	return pubTopic
+}
+
+func (d *Driver) configureTopic(topic *gpubsub.Topic) {
+	topic.PublishSettings.DelayThreshold = defaultPublishDelayThreshold
+	topic.PublishSettings.CountThreshold = defaultPublishCountThreshold
+}
+
+func (d *Driver) stopTopics() {
+	d.topicsMu.Lock()
+	defer d.topicsMu.Unlock()
+	for key, topic := range d.topics {
+		topic.Stop()
+		delete(d.topics, key)
+	}
 }
 
 type subscription struct {

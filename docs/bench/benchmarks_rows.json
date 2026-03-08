@@ -1,50 +1,82 @@
 [
   {
     "set": "Core",
-    "name": "NewRegisteredHandler",
-    "n": 6443896,
-    "ns_op": 187.0,
-    "b_op": 96,
-    "allocs_op": 6
-  },
-  {
-    "set": "Core",
-    "name": "ResolveTopic",
-    "n": 7486428,
-    "ns_op": 158.9,
-    "b_op": 96,
-    "allocs_op": 6
-  },
-  {
-    "set": "Core",
     "name": "PublishNoSubscribers",
-    "n": 5245180,
-    "ns_op": 215.4,
+    "n": 5465338,
+    "ns_op": 205,
     "b_op": 104,
     "allocs_op": 7
   },
   {
     "set": "Core",
     "name": "PublishOneSubscriber",
-    "n": 3200918,
-    "ns_op": 372.4,
+    "n": 3189990,
+    "ns_op": 369.4,
+    "b_op": 336,
+    "allocs_op": 10
+  },
+  {
+    "set": "Core",
+    "name": "SyncPublishRoundTrip",
+    "n": 3108882,
+    "ns_op": 387.6,
     "b_op": 336,
     "allocs_op": 10
   },
   {
     "set": "Core",
     "name": "PublishMultipleSubscribers",
-    "n": 1406042,
-    "ns_op": 850.5,
+    "n": 1428036,
+    "ns_op": 844.6,
     "b_op": 1000,
     "allocs_op": 16
   },
   {
+    "set": "Core",
+    "name": "ResolveTopic",
+    "n": 7510941,
+    "ns_op": 156.7,
+    "b_op": 96,
+    "allocs_op": 6
+  },
+  {
+    "set": "Core",
+    "name": "NewRegisteredHandler",
+    "n": 6523015,
+    "ns_op": 200.2,
+    "b_op": 96,
+    "allocs_op": 6
+  },
+  {
+    "set": "Integration",
+    "name": "DistributedPublishRoundTrip/gcppubsub",
+    "n": 21,
+    "ns_op": 53819681,
+    "b_op": 21906,
+    "allocs_op": 369
+  },
+  {
+    "set": "Integration",
+    "name": "DistributedPublishRoundTrip/kafka",
+    "n": 2815,
+    "ns_op": 465395,
+    "b_op": 5268,
+    "allocs_op": 68
+  },
+  {
     "set": "Integration",
     "name": "DistributedPublishRoundTrip/nats",
-    "n": 1,
-    "ns_op": 310000.0,
-    "b_op": 3232,
-    "allocs_op": 56
+    "n": 16886,
+    "ns_op": 72664,
+    "b_op": 698,
+    "allocs_op": 19
+  },
+  {
+    "set": "Integration",
+    "name": "DistributedPublishRoundTrip/redis",
+    "n": 12991,
+    "ns_op": 93531,
+    "b_op": 931,
+    "allocs_op": 32
   }
 ]
