@@ -229,12 +229,12 @@ Backend round-trip benchmarks compare the local sync bus against every enabled b
 
 | Benchmark | ns/op | ops/s | B/op | allocs/op |
 |:----------|-----:|-----:|-----:|---------:|
-| `ResolveTopic` | 156.7 | 6381621 | 96 | 6 |
-| `NewRegisteredHandler` | 200.2 | 4995005 | 96 | 6 |
-| `PublishNoSubscribers` | 205.0 | 4878049 | 104 | 7 |
-| `PublishOneSubscriber` | 369.4 | 2707093 | 336 | 10 |
-| `SyncPublishRoundTrip` | 387.6 | 2579979 | 336 | 10 |
-| `PublishMultipleSubscribers` | 844.6 | 1183992 | 1000 | 16 |
+| `ResolveTopic` | 157.3 | 6357279 | 96 | 6 |
+| `NewRegisteredHandler` | 182.9 | 5467469 | 96 | 6 |
+| `PublishNoSubscribers` | 198.9 | 5027652 | 104 | 7 |
+| `PublishOneSubscriber` | 364.4 | 2744237 | 336 | 10 |
+| `SyncPublishRoundTrip` | 380.1 | 2630887 | 336 | 10 |
+| `PublishMultipleSubscribers` | 831.3 | 1202935 | 1000 | 16 |
 
 ### Backend Round-Trip by Driver
 

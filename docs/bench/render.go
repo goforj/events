@@ -278,12 +278,12 @@ func writeMetricSVG(root, filename, title, unit string, rows []benchRow, metric 
 	}
 
 	width := 1600
-	height := 180 + len(sorted)*96
 	leftPad := 260
 	rightPad := 170
 	topPad := 120
 	barHeight := 44
 	rowGap := 96
+	height := topPad + barHeight + (len(sorted)-1)*rowGap + 56
 	chartWidth := width - leftPad - rightPad
 
 	var svg bytes.Buffer

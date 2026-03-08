@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="564" viewBox="0 0 1600 564">
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="508" viewBox="0 0 1600 508">
 <rect width="100%" height="100%" fill="#0f172a"/>
 <text x="800" y="44" text-anchor="middle" fill="#f8fafc" font-size="34" font-family="Arial, sans-serif">Events Backend Round-Trip Allocations</text>
 <text x="800" y="80" text-anchor="middle" fill="#94a3b8" font-size="22" font-family="Arial, sans-serif">Snapshot from sync plus enabled distributed driver fixtures; lower is better (allocs/op)</text>
