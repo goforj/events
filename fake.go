@@ -8,6 +8,7 @@ import (
 )
 
 // Record captures one published event observed by a Fake bus.
+// @group Testing
 //
 // Example: inspect a recorded event
 //
@@ -23,6 +24,7 @@ type Record struct {
 }
 
 // Fake provides a root-package testing helper that records published events.
+// @group Testing
 //
 // Example: keep a fake for assertions in tests
 //
@@ -34,6 +36,7 @@ type Fake struct {
 }
 
 // NewFake creates a new fake event harness backed by the root sync bus.
+// @group Testing
 //
 // Example: construct a recording fake
 //
@@ -49,6 +52,7 @@ func NewFake() *Fake {
 }
 
 // Bus returns the wrapped API to inject into code under test.
+// @group Testing
 //
 // Example: inject the fake bus into application code
 //
@@ -61,6 +65,7 @@ func (f *Fake) Bus() API {
 }
 
 // Records returns a copy of recorded publishes.
+// @group Testing
 //
 // Example: inspect recorded publishes
 //
@@ -77,6 +82,7 @@ func (f *Fake) Records() []Record {
 }
 
 // Reset clears recorded publishes.
+// @group Testing
 //
 // Example: clear recorded publishes
 //
@@ -94,6 +100,7 @@ func (f *Fake) Reset() {
 }
 
 // Count returns the total number of recorded publishes.
+// @group Testing
 //
 // Example: count recorded publishes
 //

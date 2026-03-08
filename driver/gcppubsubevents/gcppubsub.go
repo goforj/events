@@ -18,6 +18,7 @@ import (
 var nextSubscriptionID atomic.Uint64
 
 // Driver is a Google Pub/Sub-backed events transport.
+// @group Drivers
 //
 // Example: keep a Google Pub/Sub driver reference
 //
@@ -35,6 +36,7 @@ type Driver struct {
 }
 
 // Config configures Google Pub/Sub transport construction.
+// @group Driver Config
 //
 // Example: define Google Pub/Sub driver config
 //
@@ -56,6 +58,7 @@ const (
 )
 
 // New constructs a Google Pub/Sub-backed driver.
+// @group Driver Constructors
 //
 // Example: construct a Google Pub/Sub driver
 //
@@ -102,6 +105,7 @@ func New(ctx context.Context, cfg Config) (*Driver, error) {
 }
 
 // Driver reports the active backend kind.
+// @group Drivers
 //
 // Example: inspect the driver kind
 //
@@ -116,6 +120,7 @@ func (d *Driver) Driver() eventscore.Driver {
 }
 
 // Ready checks Google Pub/Sub connectivity.
+// @group Drivers
 //
 // Example: check Google Pub/Sub connectivity
 //
@@ -142,6 +147,7 @@ func (d *Driver) Ready(ctx context.Context) error {
 }
 
 // PublishContext publishes a topic payload to Google Pub/Sub.
+// @group Drivers
 //
 // Example: publish a raw message through Google Pub/Sub
 //
@@ -167,6 +173,7 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 }
 
 // SubscribeContext subscribes to a Google Pub/Sub topic and forwards messages.
+// @group Drivers
 //
 // Example: subscribe to a Google Pub/Sub topic
 //
@@ -217,6 +224,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 }
 
 // Close closes the underlying Pub/Sub client.
+// @group Drivers
 //
 // Example: close a Google Pub/Sub driver
 //

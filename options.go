@@ -1,6 +1,7 @@
 package events
 
 // Option configures root bus behavior.
+// @group Construction
 //
 // Example: keep an option for later bus construction
 //
@@ -22,6 +23,7 @@ func (o *options) apply(opts []Option) {
 }
 
 // WithCodec overrides the default event codec.
+// @group Construction
 //
 // Example: construct a bus with a custom codec
 //

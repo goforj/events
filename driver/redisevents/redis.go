@@ -9,6 +9,7 @@ import (
 )
 
 // Driver is a Redis pub/sub-backed events transport.
+// @group Drivers
 //
 // Example: keep a Redis driver reference
 //
@@ -20,6 +21,7 @@ type Driver struct {
 }
 
 // Config configures Redis transport construction.
+// @group Driver Config
 //
 // Example: define Redis driver config
 //
@@ -32,6 +34,7 @@ type Config struct {
 }
 
 // New constructs a Redis pub/sub-backed driver.
+// @group Driver Constructors
 //
 // Example: construct a Redis driver
 //
@@ -51,6 +54,7 @@ func New(cfg Config) (*Driver, error) {
 }
 
 // Driver reports the active backend kind.
+// @group Drivers
 //
 // Example: inspect the driver kind
 //
@@ -62,6 +66,7 @@ func (d *Driver) Driver() eventscore.Driver {
 }
 
 // Ready checks Redis connectivity.
+// @group Drivers
 //
 // Example: check Redis connectivity
 //
@@ -73,6 +78,7 @@ func (d *Driver) Ready(ctx context.Context) error {
 }
 
 // PublishContext publishes a topic payload via Redis pub/sub.
+// @group Drivers
 //
 // Example: publish a raw message through Redis
 //
@@ -86,6 +92,7 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 }
 
 // SubscribeContext subscribes to a Redis pub/sub channel.
+// @group Drivers
 //
 // Example: subscribe to a Redis channel
 //
@@ -126,6 +133,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 }
 
 // Close closes the underlying Redis client.
+// @group Drivers
 //
 // Example: close a Redis driver
 //

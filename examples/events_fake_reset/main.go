@@ -8,15 +8,16 @@ import (
 )
 
 func main() {
-	// Records returns a copy of recorded publishes.
+	// Reset clears recorded publishes.
 
-	// Example: inspect recorded publishes
+	// Example: clear recorded publishes
 	type UserCreated struct {
 		ID string `json:"id"`
 	}
 
 	fake := events.NewFake()
 	_ = fake.Bus().Publish(UserCreated{ID: "123"})
-	fmt.Println(len(fake.Records()))
-	// Output: 1
+	fake.Reset()
+	fmt.Println(fake.Count())
+	// Output: 0
 }

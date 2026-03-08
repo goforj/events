@@ -7,6 +7,7 @@ import (
 )
 
 // API is the root application-facing bus contract.
+// @group Core
 //
 // Example: keep an API-typed bus reference
 //
@@ -16,6 +17,7 @@ import (
 //	// Output: sync
 type API interface {
 	// Driver reports the active bus backend.
+	// @group Core
 	//
 	// Example: inspect the active backend through the interface
 	//
@@ -25,6 +27,7 @@ type API interface {
 	//	// Output: sync
 	Driver() eventscore.Driver
 	// Ready performs a background-context readiness check.
+	// @group Core
 	//
 	// Example: check readiness through the interface
 	//
@@ -34,6 +37,7 @@ type API interface {
 	//	// Output: true
 	Ready() error
 	// ReadyContext performs a readiness check with the provided context.
+	// @group Core
 	//
 	// Example: check readiness with a caller context
 	//
@@ -43,6 +47,7 @@ type API interface {
 	//	// Output: true
 	ReadyContext(ctx context.Context) error
 	// Publish dispatches an event with the background context.
+	// @group Core
 	//
 	// Example: publish a typed event through the interface
 	//
@@ -59,6 +64,7 @@ type API interface {
 	//	// Output: 123
 	Publish(event any) error
 	// PublishContext dispatches an event with the provided context.
+	// @group Core
 	//
 	// Example: publish with a caller context
 	//
@@ -76,6 +82,7 @@ type API interface {
 	//	// Output: 123 true
 	PublishContext(ctx context.Context, event any) error
 	// Subscribe registers a typed handler using the background context.
+	// @group Core
 	//
 	// Example: subscribe through the interface
 	//
@@ -93,6 +100,7 @@ type API interface {
 	//	defer sub.Close()
 	Subscribe(handler any) (Subscription, error)
 	// SubscribeContext registers a typed handler with the provided context.
+	// @group Core
 	//
 	// Example: subscribe with a caller context through the interface
 	//
@@ -112,6 +120,7 @@ type API interface {
 }
 
 // Subscription releases a subscription when closed.
+// @group Core
 //
 // Example: close a subscription when done
 //

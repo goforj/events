@@ -171,17 +171,6 @@ Note: `gcppubsub` is excluded from the default charts because the Pub/Sub emulat
 These checks are for obvious regression detection, not for noisy micro-optimism
 or hard CI performance gates.
 
-## Docs Tooling
-
-The repository includes lightweight docs tooling under `docs/`:
-
-- `sh scripts/update-docs.sh` is the fast docs loop; it renders benchmark charts from the saved snapshot
-- `sh scripts/refresh-bench-snapshot.sh` refreshes the live benchmark snapshot and regenerates the charts
-- `go run ./docs/readme` updates generated README sections and validates required structure
-- `go run ./docs/readme/testcounts` updates executed test-count badges
-- `go run ./docs/examplegen` lists example programs used by docs checks
-- `sh docs/watcher.sh` reruns the fast docs update loop locally
-
 ## API Index
 
 <!-- api:embed:start -->
@@ -190,10 +179,87 @@ The repository includes lightweight docs tooling under `docs/`:
 
 | Group | Functions |
 |------:|-----------|
-| **Other** | [Bus.Driver](#bus-driver) [Bus.Publish](#bus-publish) [Bus.PublishContext](#bus-publishcontext) [Bus.Ready](#bus-ready) [Bus.ReadyContext](#bus-readycontext) [Bus.Subscribe](#bus-subscribe) [Bus.SubscribeContext](#bus-subscribecontext) [Driver.Close](#driver-close) [Driver.Driver](#driver-driver) [Driver.PublishContext](#driver-publishcontext) [Driver.Ready](#driver-ready) [Driver.SubscribeContext](#driver-subscribecontext) [Fake.Bus](#fake-bus) [Fake.Count](#fake-count) [Fake.Records](#fake-records) [Fake.Reset](#fake-reset) [events.API](#events-api) [events.API.Driver](#api-driver) [events.API.Publish](#api-publish) [events.API.PublishContext](#api-publishcontext) [events.API.Ready](#api-ready) [events.API.ReadyContext](#api-readycontext) [events.API.Subscribe](#api-subscribe) [events.API.SubscribeContext](#api-subscribecontext) [events.Bus](#events-bus) [events.Codec](#events-codec) [events.Config](#events-config) [events.Fake](#events-fake) [events.New](#events-new) [events.NewFake](#events-newfake) [events.NewNull](#events-newnull) [events.NewSync](#events-newsync) [events.Option](#events-option) [events.Record](#events-record) [events.Subscription](#events-subscription) [events.TopicEvent](#events-topicevent) [events.WithCodec](#events-withcodec) [gcppubsubevents.Config](#gcppubsubevents-config) [gcppubsubevents.Driver](#gcppubsubevents-driver) [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.Config](#kafkaevents-config) [kafkaevents.Driver](#kafkaevents-driver) [kafkaevents.New](#kafkaevents-new) [natsevents.Config](#natsevents-config) [natsevents.Driver](#natsevents-driver) [natsevents.New](#natsevents-new) [redisevents.Config](#redisevents-config) [redisevents.Driver](#redisevents-driver) [redisevents.New](#redisevents-new) |
+| **Construction** | [events.Codec](#events-codec) [events.Config](#events-config) [events.New](#events-new) [events.NewNull](#events-newnull) [events.NewSync](#events-newsync) [events.Option](#events-option) [events.WithCodec](#events-withcodec) |
+| **Core** | [Bus.Driver](#bus-driver) [Bus.Publish](#bus-publish) [Bus.PublishContext](#bus-publishcontext) [Bus.Ready](#bus-ready) [Bus.ReadyContext](#bus-readycontext) [Bus.Subscribe](#bus-subscribe) [Bus.SubscribeContext](#bus-subscribecontext) [events.API](#events-api) [events.API.Driver](#api-driver) [events.API.Publish](#api-publish) [events.API.PublishContext](#api-publishcontext) [events.API.Ready](#api-ready) [events.API.ReadyContext](#api-readycontext) [events.API.Subscribe](#api-subscribe) [events.API.SubscribeContext](#api-subscribecontext) [events.Bus](#events-bus) [events.Subscription](#events-subscription) [events.TopicEvent](#events-topicevent) |
+| **Driver Config** | [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
+| **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) |
+| **Drivers** | [Driver.Close](#driver-close) [Driver.Driver](#driver-driver) [Driver.PublishContext](#driver-publishcontext) [Driver.Ready](#driver-ready) [Driver.SubscribeContext](#driver-subscribecontext) [gcppubsubevents.Driver](#gcppubsubevents-driver) [kafkaevents.Driver](#kafkaevents-driver) [natsevents.Driver](#natsevents-driver) [redisevents.Driver](#redisevents-driver) |
+| **Testing** | [Fake.Bus](#fake-bus) [Fake.Count](#fake-count) [Fake.Records](#fake-records) [Fake.Reset](#fake-reset) [events.Fake](#events-fake) [events.NewFake](#events-newfake) [events.Record](#events-record) |
 
 
-## Other
+## Construction
+
+### <a id="events-codec"></a>events.Codec
+
+Codec marshals and unmarshals event payloads.
+
+```go
+var codec events.Codec
+fmt.Println(codec == nil)
+// Output: true
+```
+
+### <a id="events-config"></a>events.Config
+
+Config configures root bus construction.
+
+```go
+cfg := events.Config{Driver: eventscore.DriverSync}
+fmt.Println(cfg.Driver)
+// Output: sync
+```
+
+### <a id="events-new"></a>events.New
+
+New constructs a root bus for the requested driver.
+
+```go
+bus, _ := events.New(events.Config{Driver: "sync"})
+fmt.Println(bus.Driver())
+// Output: sync
+```
+
+### <a id="events-newnull"></a>events.NewNull
+
+NewNull constructs the root null bus.
+
+```go
+bus, _ := events.NewNull()
+fmt.Println(bus.Driver())
+// Output: null
+```
+
+### <a id="events-newsync"></a>events.NewSync
+
+NewSync constructs the root sync bus.
+
+```go
+bus, _ := events.NewSync()
+fmt.Println(bus.Driver())
+// Output: sync
+```
+
+### <a id="events-option"></a>events.Option
+
+Option configures root bus behavior.
+
+```go
+opt := events.WithCodec(nil)
+fmt.Println(opt != nil)
+// Output: true
+```
+
+### <a id="events-withcodec"></a>events.WithCodec
+
+WithCodec overrides the default event codec.
+
+```go
+bus, _ := events.NewSync(events.WithCodec(nil))
+fmt.Println(bus.Driver())
+// Output: sync
+```
+
+## Core
 
 ### <a id="bus-driver"></a>Bus.Driver
 
@@ -295,6 +361,253 @@ sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, e
 })
 defer sub.Close()
 ```
+
+### <a id="events-api"></a>events.API
+
+API is the root application-facing bus contract.
+
+```go
+api, _ := events.NewSync()
+var bus events.API = api
+fmt.Println(bus.Driver())
+// Output: sync
+```
+
+### <a id="api-driver"></a>events.API.Driver
+
+Driver reports the active bus backend.
+
+```go
+api, _ := events.NewSync()
+var bus events.API = api
+fmt.Println(bus.Driver())
+// Output: sync
+```
+
+### <a id="api-publish"></a>events.API.Publish
+
+Publish dispatches an event with the background context.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+api, _ := events.NewSync()
+var bus events.API = api
+_, _ = bus.Subscribe(func(event UserCreated) {
+	fmt.Println(event.ID)
+})
+_ = bus.Publish(UserCreated{ID: "123"})
+// Output: 123
+```
+
+### <a id="api-publishcontext"></a>events.API.PublishContext
+
+PublishContext dispatches an event with the provided context.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+api, _ := events.NewSync()
+var bus events.API = api
+_, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
+	fmt.Println(event.ID, ctx != nil)
+	return nil
+})
+_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
+// Output: 123 true
+```
+
+### <a id="api-ready"></a>events.API.Ready
+
+Ready performs a background-context readiness check.
+
+```go
+api, _ := events.NewSync()
+var bus events.API = api
+fmt.Println(bus.Ready() == nil)
+// Output: true
+```
+
+### <a id="api-readycontext"></a>events.API.ReadyContext
+
+ReadyContext performs a readiness check with the provided context.
+
+```go
+api, _ := events.NewSync()
+var bus events.API = api
+fmt.Println(bus.ReadyContext(context.Background()) == nil)
+// Output: true
+```
+
+### <a id="api-subscribe"></a>events.API.Subscribe
+
+Subscribe registers a typed handler using the background context.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+api, _ := events.NewSync()
+var bus events.API = api
+sub, _ := bus.Subscribe(func(ctx context.Context, event UserCreated) error {
+	_ = ctx
+	_ = event
+	return nil
+})
+defer sub.Close()
+```
+
+### <a id="api-subscribecontext"></a>events.API.SubscribeContext
+
+SubscribeContext registers a typed handler with the provided context.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+api, _ := events.NewSync()
+var bus events.API = api
+sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
+	_ = ctx
+	_ = event
+	return nil
+})
+defer sub.Close()
+```
+
+### <a id="events-bus"></a>events.Bus
+
+Bus is the root event bus implementation.
+
+```go
+bus, _ := events.NewSync()
+var root *events.Bus = bus
+fmt.Println(root.Driver())
+// Output: sync
+```
+
+### <a id="events-subscription"></a>events.Subscription
+
+Subscription releases a subscription when closed.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+bus, _ := events.NewSync()
+sub, _ := bus.Subscribe(func(UserCreated) {})
+fmt.Println(sub.Close() == nil)
+// Output: true
+```
+
+### <a id="events-topicevent"></a>events.TopicEvent
+
+TopicEvent overrides the derived topic for an event.
+
+```go
+var event events.TopicEvent
+fmt.Println(event == nil)
+// Output: true
+```
+
+## Driver Config
+
+### <a id="gcppubsubevents-config"></a>gcppubsubevents.Config
+
+Config configures Google Pub/Sub transport construction.
+
+```go
+cfg := gcppubsubevents.Config{
+	ProjectID: "events-project",
+	URI:       "127.0.0.1:8085",
+}
+fmt.Println(cfg.ProjectID)
+// Output: events-project
+```
+
+### <a id="kafkaevents-config"></a>kafkaevents.Config
+
+Config configures Kafka transport construction.
+
+```go
+cfg := kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}}
+fmt.Println(cfg.Brokers[0])
+// Output: 127.0.0.1:9092
+```
+
+### <a id="natsevents-config"></a>natsevents.Config
+
+Config configures NATS transport construction.
+
+```go
+cfg := natsevents.Config{URL: "nats://127.0.0.1:4222"}
+fmt.Println(cfg.URL)
+// Output: nats://127.0.0.1:4222
+```
+
+### <a id="redisevents-config"></a>redisevents.Config
+
+Config configures Redis transport construction.
+
+```go
+cfg := redisevents.Config{Addr: "127.0.0.1:6379"}
+fmt.Println(cfg.Addr)
+// Output: 127.0.0.1:6379
+```
+
+## Driver Constructors
+
+### <a id="gcppubsubevents-new"></a>gcppubsubevents.New
+
+New constructs a Google Pub/Sub-backed driver.
+
+```go
+driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
+	ProjectID: "events-project",
+	URI:       "127.0.0.1:8085",
+})
+fmt.Println(driver != nil)
+// Output: true
+```
+
+### <a id="kafkaevents-new"></a>kafkaevents.New
+
+New constructs a Kafka-backed driver.
+
+```go
+driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
+fmt.Println(driver != nil)
+// Output: true
+```
+
+### <a id="natsevents-new"></a>natsevents.New
+
+New connects a NATS-backed driver from config.
+
+```go
+driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
+fmt.Println(driver != nil)
+// Output: true
+```
+
+### <a id="redisevents-new"></a>redisevents.New
+
+New constructs a Redis pub/sub-backed driver.
+
+```go
+driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
+fmt.Println(driver != nil)
+// Output: true
+```
+
+## Drivers
 
 ### <a id="driver-close"></a>Driver.Close
 
@@ -519,6 +832,48 @@ fmt.Println(sub != nil)
 // Output: true
 ```
 
+### <a id="gcppubsubevents-driver"></a>gcppubsubevents.Driver
+
+Driver is a Google Pub/Sub-backed events transport.
+
+```go
+var driver *gcppubsubevents.Driver
+fmt.Println(driver == nil)
+// Output: true
+```
+
+### <a id="kafkaevents-driver"></a>kafkaevents.Driver
+
+Driver is a Kafka-backed events transport.
+
+```go
+var driver *kafkaevents.Driver
+fmt.Println(driver == nil)
+// Output: true
+```
+
+### <a id="natsevents-driver"></a>natsevents.Driver
+
+Driver is a NATS-backed events transport.
+
+```go
+var driver *natsevents.Driver
+fmt.Println(driver == nil)
+// Output: true
+```
+
+### <a id="redisevents-driver"></a>redisevents.Driver
+
+Driver is a Redis pub/sub-backed events transport.
+
+```go
+var driver *redisevents.Driver
+fmt.Println(driver == nil)
+// Output: true
+```
+
+## Testing
+
 ### <a id="fake-bus"></a>Fake.Bus
 
 Bus returns the wrapped API to inject into code under test.
@@ -576,156 +931,6 @@ fmt.Println(fake.Count())
 // Output: 0
 ```
 
-### <a id="events-api"></a>events.API
-
-API is the root application-facing bus contract.
-
-```go
-api, _ := events.NewSync()
-var bus events.API = api
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
-### <a id="api-driver"></a>events.API.Driver
-
-Driver reports the active bus backend.
-
-```go
-api, _ := events.NewSync()
-var bus events.API = api
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
-### <a id="api-publish"></a>events.API.Publish
-
-Publish dispatches an event with the background context.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-api, _ := events.NewSync()
-var bus events.API = api
-_, _ = bus.Subscribe(func(event UserCreated) {
-	fmt.Println(event.ID)
-})
-_ = bus.Publish(UserCreated{ID: "123"})
-// Output: 123
-```
-
-### <a id="api-publishcontext"></a>events.API.PublishContext
-
-PublishContext dispatches an event with the provided context.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-api, _ := events.NewSync()
-var bus events.API = api
-_, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-	fmt.Println(event.ID, ctx != nil)
-	return nil
-})
-_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
-// Output: 123 true
-```
-
-### <a id="api-ready"></a>events.API.Ready
-
-Ready performs a background-context readiness check.
-
-```go
-api, _ := events.NewSync()
-var bus events.API = api
-fmt.Println(bus.Ready() == nil)
-// Output: true
-```
-
-### <a id="api-readycontext"></a>events.API.ReadyContext
-
-ReadyContext performs a readiness check with the provided context.
-
-```go
-api, _ := events.NewSync()
-var bus events.API = api
-fmt.Println(bus.ReadyContext(context.Background()) == nil)
-// Output: true
-```
-
-### <a id="api-subscribe"></a>events.API.Subscribe
-
-Subscribe registers a typed handler using the background context.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-api, _ := events.NewSync()
-var bus events.API = api
-sub, _ := bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-	_ = ctx
-	_ = event
-	return nil
-})
-defer sub.Close()
-```
-
-### <a id="api-subscribecontext"></a>events.API.SubscribeContext
-
-SubscribeContext registers a typed handler with the provided context.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-api, _ := events.NewSync()
-var bus events.API = api
-sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
-	_ = ctx
-	_ = event
-	return nil
-})
-defer sub.Close()
-```
-
-### <a id="events-bus"></a>events.Bus
-
-Bus is the root event bus implementation.
-
-```go
-bus, _ := events.NewSync()
-var root *events.Bus = bus
-fmt.Println(root.Driver())
-// Output: sync
-```
-
-### <a id="events-codec"></a>events.Codec
-
-Codec marshals and unmarshals event payloads.
-
-```go
-var codec events.Codec
-fmt.Println(codec == nil)
-// Output: true
-```
-
-### <a id="events-config"></a>events.Config
-
-Config configures root bus construction.
-
-```go
-cfg := events.Config{Driver: eventscore.DriverSync}
-fmt.Println(cfg.Driver)
-// Output: sync
-```
-
 ### <a id="events-fake"></a>events.Fake
 
 Fake provides a root-package testing helper that records published events.
@@ -736,16 +941,6 @@ fmt.Println(fake.Count())
 // Output: 0
 ```
 
-### <a id="events-new"></a>events.New
-
-New constructs a root bus for the requested driver.
-
-```go
-bus, _ := events.New(events.Config{Driver: "sync"})
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
 ### <a id="events-newfake"></a>events.NewFake
 
 NewFake creates a new fake event harness backed by the root sync bus.
@@ -754,36 +949,6 @@ NewFake creates a new fake event harness backed by the root sync bus.
 fake := events.NewFake()
 fmt.Println(fake.Count())
 // Output: 0
-```
-
-### <a id="events-newnull"></a>events.NewNull
-
-NewNull constructs the root null bus.
-
-```go
-bus, _ := events.NewNull()
-fmt.Println(bus.Driver())
-// Output: null
-```
-
-### <a id="events-newsync"></a>events.NewSync
-
-NewSync constructs the root sync bus.
-
-```go
-bus, _ := events.NewSync()
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
-### <a id="events-option"></a>events.Option
-
-Option configures root bus behavior.
-
-```go
-opt := events.WithCodec(nil)
-fmt.Println(opt != nil)
-// Output: true
 ```
 
 ### <a id="events-record"></a>events.Record
@@ -799,168 +964,47 @@ record := events.Record{Event: UserCreated{ID: "123"}}
 fmt.Printf("%T\n", record.Event)
 // Output: main.UserCreated
 ```
-
-### <a id="events-subscription"></a>events.Subscription
-
-Subscription releases a subscription when closed.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-bus, _ := events.NewSync()
-sub, _ := bus.Subscribe(func(UserCreated) {})
-fmt.Println(sub.Close() == nil)
-// Output: true
-```
-
-### <a id="events-topicevent"></a>events.TopicEvent
-
-TopicEvent overrides the derived topic for an event.
-
-```go
-var event events.TopicEvent
-fmt.Println(event == nil)
-// Output: true
-```
-
-### <a id="events-withcodec"></a>events.WithCodec
-
-WithCodec overrides the default event codec.
-
-```go
-bus, _ := events.NewSync(events.WithCodec(nil))
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
-### <a id="gcppubsubevents-config"></a>gcppubsubevents.Config
-
-Config configures Google Pub/Sub transport construction.
-
-```go
-cfg := gcppubsubevents.Config{
-	ProjectID: "events-project",
-	URI:       "127.0.0.1:8085",
-}
-fmt.Println(cfg.ProjectID)
-// Output: events-project
-```
-
-### <a id="gcppubsubevents-driver"></a>gcppubsubevents.Driver
-
-Driver is a Google Pub/Sub-backed events transport.
-
-```go
-var driver *gcppubsubevents.Driver
-fmt.Println(driver == nil)
-// Output: true
-```
-
-### <a id="gcppubsubevents-new"></a>gcppubsubevents.New
-
-New constructs a Google Pub/Sub-backed driver.
-
-```go
-driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-	ProjectID: "events-project",
-	URI:       "127.0.0.1:8085",
-})
-fmt.Println(driver != nil)
-// Output: true
-```
-
-### <a id="kafkaevents-config"></a>kafkaevents.Config
-
-Config configures Kafka transport construction.
-
-```go
-cfg := kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}}
-fmt.Println(cfg.Brokers[0])
-// Output: 127.0.0.1:9092
-```
-
-### <a id="kafkaevents-driver"></a>kafkaevents.Driver
-
-Driver is a Kafka-backed events transport.
-
-```go
-var driver *kafkaevents.Driver
-fmt.Println(driver == nil)
-// Output: true
-```
-
-### <a id="kafkaevents-new"></a>kafkaevents.New
-
-New constructs a Kafka-backed driver.
-
-```go
-driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-fmt.Println(driver != nil)
-// Output: true
-```
-
-### <a id="natsevents-config"></a>natsevents.Config
-
-Config configures NATS transport construction.
-
-```go
-cfg := natsevents.Config{URL: "nats://127.0.0.1:4222"}
-fmt.Println(cfg.URL)
-// Output: nats://127.0.0.1:4222
-```
-
-### <a id="natsevents-driver"></a>natsevents.Driver
-
-Driver is a NATS-backed events transport.
-
-```go
-var driver *natsevents.Driver
-fmt.Println(driver == nil)
-// Output: true
-```
-
-### <a id="natsevents-new"></a>natsevents.New
-
-New connects a NATS-backed driver from config.
-
-```go
-driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-fmt.Println(driver != nil)
-// Output: true
-```
-
-### <a id="redisevents-config"></a>redisevents.Config
-
-Config configures Redis transport construction.
-
-```go
-cfg := redisevents.Config{Addr: "127.0.0.1:6379"}
-fmt.Println(cfg.Addr)
-// Output: 127.0.0.1:6379
-```
-
-### <a id="redisevents-driver"></a>redisevents.Driver
-
-Driver is a Redis pub/sub-backed events transport.
-
-```go
-var driver *redisevents.Driver
-fmt.Println(driver == nil)
-// Output: true
-```
-
-### <a id="redisevents-new"></a>redisevents.New
-
-New constructs a Redis pub/sub-backed driver.
-
-```go
-driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-fmt.Println(driver != nil)
-// Output: true
-```
 <!-- api:embed:end -->
+
+## Docs Tooling
+
+The repository includes lightweight docs tooling under `docs/`.
+
+Fast docs loop:
+
+```bash
+sh scripts/update-docs.sh
+```
+
+Refresh the live benchmark snapshot and regenerate the charts:
+
+```bash
+sh scripts/refresh-bench-snapshot.sh
+```
+
+Update generated README sections and validate required structure:
+
+```bash
+go run ./docs/readme/main.go
+```
+
+Update executed test-count badges:
+
+```bash
+go run ./docs/readme/testcounts/main.go
+```
+
+Generate example programs used by docs checks:
+
+```bash
+go run ./docs/examplegen/main.go
+```
+
+Rerun the fast docs update loop locally:
+
+```bash
+sh docs/watcher.sh
+```
 
 ## Release Tagging
 

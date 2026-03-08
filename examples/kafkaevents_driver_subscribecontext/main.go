@@ -5,18 +5,15 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/goforj/events/driver/gcppubsubevents"
+	"github.com/goforj/events/driver/kafkaevents"
 	"github.com/goforj/events/eventscore"
 )
 
 func main() {
-	// SubscribeContext subscribes to a Google Pub/Sub topic and forwards messages.
+	// SubscribeContext subscribes to a Kafka topic and forwards messages.
 
-	// Example: subscribe to a Google Pub/Sub topic
-	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-		ProjectID: "events-project",
-		URI:       "127.0.0.1:8085",
-	})
+	// Example: subscribe to a Kafka topic
+	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
 	sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
 		_ = ctx
 		_ = msg

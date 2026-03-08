@@ -3,6 +3,7 @@ package events
 import "github.com/goforj/events/eventscore"
 
 // Config configures root bus construction.
+// @group Construction
 //
 // Example: define bus construction config
 //

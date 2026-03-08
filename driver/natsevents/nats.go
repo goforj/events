@@ -9,6 +9,7 @@ import (
 )
 
 // Driver is a NATS-backed events transport.
+// @group Drivers
 //
 // Example: keep a NATS driver reference
 //
@@ -20,6 +21,7 @@ type Driver struct {
 }
 
 // Config configures NATS transport construction.
+// @group Driver Config
 //
 // Example: define NATS driver config
 //
@@ -32,6 +34,7 @@ type Config struct {
 }
 
 // New connects a NATS-backed driver from config.
+// @group Driver Constructors
 //
 // Example: construct a NATS driver
 //
@@ -53,6 +56,7 @@ func New(cfg Config) (*Driver, error) {
 }
 
 // Driver reports the active backend kind.
+// @group Drivers
 //
 // Example: inspect the driver kind
 //
@@ -64,6 +68,7 @@ func (d *Driver) Driver() eventscore.Driver {
 }
 
 // Ready checks that the NATS connection is healthy.
+// @group Drivers
 //
 // Example: check NATS connectivity
 //
@@ -78,6 +83,7 @@ func (d *Driver) Ready(ctx context.Context) error {
 }
 
 // PublishContext publishes a topic payload to NATS.
+// @group Drivers
 //
 // Example: publish a raw message through NATS
 //
@@ -97,6 +103,7 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 }
 
 // SubscribeContext subscribes to a NATS subject and forwards messages.
+// @group Drivers
 //
 // Example: subscribe to a raw NATS subject
 //
@@ -126,6 +133,7 @@ func (d *Driver) SubscribeContext(_ context.Context, topic string, handler event
 }
 
 // Close drains the underlying NATS connection.
+// @group Drivers
 //
 // Example: close a NATS driver
 //

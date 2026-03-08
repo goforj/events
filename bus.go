@@ -8,6 +8,7 @@ import (
 )
 
 // Bus is the root event bus implementation.
+// @group Core
 //
 // Example: keep a concrete bus reference
 //
@@ -26,6 +27,7 @@ type Bus struct {
 }
 
 // New constructs a root bus for the requested driver.
+// @group Construction
 //
 // Example: construct a bus from config
 //
@@ -54,6 +56,7 @@ func New(cfg Config, opts ...Option) (*Bus, error) {
 }
 
 // NewSync constructs the root sync bus.
+// @group Construction
 //
 // Example: construct a sync bus
 //
@@ -65,6 +68,7 @@ func NewSync(opts ...Option) (*Bus, error) {
 }
 
 // NewNull constructs the root null bus.
+// @group Construction
 //
 // Example: construct a null bus
 //
@@ -76,6 +80,7 @@ func NewNull(opts ...Option) (*Bus, error) {
 }
 
 // Driver reports the active backend.
+// @group Core
 //
 // Example: inspect the active backend
 //
@@ -87,6 +92,7 @@ func (b *Bus) Driver() eventscore.Driver {
 }
 
 // Ready reports whether the bus is ready.
+// @group Core
 //
 // Example: check readiness
 //
@@ -98,6 +104,7 @@ func (b *Bus) Ready() error {
 }
 
 // ReadyContext reports whether the bus is ready.
+// @group Core
 //
 // Example: check readiness with a caller context
 //
@@ -112,6 +119,7 @@ func (b *Bus) ReadyContext(ctx context.Context) error {
 }
 
 // Publish publishes an event using the background context.
+// @group Core
 //
 // Example: publish a typed event
 //
@@ -130,6 +138,7 @@ func (b *Bus) Publish(event any) error {
 }
 
 // PublishContext publishes an event using the configured codec and dispatch flow.
+// @group Core
 //
 // Example: publish with a caller context
 //
@@ -180,6 +189,7 @@ func (b *Bus) dispatchMessage(ctx context.Context, msg eventscore.Message) error
 }
 
 // Subscribe registers a handler using the background context.
+// @group Core
 //
 // Example: subscribe to a typed event
 //
@@ -199,6 +209,7 @@ func (b *Bus) Subscribe(handler any) (Subscription, error) {
 }
 
 // SubscribeContext registers a typed handler.
+// @group Core
 //
 // Example: subscribe with a caller context
 //

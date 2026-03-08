@@ -14,6 +14,7 @@ import (
 )
 
 // Driver is a Kafka-backed events transport.
+// @group Drivers
 //
 // Example: keep a Kafka driver reference
 //
@@ -30,6 +31,7 @@ type Driver struct {
 }
 
 // Config configures Kafka transport construction.
+// @group Driver Config
 //
 // Example: define Kafka driver config
 //
@@ -49,6 +51,7 @@ const (
 )
 
 // New constructs a Kafka-backed driver.
+// @group Driver Constructors
 //
 // Example: construct a Kafka driver
 //
@@ -83,6 +86,7 @@ func New(cfg Config) (*Driver, error) {
 }
 
 // Driver reports the active backend kind.
+// @group Drivers
 //
 // Example: inspect the driver kind
 //
@@ -94,6 +98,7 @@ func (d *Driver) Driver() eventscore.Driver {
 }
 
 // Ready checks Kafka connectivity.
+// @group Drivers
 //
 // Example: check Kafka connectivity
 //
@@ -112,6 +117,7 @@ func (d *Driver) Ready(ctx context.Context) error {
 }
 
 // PublishContext publishes a topic payload to Kafka.
+// @group Drivers
 //
 // Example: publish a raw message through Kafka
 //
@@ -134,6 +140,7 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 }
 
 // SubscribeContext subscribes to a Kafka topic and forwards messages.
+// @group Drivers
 //
 // Example: subscribe to a Kafka topic
 //
@@ -194,6 +201,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 }
 
 // Close closes the underlying Kafka writer.
+// @group Drivers
 //
 // Example: close a Kafka driver
 //
