@@ -1,6 +1,12 @@
 package events
 
 // Option configures root bus behavior.
+//
+// Example: keep an option for later bus construction
+//
+//	opt := events.WithCodec(nil)
+//	fmt.Println(opt != nil)
+//	// Output: true
 type Option func(*options)
 
 type options struct {
@@ -16,6 +22,12 @@ func (o *options) apply(opts []Option) {
 }
 
 // WithCodec overrides the default event codec.
+//
+// Example: construct a bus with a custom codec
+//
+//	bus, _ := events.NewSync(events.WithCodec(nil))
+//	fmt.Println(bus.Driver())
+//	// Output: sync
 func WithCodec(codec Codec) Option {
 	return func(o *options) {
 		if codec != nil {

@@ -18,6 +18,12 @@ import (
 var nextSubscriptionID atomic.Uint64
 
 // Driver is a Google Pub/Sub-backed events transport.
+//
+// Example: keep a Google Pub/Sub driver reference
+//
+//	var driver *gcppubsubevents.Driver
+//	fmt.Println(driver == nil)
+//	// Output: true
 type Driver struct {
 	projectID  string
 	client     *gpubsub.Client
@@ -29,6 +35,15 @@ type Driver struct {
 }
 
 // Config configures Google Pub/Sub transport construction.
+//
+// Example: define Google Pub/Sub driver config
+//
+//	cfg := gcppubsubevents.Config{
+//		ProjectID: "events-project",
+//		URI:       "127.0.0.1:8085",
+//	}
+//	fmt.Println(cfg.ProjectID)
+//	// Output: events-project
 type Config struct {
 	ProjectID string
 	URI       string
@@ -41,6 +56,15 @@ const (
 )
 
 // New constructs a Google Pub/Sub-backed driver.
+//
+// Example: construct a Google Pub/Sub driver
+//
+//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
+//		ProjectID: "events-project",
+//		URI:       "127.0.0.1:8085",
+//	})
+//	fmt.Println(driver != nil)
+//	// Output: true
 func New(ctx context.Context, cfg Config) (*Driver, error) {
 	if cfg.Client != nil {
 		if cfg.ProjectID == "" {
@@ -78,11 +102,29 @@ func New(ctx context.Context, cfg Config) (*Driver, error) {
 }
 
 // Driver reports the active backend kind.
+//
+// Example: inspect the driver kind
+//
+//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
+//		ProjectID: "events-project",
+//		URI:       "127.0.0.1:8085",
+//	})
+//	fmt.Println(driver.Driver())
+//	// Output: gcppubsub
 func (d *Driver) Driver() eventscore.Driver {
 	return eventscore.DriverGCPPubSub
 }
 
 // Ready checks Google Pub/Sub connectivity.
+//
+// Example: check Google Pub/Sub connectivity
+//
+//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
+//		ProjectID: "events-project",
+//		URI:       "127.0.0.1:8085",
+//	})
+//	fmt.Println(driver.Ready(context.Background()) == nil)
+//	// Output: true
 func (d *Driver) Ready(ctx context.Context) error {
 	if ctx != nil && ctx.Err() != nil {
 		return ctx.Err()
@@ -100,6 +142,17 @@ func (d *Driver) Ready(ctx context.Context) error {
 }
 
 // PublishContext publishes a topic payload to Google Pub/Sub.
+//
+// Example: publish a raw message through Google Pub/Sub
+//
+//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
+//		ProjectID: "events-project",
+//		URI:       "127.0.0.1:8085",
+//	})
+//	_ = driver.PublishContext(context.Background(), eventscore.Message{
+//		Topic:   "users.created",
+//		Payload: []byte(`{"id":"123"}`),
+//	})
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
 	if ctx != nil && ctx.Err() != nil {
 		return ctx.Err()
@@ -114,6 +167,20 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 }
 
 // SubscribeContext subscribes to a Google Pub/Sub topic and forwards messages.
+//
+// Example: subscribe to a Google Pub/Sub topic
+//
+//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
+//		ProjectID: "events-project",
+//		URI:       "127.0.0.1:8085",
+//	})
+//	sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
+//		_ = ctx
+//		_ = msg
+//		return nil
+//	})
+//	fmt.Println(sub != nil)
+//	// Output: true
 func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
 	if ctx != nil && ctx.Err() != nil {
 		return nil, ctx.Err()
@@ -150,6 +217,15 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 }
 
 // Close closes the underlying Pub/Sub client.
+//
+// Example: close a Google Pub/Sub driver
+//
+//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
+//		ProjectID: "events-project",
+//		URI:       "127.0.0.1:8085",
+//	})
+//	fmt.Println(driver.Close() == nil)
+//	// Output: true
 func (d *Driver) Close() error {
 	d.stopTopics()
 	if d.ownsClient && d.client != nil {

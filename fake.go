@@ -8,16 +8,38 @@ import (
 )
 
 // Record captures one published event observed by a Fake bus.
+//
+// Example: inspect a recorded event
+//
+//	type UserCreated struct {
+//		ID string `json:"id"`
+//	}
+//
+//	record := events.Record{Event: UserCreated{ID: "123"}}
+//	fmt.Printf("%T\n", record.Event)
+//	// Output: main.UserCreated
 type Record struct {
 	Event any
 }
 
 // Fake provides a root-package testing helper that records published events.
+//
+// Example: keep a fake for assertions in tests
+//
+//	fake := events.NewFake()
+//	fmt.Println(fake.Count())
+//	// Output: 0
 type Fake struct {
 	bus *fakeBus
 }
 
 // NewFake creates a new fake event harness backed by the root sync bus.
+//
+// Example: construct a recording fake
+//
+//	fake := events.NewFake()
+//	fmt.Println(fake.Count())
+//	// Output: 0
 func NewFake() *Fake {
 	bus, err := NewSync()
 	if err != nil {
@@ -27,21 +49,62 @@ func NewFake() *Fake {
 }
 
 // Bus returns the wrapped API to inject into code under test.
+//
+// Example: inject the fake bus into application code
+//
+//	fake := events.NewFake()
+//	bus := fake.Bus()
+//	fmt.Println(bus.Ready() == nil)
+//	// Output: true
 func (f *Fake) Bus() API {
 	return f.bus
 }
 
 // Records returns a copy of recorded publishes.
+//
+// Example: inspect recorded publishes
+//
+//	type UserCreated struct {
+//		ID string `json:"id"`
+//	}
+//
+//	fake := events.NewFake()
+//	_ = fake.Bus().Publish(UserCreated{ID: "123"})
+//	fmt.Println(len(fake.Records()))
+//	// Output: 1
 func (f *Fake) Records() []Record {
 	return f.bus.Records()
 }
 
 // Reset clears recorded publishes.
+//
+// Example: clear recorded publishes
+//
+//	type UserCreated struct {
+//		ID string `json:"id"`
+//	}
+//
+//	fake := events.NewFake()
+//	_ = fake.Bus().Publish(UserCreated{ID: "123"})
+//	fake.Reset()
+//	fmt.Println(fake.Count())
+//	// Output: 0
 func (f *Fake) Reset() {
 	f.bus.Reset()
 }
 
 // Count returns the total number of recorded publishes.
+//
+// Example: count recorded publishes
+//
+//	type UserCreated struct {
+//		ID string `json:"id"`
+//	}
+//
+//	fake := events.NewFake()
+//	_ = fake.Bus().Publish(UserCreated{ID: "123"})
+//	fmt.Println(fake.Count())
+//	// Output: 1
 func (f *Fake) Count() int {
 	return len(f.bus.Records())
 }

@@ -8,6 +8,13 @@ import (
 )
 
 // Bus is the root event bus implementation.
+//
+// Example: keep a concrete bus reference
+//
+//	bus, _ := events.NewSync()
+//	var root *events.Bus = bus
+//	fmt.Println(root.Driver())
+//	// Output: sync
 type Bus struct {
 	driver    eventscore.Driver
 	codec     Codec
@@ -19,6 +26,12 @@ type Bus struct {
 }
 
 // New constructs a root bus for the requested driver.
+//
+// Example: construct a bus from config
+//
+//	bus, _ := events.New(events.Config{Driver: "sync"})
+//	fmt.Println(bus.Driver())
+//	// Output: sync
 func New(cfg Config, opts ...Option) (*Bus, error) {
 	options := options{codec: cfg.Codec}
 	options.apply(opts)
@@ -41,26 +54,56 @@ func New(cfg Config, opts ...Option) (*Bus, error) {
 }
 
 // NewSync constructs the root sync bus.
+//
+// Example: construct a sync bus
+//
+//	bus, _ := events.NewSync()
+//	fmt.Println(bus.Driver())
+//	// Output: sync
 func NewSync(opts ...Option) (*Bus, error) {
 	return New(Config{Driver: eventscore.DriverSync}, opts...)
 }
 
 // NewNull constructs the root null bus.
+//
+// Example: construct a null bus
+//
+//	bus, _ := events.NewNull()
+//	fmt.Println(bus.Driver())
+//	// Output: null
 func NewNull(opts ...Option) (*Bus, error) {
 	return New(Config{Driver: eventscore.DriverNull}, opts...)
 }
 
 // Driver reports the active backend.
+//
+// Example: inspect the active backend
+//
+//	bus, _ := events.NewSync()
+//	fmt.Println(bus.Driver())
+//	// Output: sync
 func (b *Bus) Driver() eventscore.Driver {
 	return b.driver
 }
 
 // Ready reports whether the bus is ready.
+//
+// Example: check readiness
+//
+//	bus, _ := events.NewSync()
+//	fmt.Println(bus.Ready() == nil)
+//	// Output: true
 func (b *Bus) Ready() error {
 	return b.ReadyContext(context.Background())
 }
 
 // ReadyContext reports whether the bus is ready.
+//
+// Example: check readiness with a caller context
+//
+//	bus, _ := events.NewSync()
+//	fmt.Println(bus.ReadyContext(context.Background()) == nil)
+//	// Output: true
 func (b *Bus) ReadyContext(ctx context.Context) error {
 	if b.transport != nil {
 		return b.transport.Ready(ctx)
@@ -69,11 +112,38 @@ func (b *Bus) ReadyContext(ctx context.Context) error {
 }
 
 // Publish publishes an event using the background context.
+//
+// Example: publish a typed event
+//
+//	type UserCreated struct {
+//		ID string `json:"id"`
+//	}
+//
+//	bus, _ := events.NewSync()
+//	_, _ = bus.Subscribe(func(event UserCreated) {
+//		fmt.Println(event.ID)
+//	})
+//	_ = bus.Publish(UserCreated{ID: "123"})
+//	// Output: 123
 func (b *Bus) Publish(event any) error {
 	return b.PublishContext(context.Background(), event)
 }
 
 // PublishContext publishes an event using the configured codec and dispatch flow.
+//
+// Example: publish with a caller context
+//
+//	type UserCreated struct {
+//		ID string `json:"id"`
+//	}
+//
+//	bus, _ := events.NewSync()
+//	_, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
+//		fmt.Println(event.ID, ctx != nil)
+//		return nil
+//	})
+//	_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
+//	// Output: 123 true
 func (b *Bus) PublishContext(ctx context.Context, event any) error {
 	if b.driver == eventscore.DriverNull {
 		return nil
@@ -110,11 +180,39 @@ func (b *Bus) dispatchMessage(ctx context.Context, msg eventscore.Message) error
 }
 
 // Subscribe registers a handler using the background context.
+//
+// Example: subscribe to a typed event
+//
+//	type UserCreated struct {
+//		ID string `json:"id"`
+//	}
+//
+//	bus, _ := events.NewSync()
+//	sub, _ := bus.Subscribe(func(ctx context.Context, event UserCreated) error {
+//		_ = ctx
+//		_ = event
+//		return nil
+//	})
+//	defer sub.Close()
 func (b *Bus) Subscribe(handler any) (Subscription, error) {
 	return b.subscribeContext(context.Background(), handler)
 }
 
 // SubscribeContext registers a typed handler.
+//
+// Example: subscribe with a caller context
+//
+//	type UserCreated struct {
+//		ID string `json:"id"`
+//	}
+//
+//	bus, _ := events.NewSync()
+//	sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
+//		_ = ctx
+//		_ = event
+//		return nil
+//	})
+//	defer sub.Close()
 func (b *Bus) SubscribeContext(ctx context.Context, handler any) (Subscription, error) {
 	return b.subscribeContext(ctx, handler)
 }

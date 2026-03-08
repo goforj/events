@@ -9,17 +9,35 @@ import (
 )
 
 // Driver is a NATS-backed events transport.
+//
+// Example: keep a NATS driver reference
+//
+//	var driver *natsevents.Driver
+//	fmt.Println(driver == nil)
+//	// Output: true
 type Driver struct {
 	conn *nats.Conn
 }
 
 // Config configures NATS transport construction.
+//
+// Example: define NATS driver config
+//
+//	cfg := natsevents.Config{URL: "nats://127.0.0.1:4222"}
+//	fmt.Println(cfg.URL)
+//	// Output: nats://127.0.0.1:4222
 type Config struct {
 	URL  string
 	Conn *nats.Conn
 }
 
 // New connects a NATS-backed driver from config.
+//
+// Example: construct a NATS driver
+//
+//	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
+//	fmt.Println(driver != nil)
+//	// Output: true
 func New(cfg Config) (*Driver, error) {
 	if cfg.Conn != nil {
 		return &Driver{conn: cfg.Conn}, nil
@@ -35,11 +53,23 @@ func New(cfg Config) (*Driver, error) {
 }
 
 // Driver reports the active backend kind.
+//
+// Example: inspect the driver kind
+//
+//	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
+//	fmt.Println(driver.Driver())
+//	// Output: nats
 func (d *Driver) Driver() eventscore.Driver {
 	return eventscore.DriverNATS
 }
 
 // Ready checks that the NATS connection is healthy.
+//
+// Example: check NATS connectivity
+//
+//	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
+//	fmt.Println(driver.Ready(context.Background()) == nil)
+//	// Output: true
 func (d *Driver) Ready(ctx context.Context) error {
 	if ctx != nil && ctx.Err() != nil {
 		return ctx.Err()
@@ -48,6 +78,14 @@ func (d *Driver) Ready(ctx context.Context) error {
 }
 
 // PublishContext publishes a topic payload to NATS.
+//
+// Example: publish a raw message through NATS
+//
+//	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
+//	_ = driver.PublishContext(context.Background(), eventscore.Message{
+//		Topic:   "users.created",
+//		Payload: []byte(`{"id":"123"}`),
+//	})
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
 	if ctx != nil && ctx.Err() != nil {
 		return ctx.Err()
@@ -59,6 +97,17 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 }
 
 // SubscribeContext subscribes to a NATS subject and forwards messages.
+//
+// Example: subscribe to a raw NATS subject
+//
+//	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
+//	sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
+//		_ = ctx
+//		_ = msg
+//		return nil
+//	})
+//	fmt.Println(sub != nil)
+//	// Output: true
 func (d *Driver) SubscribeContext(_ context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
 	sub, err := d.conn.Subscribe(topic, func(msg *nats.Msg) {
 		_ = handler(context.Background(), eventscore.Message{
@@ -77,6 +126,12 @@ func (d *Driver) SubscribeContext(_ context.Context, topic string, handler event
 }
 
 // Close drains the underlying NATS connection.
+//
+// Example: close a NATS driver
+//
+//	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
+//	fmt.Println(driver.Close() == nil)
+//	// Output: true
 func (d *Driver) Close() error {
 	d.conn.Close()
 	return nil

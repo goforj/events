@@ -1,11 +1,21 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 
-cd "$(dirname "$0")"
+if ! command -v wgo >/dev/null 2>&1; then
+  echo "Installing wgo..."
+  go install github.com/bokwoon95/wgo@latest
+fi
 
-while true
-do
-  ../scripts/update-docs.sh
-  sleep 2
-done
+echo "Watching for .go file changes to regenerate documentation..."
+
+echo "Starting API/examples watcher (non-test .go files)..."
+wgo -verbose -file=.go -xfile '_test\.go$' -xdir examples \
+  go run ./docs/examplegen/main.go :: \
+  go run ./docs/readme/main.go &
+
+echo "Starting test badge watcher (_test.go files, runs tests)..."
+wgo -verbose -file '_test\.go$' \
+  go run ./docs/readme/testcounts/main.go &
+
+wait

@@ -8,6 +8,12 @@ import (
 )
 
 // TopicEvent overrides the derived topic for an event.
+//
+// Example: override the derived topic
+//
+//	var event events.TopicEvent
+//	fmt.Println(event == nil)
+//	// Output: true
 type TopicEvent interface {
 	Topic() string
 }

@@ -1,6 +1,10 @@
+//go:build ignore
+// +build ignore
+
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -11,7 +15,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"strconv"
+	"sort"
 	"strings"
 )
 
@@ -30,7 +34,7 @@ func main() {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
-	fmt.Println("Test badges updated from executed test runs")
+	fmt.Println("✔ Test badges updated from executed test runs")
 }
 
 func run() error {
@@ -39,23 +43,27 @@ func run() error {
 		return err
 	}
 
-	unitCount, err := countModuleRuns(root, moduleDirs())
+	integrationDir := filepath.Join(root, "integration")
+
+	integrationNames, err := integrationTopLevelTests(integrationDir)
+	if err != nil {
+		return fmt.Errorf("integration top-level tests: %w", err)
+	}
+
+	unitCount, err := countRunEvents(root, []string{"test", "./...", "-run", "Test", "-count=1", "-json"})
 	if err != nil {
 		return fmt.Errorf("count unit test runs: %w", err)
+	}
+
+	integrationCount, err := countIntegrationRunEvents(integrationDir, integrationNames)
+	if err != nil {
+		return fmt.Errorf("count integration test runs: %w", err)
 	}
 
 	readmePath := filepath.Join(root, "README.md")
 	data, err := os.ReadFile(readmePath)
 	if err != nil {
 		return err
-	}
-
-	existing, _ := existingCountsFromReadme(string(data))
-
-	integrationCount, err := countIntegrationRuns(filepath.Join(root, "integration"))
-	if err != nil {
-		fmt.Printf("warn: integration executed count unavailable (%v); leaving integration badge unchanged if present\n", err)
-		integrationCount = existing.Integration
 	}
 
 	out, err := updateTestsSection(string(data), Counts{
@@ -69,83 +77,39 @@ func run() error {
 	return os.WriteFile(readmePath, []byte(out), 0o644)
 }
 
-func moduleDirs() []string {
-	return []string{
-		".",
-		"eventscore",
-		"eventstest",
-		"eventsfake",
-		"examples",
-		"docs",
-		"driver/gcppubsubevents",
-		"driver/kafkaevents",
-		"driver/natsevents",
-		"driver/redisevents",
-	}
-}
-
-func countModuleRuns(root string, dirs []string) (int, error) {
-	total := 0
-	for _, dir := range dirs {
-		count, err := countRunEvents(filepath.Join(root, dir), []string{"go", "test", "./...", "-run", "Test", "-count=1", "-json"})
-		if err != nil {
-			return 0, err
-		}
-		total += count
-	}
-	return total, nil
-}
-
-func countIntegrationRuns(integrationRoot string) (int, error) {
-	names, err := integrationTopLevelTests(integrationRoot)
-	if err != nil {
-		return 0, err
-	}
-	runPattern := buildTopLevelRunPattern(names)
-	if runPattern == "" {
-		return 0, nil
-	}
-	return countRunEvents(integrationRoot, []string{"go", "test", "./...", "-run", runPattern, "-count=1", "-json"})
-}
-
-func countRunEvents(dir string, args []string) (int, error) {
-	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Dir = dir
+func countRunEvents(root string, args []string) (int, error) {
+	cmd := exec.Command("go", args...)
+	cmd.Dir = root
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
 
 	if err := cmd.Run(); err != nil {
-		return 0, fmt.Errorf("%s (in %s): %w%s", strings.Join(args, " "), dir, err, summarizeOutput(out.String()))
+		return 0, fmt.Errorf("go %s: %w\n%s", strings.Join(args, " "), err, out.String())
 	}
 
-	total := 0
-	dec := json.NewDecoder(bytes.NewReader(out.Bytes()))
-	for dec.More() {
-		var event struct {
-			Action string `json:"Action"`
-			Test   string `json:"Test"`
-		}
-		if err := dec.Decode(&event); err != nil {
-			return 0, err
-		}
-		if event.Action == "run" && event.Test != "" {
-			total++
-		}
-	}
-	return total, nil
+	return countRunEventsFromJSON(out.Bytes(), nil)
 }
 
-func buildTopLevelRunPattern(names map[string]struct{}) string {
-	if len(names) == 0 {
-		return ""
+func countIntegrationRunEvents(integrationDir string, integrationNames map[string]struct{}) (int, error) {
+	runPattern := buildTopLevelRunPattern(integrationNames)
+	if runPattern == "" {
+		return 0, nil
 	}
-	parts := make([]string, 0, len(names))
-	for name := range names {
-		parts = append(parts, regexp.QuoteMeta(name))
+
+	args := []string{"test", "-tags=integration", "./all", "-run", runPattern, "-count=1", "-json"}
+	cmd := exec.Command("go", args...)
+	cmd.Dir = integrationDir
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+
+	if err := cmd.Run(); err != nil {
+		return 0, fmt.Errorf("go %s: %w\n%s", strings.Join(args, " "), err, out.String())
 	}
-	return "^(" + strings.Join(parts, "|") + ")(/.*)?$"
+
+	return countRunEventsFromJSON(out.Bytes(), integrationNames)
 }
 
 func integrationTopLevelTests(root string) (map[string]struct{}, error) {
@@ -156,8 +120,7 @@ func integrationTopLevelTests(root string) (map[string]struct{}, error) {
 			return err
 		}
 		if info.IsDir() {
-			name := info.Name()
-			if name == ".git" || name == "vendor" || name == "tmp" {
+			if info.Name() == ".git" || info.Name() == "vendor" {
 				return filepath.SkipDir
 			}
 			return nil
@@ -166,14 +129,22 @@ func integrationTopLevelTests(root string) (map[string]struct{}, error) {
 			return nil
 		}
 
+		src, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		if !hasIntegrationBuildTag(src) {
+			return nil
+		}
+
 		fset := token.NewFileSet()
-		file, err := parser.ParseFile(fset, path, nil, 0)
+		file, err := parser.ParseFile(fset, path, src, 0)
 		if err != nil {
 			return err
 		}
 		for _, decl := range file.Decls {
 			fn, ok := decl.(*ast.FuncDecl)
-			if !ok || fn.Recv != nil || fn.Name == nil {
+			if !ok || fn.Recv != nil {
 				continue
 			}
 			if strings.HasPrefix(fn.Name.Name, "Test") {
@@ -182,76 +153,111 @@ func integrationTopLevelTests(root string) (map[string]struct{}, error) {
 		}
 		return nil
 	})
-	return names, err
-}
-
-func updateTestsSection(body string, counts Counts) (string, error) {
-	start := strings.Index(body, testCountStart)
-	end := strings.Index(body, testCountEnd)
-	if start == -1 || end == -1 || end < start {
-		return "", fmt.Errorf("README missing %s/%s markers", testCountStart, testCountEnd)
-	}
-	end += len(testCountEnd)
-
-	replacement := fmt.Sprintf(`%s
-    <img src="https://img.shields.io/badge/unit_tests-%d-brightgreen" alt="Unit tests (executed count)">
-    <img src="https://img.shields.io/badge/integration_tests-%d-blue" alt="Integration tests (executed count)">
-%s`, testCountStart, counts.Unit, counts.Integration, testCountEnd)
-
-	return body[:start] + replacement + body[end:], nil
-}
-
-func existingCountsFromReadme(body string) (Counts, error) {
-	unit, err := extractBadgeCount(body, "unit_tests-")
 	if err != nil {
-		return Counts{}, err
+		return nil, err
 	}
-	integration, err := extractBadgeCount(body, "integration_tests-")
-	if err != nil {
-		return Counts{}, err
-	}
-	return Counts{Unit: unit, Integration: integration}, nil
+
+	return names, nil
 }
 
-func extractBadgeCount(body string, prefix string) (int, error) {
-	idx := strings.Index(body, prefix)
-	if idx == -1 {
-		return 0, fmt.Errorf("badge prefix %q not found", prefix)
-	}
-	start := idx + len(prefix)
-	end := start
-	for end < len(body) && body[end] >= '0' && body[end] <= '9' {
-		end++
-	}
-	return strconv.Atoi(body[start:end])
+func hasIntegrationBuildTag(src []byte) bool {
+	text := string(src)
+	return strings.Contains(text, "//go:build integration") || strings.Contains(text, "// +build integration")
 }
 
-func summarizeOutput(s string) string {
-	s = strings.TrimSpace(s)
-	if s == "" {
+func buildTopLevelRunPattern(names map[string]struct{}) string {
+	if len(names) == 0 {
 		return ""
 	}
-	var lines []string
-	for _, line := range strings.Split(s, "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "{") {
+	keys := make([]string, 0, len(names))
+	for k := range names {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	parts := make([]string, 0, len(keys))
+	for _, k := range keys {
+		parts = append(parts, regexp.QuoteMeta(k))
+	}
+	return "^(" + strings.Join(parts, "|") + ")(/.*)?$"
+}
+
+func countRunEventsFromJSON(data []byte, topLevelNames map[string]struct{}) (int, error) {
+	var total int
+	scanner := bufio.NewScanner(bytes.NewReader(data))
+	for scanner.Scan() {
+		line := bytes.TrimSpace(scanner.Bytes())
+		if len(line) == 0 || line[0] != '{' {
 			continue
 		}
-		lines = append(lines, line)
-		if len(lines) == 4 {
-			break
+		var event struct {
+			Action string `json:"Action"`
+			Test   string `json:"Test"`
+		}
+		if err := json.Unmarshal(line, &event); err != nil {
+			continue
+		}
+		if event.Action != "run" || event.Test == "" {
+			continue
+		}
+		if topLevelNames == nil {
+			total++
+			continue
+		}
+		top := event.Test
+		if i := strings.IndexByte(top, '/'); i >= 0 {
+			top = top[:i]
+		}
+		if _, ok := topLevelNames[top]; ok {
+			total++
 		}
 	}
-	if len(lines) == 0 {
-		return ""
+	if err := scanner.Err(); err != nil {
+		return 0, err
 	}
-	return "\n" + strings.Join(lines, "\n")
+	return total, nil
+}
+
+func updateTestsSection(readme string, counts Counts) (string, error) {
+	start := strings.Index(readme, testCountStart)
+	end := strings.Index(readme, testCountEnd)
+	if start == -1 || end == -1 || end < start {
+		return "", fmt.Errorf("test count anchors not found or malformed")
+	}
+
+	before := readme[:start+len(testCountStart)]
+	body := readme[start+len(testCountStart) : end]
+	after := readme[end:]
+
+	leading := ""
+	if strings.HasPrefix(body, "\n") {
+		leading = "\n"
+	}
+
+	lines := []string{
+		fmt.Sprintf("  <img src=\"https://img.shields.io/badge/unit_tests-%d-brightgreen\" alt=\"Unit tests (executed count)\">", counts.Unit),
+		fmt.Sprintf("  <img src=\"https://img.shields.io/badge/integration_tests-%d-blue\" alt=\"Integration tests (executed count)\">", counts.Integration),
+	}
+	return before + leading + strings.Join(lines, "\n") + "\n" + after, nil
 }
 
 func findRoot() (string, error) {
-	root, err := os.Getwd()
+	wd, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Clean(filepath.Join(root, "..")), nil
+	for c := filepath.Clean(wd); ; c = filepath.Dir(c) {
+		if fileExists(filepath.Join(c, "go.mod")) && fileExists(filepath.Join(c, "README.md")) && fileExists(filepath.Join(c, "docs")) {
+			return c, nil
+		}
+		parent := filepath.Dir(c)
+		if parent == c {
+			break
+		}
+	}
+	return "", fmt.Errorf("could not find project root")
+}
+
+func fileExists(p string) bool {
+	_, err := os.Stat(p)
+	return err == nil
 }

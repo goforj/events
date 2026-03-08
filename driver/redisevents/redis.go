@@ -9,17 +9,35 @@ import (
 )
 
 // Driver is a Redis pub/sub-backed events transport.
+//
+// Example: keep a Redis driver reference
+//
+//	var driver *redisevents.Driver
+//	fmt.Println(driver == nil)
+//	// Output: true
 type Driver struct {
 	client *redis.Client
 }
 
 // Config configures Redis transport construction.
+//
+// Example: define Redis driver config
+//
+//	cfg := redisevents.Config{Addr: "127.0.0.1:6379"}
+//	fmt.Println(cfg.Addr)
+//	// Output: 127.0.0.1:6379
 type Config struct {
 	Addr   string
 	Client *redis.Client
 }
 
 // New constructs a Redis pub/sub-backed driver.
+//
+// Example: construct a Redis driver
+//
+//	driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
+//	fmt.Println(driver != nil)
+//	// Output: true
 func New(cfg Config) (*Driver, error) {
 	if cfg.Client != nil {
 		return &Driver{client: cfg.Client}, nil
@@ -33,21 +51,52 @@ func New(cfg Config) (*Driver, error) {
 }
 
 // Driver reports the active backend kind.
+//
+// Example: inspect the driver kind
+//
+//	driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
+//	fmt.Println(driver.Driver())
+//	// Output: redis
 func (d *Driver) Driver() eventscore.Driver {
 	return eventscore.DriverRedis
 }
 
 // Ready checks Redis connectivity.
+//
+// Example: check Redis connectivity
+//
+//	driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
+//	fmt.Println(driver.Ready(context.Background()) == nil)
+//	// Output: true
 func (d *Driver) Ready(ctx context.Context) error {
 	return d.client.Ping(ctx).Err()
 }
 
 // PublishContext publishes a topic payload via Redis pub/sub.
+//
+// Example: publish a raw message through Redis
+//
+//	driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
+//	_ = driver.PublishContext(context.Background(), eventscore.Message{
+//		Topic:   "users.created",
+//		Payload: []byte(`{"id":"123"}`),
+//	})
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
 	return d.client.Publish(ctx, msg.Topic, msg.Payload).Err()
 }
 
 // SubscribeContext subscribes to a Redis pub/sub channel.
+//
+// Example: subscribe to a Redis channel
+//
+//	driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
+//	sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
+//		_ = ctx
+//		_ = msg
+//		return nil
+//	})
+//	fmt.Println(sub != nil)
+//	// Output: true
 func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
 	pubsub := d.client.Subscribe(ctx, topic)
 	if _, err := pubsub.Receive(ctx); err != nil {
@@ -77,6 +126,12 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 }
 
 // Close closes the underlying Redis client.
+//
+// Example: close a Redis driver
+//
+//	driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
+//	fmt.Println(driver.Close() == nil)
+//	// Output: true
 func (d *Driver) Close() error {
 	return d.client.Close()
 }
