@@ -151,6 +151,15 @@ type UserCreated struct {
 func (UserCreated) Topic() string { return "users.created" }
 ```
 
+## How It Works
+
+```mermaid
+flowchart LR
+    A[App publishes typed event] --> B[events.Bus resolves topic and encodes payload]
+    B --> C[Driver transports topic plus payload]
+    C --> D[Subscriber handler receives decoded typed event]
+```
+
 ## Delivery Semantics
 
 The root contract is intentionally small and honest:
