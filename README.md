@@ -55,6 +55,42 @@ go get github.com/goforj/events/driver/kafkaevents
 go get github.com/goforj/events/driver/gcppubsubevents
 ```
 
+## Quick Start
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/goforj/events"
+)
+
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+func main() {
+	bus, _ := events.NewSync()
+	_, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
+		fmt.Println("received", event.ID, ctx != nil)
+		return nil
+	})
+	_ = bus.Publish(UserCreated{ID: "123"})
+}
+```
+
+## Topic Override
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+func (UserCreated) Topic() string { return "users.created" }
+```
+
 ## Drivers
 
 |                                                                                                Driver / Backend | Mode | Fan-out | Durable | Queue Semantics | Notes |
@@ -114,42 +150,6 @@ func main() {
 | Testing and tooling | `github.com/goforj/events/integration` | Centralized live integration and benchmark harnesses |
 | Testing and tooling | `github.com/goforj/events/examples` | Compile-checked example programs |
 | Testing and tooling | `github.com/goforj/events/docs` | README/docs/example tooling |
-
-## Quick Start
-
-```go
-package main
-
-import (
-	"context"
-	"fmt"
-
-	"github.com/goforj/events"
-)
-
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-func main() {
-	bus, _ := events.NewSync()
-	_, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-		fmt.Println("received", event.ID, ctx != nil)
-		return nil
-	})
-	_ = bus.Publish(UserCreated{ID: "123"})
-}
-```
-
-## Topic Override
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-func (UserCreated) Topic() string { return "users.created" }
-```
 
 ## How It Works
 
