@@ -57,15 +57,15 @@ go get github.com/goforj/events/driver/gcppubsubevents
 
 ## Drivers
 
-| Driver / Backend | Mode | Fan-out | Durable | Queue Semantics | Notes |
-| ---: | :--- | :---: | :---: | :---: | :--- |
-| `sync` | In-process | Yes | No | No | Root-backed synchronous dispatch in the caller path. |
-| `null` | Drop-only | No | No | No | Root-backed no-op transport for disabled eventing and tests. |
-| `nats` | Distributed pub/sub | Yes | No | No | Subject-based transport with live integration coverage. |
-| `redis` | Distributed pub/sub | Yes | No | No | Redis pub/sub transport; Streams are intentionally deferred. |
-| `kafka` | Distributed topic/log | Yes | Partial | No | Current driver validates topic-based fan-out compatibility, not full consumer-group semantics. |
-| `gcppubsub` | Distributed topic/subscription | Yes | Partial | No | Emulator-backed Google Pub/Sub integration with per-subscription fan-out mapping. |
-| `sqs` | Queue target | Planned | Yes | Yes | Deferred until a separate async capability surface is intentionally introduced. |
+|                                                                                                Driver / Backend | Mode | Fan-out | Durable | Queue Semantics | Notes |
+|----------------------------------------------------------------------------------------------------------------:| :--- | :---: | :---: | :---: | :--- |
+|      <img src="https://img.shields.io/badge/sync-546E7A?logo=go&logoColor=white" alt="Sync"> | In-process | ✓ | x | x | Root-backed synchronous dispatch in the caller path. |
+|     <img src="https://img.shields.io/badge/null-9e9e9e?logo=probot&logoColor=white" alt="Null"> | Drop-only | x | x | x | Root-backed no-op transport for disabled eventing and tests. |
+|        <img src="https://img.shields.io/badge/nats-27AAE1?logo=natsdotio&logoColor=white" alt="NATS"> | Distributed pub/sub | ✓ | x | x | Subject-based transport with live integration coverage. |
+|      <img src="https://img.shields.io/badge/redis-%23DC382D?logo=redis&logoColor=white" alt="Redis"> | Distributed pub/sub | ✓ | x | x | Redis pub/sub transport; Streams are intentionally deferred. |
+|      <img src="https://img.shields.io/badge/kafka-231F20?logo=apachekafka&logoColor=white" alt="Kafka"> | Distributed topic/log | ✓ | Partial | x | Current driver validates topic-based fan-out compatibility, not full consumer-group semantics. |
+| <img src="https://img.shields.io/badge/gcp%20pub%2Fsub-4285F4?logo=googlecloud&logoColor=white" alt="Google Pub/Sub"> | Distributed topic/subscription | ✓ | Partial | x | Emulator-backed Google Pub/Sub integration with per-subscription fan-out mapping. |
+|          <img src="https://img.shields.io/badge/sqs-FF9900?logo=buffer&logoColor=white" alt="SQS"> | Queue target | Planned | ✓ | ✓ | Deferred until a separate async capability surface is intentionally introduced. |
 
 ## Driver Constructor Quick Examples
 
