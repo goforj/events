@@ -191,23 +191,6 @@ func renderSection(rows []benchRow) string {
 	buf.WriteString("Core hot-path benchmarks track the in-process event bus overhead directly.\n")
 	buf.WriteString("Backend round-trip benchmarks compare the local sync bus against every enabled broker-backed driver fixture.\n\n")
 
-	if len(core) > 0 {
-		buf.WriteString("### Core Hot Paths\n\n")
-		buf.WriteString("| Benchmark | ns/op | ops/s | B/op | allocs/op |\n")
-		buf.WriteString("|:----------|-----:|-----:|-----:|---------:|\n")
-		for _, row := range sortCoreRows(core) {
-			buf.WriteString(fmt.Sprintf(
-				"| `%s` | %.1f | %.0f | %d | %d |\n",
-				coreLabel(row.Name),
-				row.NsOp,
-				1e9/row.NsOp,
-				row.BOp,
-				row.AllocsOp,
-			))
-		}
-		buf.WriteString("\n")
-	}
-
 	if len(drivers) == 0 {
 		buf.WriteString("Backend charts are rendered when the benchmark snapshot includes round-trip driver rows.\n")
 		buf.WriteString("Run with `RUN_INTEGRATION=1` to capture the full driver matrix.\n")
