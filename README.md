@@ -1,4 +1,6 @@
-# events
+<p align="center">
+  <img src="./docs/images/logo.png?v=1" width="300" alt="events logo">
+</p>
 
 <p align="center">
     events is a typed event bus library for local dispatch and distributed pub/sub.
