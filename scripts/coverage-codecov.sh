@@ -2,7 +2,7 @@
 
 set -eu
 
-export GOCACHE="${PWD}/tmp/gocache"
+export GOCACHE="${GOCACHE:-/tmp/events-gocache}"
 
 tmp_dir="${PWD}/tmp/coverage"
 mkdir -p "${tmp_dir}"
@@ -11,6 +11,10 @@ run_cover() {
   dir="$1"
   out="$2"
   pattern="${3:-./...}"
+  packages=$(cd "${dir}" && go list ${pattern} 2>/dev/null || true)
+  if [ -z "${packages}" ]; then
+    return 0
+  fi
   (cd "${dir}" && go test ${pattern} -coverprofile="${out}")
 }
 
