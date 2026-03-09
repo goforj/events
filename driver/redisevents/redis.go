@@ -28,6 +28,15 @@ type Driver struct {
 //	cfg := redisevents.Config{Addr: "127.0.0.1:6379"}
 //	fmt.Println(cfg.Addr)
 //	// Output: 127.0.0.1:6379
+//
+// Example: define Redis driver config with all fields
+//
+//	cfg := redisevents.Config{
+//		Addr:   "127.0.0.1:6379",
+//		Client: nil, // default: nil constructs a client from Addr
+//	}
+//	fmt.Println(cfg.Addr)
+//	// Output: 127.0.0.1:6379
 type Config struct {
 	Addr   string
 	Client *redis.Client

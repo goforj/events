@@ -14,4 +14,5 @@ func main() {
 	cfg := kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}}
 	fmt.Println(cfg.Brokers[0])
 	// Output: 127.0.0.1:9092
+
 }

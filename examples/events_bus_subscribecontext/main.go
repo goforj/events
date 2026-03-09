@@ -8,15 +8,14 @@ import (
 )
 
 func main() {
-	// SubscribeContext registers a typed handler with the provided context.
+	// SubscribeContext registers a typed handler.
 
-	// Example: subscribe with a caller context through the interface
+	// Example: subscribe with a caller context
 	type UserCreated struct {
 		ID string `json:"id"`
 	}
 
-	api, _ := events.NewSync()
-	var bus events.API = api
+	bus, _ := events.NewSync()
 	sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
 		_ = ctx
 		_ = event

@@ -15,4 +15,5 @@ func main() {
 	cfg := events.Config{Driver: eventscore.DriverSync}
 	fmt.Println(cfg.Driver)
 	// Output: sync
+
 }

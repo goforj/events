@@ -14,4 +14,5 @@ func main() {
 	cfg := redisevents.Config{Addr: "127.0.0.1:6379"}
 	fmt.Println(cfg.Addr)
 	// Output: 127.0.0.1:6379
+
 }

@@ -46,6 +46,16 @@ type Driver struct {
 //	}
 //	fmt.Println(cfg.ProjectID)
 //	// Output: events-project
+//
+// Example: define Google Pub/Sub driver config with all fields
+//
+//	cfg := gcppubsubevents.Config{
+//		ProjectID: "events-project",
+//		URI:       "127.0.0.1:8085", // default: "" is invalid unless Client is provided
+//		Client:    nil,              // default: nil creates a client from ProjectID and URI
+//	}
+//	fmt.Println(cfg.ProjectID)
+//	// Output: events-project
 type Config struct {
 	ProjectID string
 	URI       string

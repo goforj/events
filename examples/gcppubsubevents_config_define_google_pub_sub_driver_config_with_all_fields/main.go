@@ -10,10 +10,11 @@ import (
 func main() {
 	// Config configures Google Pub/Sub transport construction.
 
-	// Example: define Google Pub/Sub driver config
+	// Example: define Google Pub/Sub driver config with all fields
 	cfg := gcppubsubevents.Config{
 		ProjectID: "events-project",
-		URI:       "127.0.0.1:8085",
+		URI:       "127.0.0.1:8085", // default: "" is invalid unless Client is provided
+		Client:    nil,              // default: nil creates a client from ProjectID and URI
 	}
 	fmt.Println(cfg.ProjectID)
 	// Output: events-project

@@ -10,8 +10,11 @@ import (
 func main() {
 	// Config configures NATS transport construction.
 
-	// Example: define NATS driver config
-	cfg := natsevents.Config{URL: "nats://127.0.0.1:4222"}
+	// Example: define NATS driver config with all fields
+	cfg := natsevents.Config{
+		URL:  "nats://127.0.0.1:4222",
+		Conn: nil, // default: nil dials URL instead of reusing an existing connection
+	}
 	fmt.Println(cfg.URL)
 	// Output: nats://127.0.0.1:4222
 }

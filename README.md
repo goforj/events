@@ -169,8 +169,6 @@ Note: `gcppubsub` is excluded from the default charts because the Pub/Sub emulat
 These checks are for obvious regression detection, not for noisy micro-optimism
 or hard CI performance gates.
 
-## API Index
-
 <!-- api:embed:start -->
 
 ## API Index
@@ -201,8 +199,22 @@ fmt.Println(codec == nil)
 
 Config configures root bus construction.
 
+_Example: define bus construction config_
+
 ```go
 cfg := events.Config{Driver: eventscore.DriverSync}
+fmt.Println(cfg.Driver)
+// Output: sync
+```
+
+_Example: define bus construction config with all fields_
+
+```go
+cfg := events.Config{
+	Driver:    eventscore.DriverSync, // default: "sync" when empty and no Transport is provided
+	Codec:     nil,                   // default: nil uses the built-in JSON codec
+	Transport: nil,                   // default: nil keeps dispatch in-process
+}
 fmt.Println(cfg.Driver)
 // Output: sync
 ```
@@ -521,6 +533,8 @@ fmt.Println(event == nil)
 
 Config configures Google Pub/Sub transport construction.
 
+_Example: define Google Pub/Sub driver config_
+
 ```go
 cfg := gcppubsubevents.Config{
 	ProjectID: "events-project",
@@ -530,12 +544,38 @@ fmt.Println(cfg.ProjectID)
 // Output: events-project
 ```
 
+_Example: define Google Pub/Sub driver config with all fields_
+
+```go
+cfg := gcppubsubevents.Config{
+	ProjectID: "events-project",
+	URI:       "127.0.0.1:8085", // default: "" is invalid unless Client is provided
+	Client:    nil,              // default: nil creates a client from ProjectID and URI
+}
+fmt.Println(cfg.ProjectID)
+// Output: events-project
+```
+
 ### <a id="kafkaevents-config"></a>kafkaevents.Config
 
 Config configures Kafka transport construction.
 
+_Example: define Kafka driver config_
+
 ```go
 cfg := kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}}
+fmt.Println(cfg.Brokers[0])
+// Output: 127.0.0.1:9092
+```
+
+_Example: define Kafka driver config with all fields_
+
+```go
+cfg := kafkaevents.Config{
+	Brokers: []string{"127.0.0.1:9092"},
+	Dialer:  nil, // default: nil uses a zero-value kafka.Dialer
+	Writer:  nil, // default: nil builds a writer with single-message, auto-topic defaults
+}
 fmt.Println(cfg.Brokers[0])
 // Output: 127.0.0.1:9092
 ```
@@ -544,8 +584,21 @@ fmt.Println(cfg.Brokers[0])
 
 Config configures NATS transport construction.
 
+_Example: define NATS driver config_
+
 ```go
 cfg := natsevents.Config{URL: "nats://127.0.0.1:4222"}
+fmt.Println(cfg.URL)
+// Output: nats://127.0.0.1:4222
+```
+
+_Example: define NATS driver config with all fields_
+
+```go
+cfg := natsevents.Config{
+	URL:  "nats://127.0.0.1:4222",
+	Conn: nil, // default: nil dials URL instead of reusing an existing connection
+}
 fmt.Println(cfg.URL)
 // Output: nats://127.0.0.1:4222
 ```
@@ -554,8 +607,21 @@ fmt.Println(cfg.URL)
 
 Config configures Redis transport construction.
 
+_Example: define Redis driver config_
+
 ```go
 cfg := redisevents.Config{Addr: "127.0.0.1:6379"}
+fmt.Println(cfg.Addr)
+// Output: 127.0.0.1:6379
+```
+
+_Example: define Redis driver config with all fields_
+
+```go
+cfg := redisevents.Config{
+	Addr:   "127.0.0.1:6379",
+	Client: nil, // default: nil constructs a client from Addr
+}
 fmt.Println(cfg.Addr)
 // Output: 127.0.0.1:6379
 ```
