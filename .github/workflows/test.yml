@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  verify:
+  unit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,8 +27,6 @@ jobs:
             integration/go.sum
       - name: Test All Modules
         run: sh scripts/test-all-modules.sh
-      - name: Test Integration
-        run: sh scripts/test-integration.sh
       - name: Check Docs
         run: sh scripts/check-docs.sh
       - name: Aggregate Coverage
@@ -41,3 +39,51 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: Benchmark Smoke
         run: sh scripts/check-bench-smoke.sh
+
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+          cache: true
+          cache-dependency-path: |
+            go.sum
+            eventscore/go.sum
+            eventstest/go.sum
+            eventsfake/go.sum
+            examples/go.sum
+            docs/go.sum
+            driver/gcppubsubevents/go.sum
+            driver/kafkaevents/go.sum
+            driver/natsevents/go.sum
+            driver/redisevents/go.sum
+            integration/go.sum
+      - name: Test Examples
+        run: |
+          cd examples
+          go test ./...
+
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.0'
+          cache: true
+          cache-dependency-path: |
+            go.sum
+            eventscore/go.sum
+            eventstest/go.sum
+            eventsfake/go.sum
+            examples/go.sum
+            docs/go.sum
+            driver/gcppubsubevents/go.sum
+            driver/kafkaevents/go.sum
+            driver/natsevents/go.sum
+            driver/redisevents/go.sum
+            integration/go.sum
+      - name: Test Integration
+        run: sh scripts/test-integration.sh

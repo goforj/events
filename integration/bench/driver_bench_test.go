@@ -33,7 +33,7 @@ func BenchmarkDistributedPublishRoundTrip(b *testing.B) {
 			continue
 		}
 		b.Run(fixture.name, func(b *testing.B) {
-			ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 			defer cancel()
 
 			driver := fixture.factory(b, ctx)

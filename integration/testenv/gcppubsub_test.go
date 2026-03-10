@@ -8,7 +8,7 @@ import (
 )
 
 func TestStartGCPPubSub(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
 	env, err := StartGCPPubSub(ctx)

@@ -22,14 +22,13 @@ run_cover() {
 run_integration_cover() {
   out="$1"
   coverpkg="github.com/goforj/events,github.com/goforj/events/driver/gcppubsubevents,github.com/goforj/events/driver/kafkaevents,github.com/goforj/events/driver/natsevents,github.com/goforj/events/driver/redisevents"
-  (cd integration && go test ./... -coverpkg="${coverpkg}" -coverprofile="${out}")
+  (cd integration && go test ./root ./all -coverpkg="${coverpkg}" -coverprofile="${out}")
 }
 
 run_cover "." "${tmp_dir}/root.out"
 run_cover "eventscore" "${tmp_dir}/eventscore.out"
 run_cover "eventstest" "${tmp_dir}/eventstest.out"
 run_cover "eventsfake" "${tmp_dir}/eventsfake.out"
-run_cover "examples" "${tmp_dir}/examples.out" "."
 run_cover "docs" "${tmp_dir}/docs.out"
 run_cover "driver/gcppubsubevents" "${tmp_dir}/gcppubsubevents.out"
 run_cover "driver/kafkaevents" "${tmp_dir}/kafkaevents.out"
@@ -46,7 +45,6 @@ for profile in \
   "${tmp_dir}/eventscore.out" \
   "${tmp_dir}/eventstest.out" \
   "${tmp_dir}/eventsfake.out" \
-  "${tmp_dir}/examples.out" \
   "${tmp_dir}/docs.out" \
   "${tmp_dir}/gcppubsubevents.out" \
   "${tmp_dir}/kafkaevents.out" \

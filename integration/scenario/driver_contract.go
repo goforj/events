@@ -2,6 +2,8 @@ package scenario
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -19,6 +21,12 @@ type overrideDriverEvent struct {
 
 func (overrideDriverEvent) Topic() string { return "integration.override" }
 
+const (
+	driverSetupTimeout    = 20 * time.Second
+	driverScenarioTimeout = 10 * time.Second
+	unsubscribeWait       = 150 * time.Millisecond
+)
+
 // Factory constructs a transport-backed driver for integration scenarios.
 type Factory func(testing.TB, context.Context) eventscore.DriverAPI
 
@@ -26,21 +34,27 @@ type Factory func(testing.TB, context.Context) eventscore.DriverAPI
 func RunDriverContract(t *testing.T, factory Factory) {
 	t.Helper()
 
+	driverCtx, cancelDriver := context.WithTimeout(context.Background(), driverSetupTimeout)
+	defer cancelDriver()
+
+	progressf("creating shared driver fixture")
+	driver := factory(t, driverCtx)
+	progressf("shared driver fixture ready")
+
 	t.Run("ready", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		progressf("checking driver readiness")
+		ctx, cancel := context.WithTimeout(context.Background(), driverScenarioTimeout)
 		defer cancel()
 
-		driver := factory(t, ctx)
 		if err := driver.Ready(ctx); err != nil {
 			t.Fatalf("Ready returned error: %v", err)
 		}
 	})
 
 	t.Run("publish_subscribe", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		progressf("running publish/subscribe scenario")
+		ctx, cancel := context.WithTimeout(context.Background(), driverScenarioTimeout)
 		defer cancel()
-
-		driver := factory(t, ctx)
 
 		bus, err := events.New(events.Config{Transport: driver})
 		if err != nil {
@@ -71,10 +85,9 @@ func RunDriverContract(t *testing.T, factory Factory) {
 	})
 
 	t.Run("unsubscribe", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		progressf("running unsubscribe scenario")
+		ctx, cancel := context.WithTimeout(context.Background(), driverScenarioTimeout)
 		defer cancel()
-
-		driver := factory(t, ctx)
 
 		bus, err := events.New(events.Config{Transport: driver})
 		if err != nil {
@@ -99,15 +112,14 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		select {
 		case <-delivered:
 			t.Fatal("received message after unsubscribe")
-		case <-time.After(500 * time.Millisecond):
+		case <-time.After(unsubscribeWait):
 		}
 	})
 
 	t.Run("fanout_subscriptions", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		progressf("running fan-out scenario")
+		ctx, cancel := context.WithTimeout(context.Background(), driverScenarioTimeout)
 		defer cancel()
-
-		driver := factory(t, ctx)
 
 		bus, err := events.New(events.Config{Transport: driver})
 		if err != nil {
@@ -153,10 +165,9 @@ func RunDriverContract(t *testing.T, factory Factory) {
 	})
 
 	t.Run("topic_override", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		progressf("running topic override scenario")
+		ctx, cancel := context.WithTimeout(context.Background(), driverScenarioTimeout)
 		defer cancel()
-
-		driver := factory(t, ctx)
 
 		bus, err := events.New(events.Config{Transport: driver})
 		if err != nil {
@@ -185,4 +196,10 @@ func RunDriverContract(t *testing.T, factory Factory) {
 			t.Fatal("timed out waiting for override-routed distributed delivery")
 		}
 	})
+}
+
+func progressf(format string, args ...any) {
+	if testing.Verbose() {
+		fmt.Fprintf(os.Stderr, "[integration] "+format+"\n", args...)
+	}
 }

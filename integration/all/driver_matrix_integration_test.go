@@ -2,6 +2,7 @@ package all
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -27,6 +28,7 @@ func TestDriverContract_AllDrivers(t *testing.T) {
 			continue
 		}
 		t.Run(fixture.name, func(t *testing.T) {
+			scenarioProgressf("starting integration battery for driver=%s", fixture.name)
 			scenario.RunDriverContract(t, fixture.factory)
 		})
 	}
@@ -43,6 +45,7 @@ func integrationFixtures(t *testing.T) []driverFixture {
 			enabled: selected["gcppubsub"],
 			factory: func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
 				t.Helper()
+				scenarioProgressf("booting gcppubsub test environment")
 				env, err := testenv.StartGCPPubSub(ctx)
 				if err != nil {
 					t.Fatalf("StartGCPPubSub returned error: %v", err)
@@ -65,6 +68,7 @@ func integrationFixtures(t *testing.T) []driverFixture {
 			enabled: selected["kafka"],
 			factory: func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
 				t.Helper()
+				scenarioProgressf("booting kafka test environment")
 				env, err := testenv.StartKafka(ctx)
 				if err != nil {
 					t.Fatalf("StartKafka returned error: %v", err)
@@ -84,6 +88,7 @@ func integrationFixtures(t *testing.T) []driverFixture {
 			enabled: selected["nats"],
 			factory: func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
 				t.Helper()
+				scenarioProgressf("booting nats test environment")
 				env, err := testenv.StartNATS(ctx)
 				if err != nil {
 					t.Fatalf("StartNATS returned error: %v", err)
@@ -103,6 +108,7 @@ func integrationFixtures(t *testing.T) []driverFixture {
 			enabled: selected["redis"],
 			factory: func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
 				t.Helper()
+				scenarioProgressf("booting redis test environment")
 				env, err := testenv.StartRedis(ctx)
 				if err != nil {
 					t.Fatalf("StartRedis returned error: %v", err)
@@ -117,6 +123,12 @@ func integrationFixtures(t *testing.T) []driverFixture {
 				return driver
 			},
 		},
+	}
+}
+
+func scenarioProgressf(format string, args ...any) {
+	if testing.Verbose() {
+		fmt.Fprintf(os.Stderr, "[integration] "+format+"\n", args...)
 	}
 }
 

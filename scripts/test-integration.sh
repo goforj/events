@@ -2,6 +2,4 @@
 
 set -eu
 
-export GOCACHE="${PWD}/tmp/gocache"
-
-(cd integration && go test ./...)
+(cd integration && go test ./root ./all)

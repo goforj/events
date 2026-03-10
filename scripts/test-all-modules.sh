@@ -16,7 +16,6 @@ go test ./...
 run_tests "eventscore"
 run_tests "eventstest"
 run_tests "eventsfake"
-run_tests "examples"
 run_tests "docs"
 run_tests "driver/gcppubsubevents"
 run_tests "driver/kafkaevents"
