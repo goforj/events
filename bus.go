@@ -97,7 +97,7 @@ func (b *Bus) Ready() error {
 }
 
 // ReadyContext reports whether the bus is ready.
-// @group Bus Context
+// @group Bus
 //
 // Example: check readiness with a caller context
 //
@@ -131,7 +131,7 @@ func (b *Bus) Publish(event any) error {
 }
 
 // PublishContext publishes an event using the configured codec and dispatch flow.
-// @group Publish Context
+// @group Publish
 //
 // Example: publish with a caller context
 //
@@ -203,7 +203,7 @@ func (b *Bus) Subscribe(handler any) (Subscription, error) {
 }
 
 // SubscribeContext registers a typed handler.
-// @group Subscribe Context
+// @group Subscribe
 //
 // Example: subscribe with a caller context
 //

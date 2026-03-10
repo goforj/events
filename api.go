@@ -121,15 +121,4 @@ type API interface {
 
 // Subscription releases a subscription when closed.
 // @group Subscribe
-//
-// Example: close a subscription when done
-//
-//	type UserCreated struct {
-//		ID string `json:"id"`
-//	}
-//
-//	bus, _ := events.NewSync()
-//	sub, _ := bus.Subscribe(func(UserCreated) {})
-//	fmt.Println(sub.Close() == nil)
-//	// Output: true
 type Subscription = eventscore.Subscription

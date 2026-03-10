@@ -174,17 +174,14 @@ or hard CI performance gates.
 
 | Group | Functions |
 |------:|-----------|
-| **Bus** | [Bus.Driver](#bus-driver) [Bus.Ready](#bus-ready) [events.Bus](#events-bus) |
-| **Bus Context** | [Bus.ReadyContext](#bus-readycontext) |
+| **Bus** | [Bus.Driver](#bus-driver) [Bus.Ready](#bus-ready) [Bus.ReadyContext](#bus-readycontext) [events.Bus](#events-bus) |
 | **Config** | [events.Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
 | **Construction** | [events.New](#events-new) [events.NewNull](#events-newnull) [events.NewSync](#events-newsync) |
 | **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) |
 | **Drivers** | [Driver.Close](#driver-close) |
 | **Options** | [events.Option](#events-option) [events.WithCodec](#events-withcodec) |
-| **Publish** | [Bus.Publish](#bus-publish) [events.TopicEvent](#events-topicevent) |
-| **Publish Context** | [Bus.PublishContext](#bus-publishcontext) |
-| **Subscribe** | [Bus.Subscribe](#bus-subscribe) [events.Subscription](#events-subscription) |
-| **Subscribe Context** | [Bus.SubscribeContext](#bus-subscribecontext) |
+| **Publish** | [Bus.Publish](#bus-publish) [Bus.PublishContext](#bus-publishcontext) [events.TopicEvent](#events-topicevent) |
+| **Subscribe** | [Bus.Subscribe](#bus-subscribe) [Bus.SubscribeContext](#bus-subscribecontext) [events.Subscription](#events-subscription) |
 | **Testing** | [Fake.Bus](#fake-bus) [Fake.Count](#fake-count) [Fake.Records](#fake-records) [Fake.Reset](#fake-reset) [events.Fake](#events-fake) [events.NewFake](#events-newfake) [events.Record](#events-record) |
 
 
@@ -210,12 +207,6 @@ fmt.Println(bus.Ready() == nil)
 // Output: true
 ```
 
-### <a id="events-bus"></a>events.Bus
-
-Bus is the root event bus implementation.
-
-## Bus Context
-
 ### <a id="bus-readycontext"></a>Bus.ReadyContext
 
 ReadyContext reports whether the bus is ready.
@@ -225,6 +216,10 @@ bus, _ := events.NewSync()
 fmt.Println(bus.ReadyContext(context.Background()) == nil)
 // Output: true
 ```
+
+### <a id="events-bus"></a>events.Bus
+
+Bus is the root event bus implementation.
 
 ## Config
 
@@ -443,18 +438,6 @@ _ = bus.Publish(UserCreated{ID: "123"})
 // Output: 123
 ```
 
-### <a id="events-topicevent"></a>events.TopicEvent
-
-TopicEvent overrides the derived topic for an event.
-
-```go
-var event events.TopicEvent
-fmt.Println(event == nil)
-// Output: true
-```
-
-## Publish Context
-
 ### <a id="bus-publishcontext"></a>Bus.PublishContext
 
 PublishContext publishes an event using the configured codec and dispatch flow.
@@ -471,6 +454,16 @@ _, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
 })
 _ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
 // Output: 123 true
+```
+
+### <a id="events-topicevent"></a>events.TopicEvent
+
+TopicEvent overrides the derived topic for an event.
+
+```go
+var event events.TopicEvent
+fmt.Println(event == nil)
+// Output: true
 ```
 
 ## Subscribe
@@ -494,23 +487,6 @@ _ = bus.Publish(UserCreated{ID: "123"})
 // Output: 123
 ```
 
-### <a id="events-subscription"></a>events.Subscription
-
-Subscription releases a subscription when closed.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-bus, _ := events.NewSync()
-sub, _ := bus.Subscribe(func(UserCreated) {})
-fmt.Println(sub.Close() == nil)
-// Output: true
-```
-
-## Subscribe Context
-
 ### <a id="bus-subscribecontext"></a>Bus.SubscribeContext
 
 SubscribeContext registers a typed handler.
@@ -529,6 +505,10 @@ defer sub.Close()
 _ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
 // Output: 123 true
 ```
+
+### <a id="events-subscription"></a>events.Subscription
+
+Subscription releases a subscription when closed.
 
 ## Testing
 
