@@ -2,73 +2,97 @@
   {
     "set": "Core",
     "name": "PublishNoSubscribers",
-    "n": 5277504,
-    "ns_op": 198.9,
-    "b_op": 104,
-    "allocs_op": 7
+    "n": 5556154,
+    "ns_op": 199,
+    "b_op": 88,
+    "allocs_op": 6
   },
   {
     "set": "Core",
     "name": "PublishOneSubscriber",
-    "n": 3260858,
-    "ns_op": 364.4,
-    "b_op": 336,
-    "allocs_op": 10
+    "n": 3270447,
+    "ns_op": 361.1,
+    "b_op": 320,
+    "allocs_op": 9
   },
   {
     "set": "Core",
     "name": "SyncPublishRoundTrip",
-    "n": 3175098,
-    "ns_op": 380.1,
-    "b_op": 336,
-    "allocs_op": 10
+    "n": 3219900,
+    "ns_op": 371.8,
+    "b_op": 320,
+    "allocs_op": 9
   },
   {
     "set": "Core",
     "name": "PublishMultipleSubscribers",
-    "n": 1442766,
-    "ns_op": 831.3,
-    "b_op": 1000,
-    "allocs_op": 16
+    "n": 1408299,
+    "ns_op": 859.8,
+    "b_op": 984,
+    "allocs_op": 15
   },
   {
     "set": "Core",
     "name": "ResolveTopic",
-    "n": 7714350,
-    "ns_op": 157.3,
-    "b_op": 96,
-    "allocs_op": 6
+    "n": 8015792,
+    "ns_op": 150.5,
+    "b_op": 80,
+    "allocs_op": 5
   },
   {
     "set": "Core",
     "name": "NewRegisteredHandler",
-    "n": 6209817,
-    "ns_op": 182.9,
-    "b_op": 96,
-    "allocs_op": 6
+    "n": 6833816,
+    "ns_op": 179.5,
+    "b_op": 80,
+    "allocs_op": 5
+  },
+  {
+    "set": "Integration",
+    "name": "DistributedPublishRoundTrip/gcppubsub",
+    "n": 21,
+    "ns_op": 52848425,
+    "b_op": 21971,
+    "allocs_op": 369
   },
   {
     "set": "Integration",
     "name": "DistributedPublishRoundTrip/kafka",
-    "n": 2739,
-    "ns_op": 386658,
-    "b_op": 4918,
-    "allocs_op": 68
+    "n": 2037,
+    "ns_op": 499091,
+    "b_op": 5040,
+    "allocs_op": 67
+  },
+  {
+    "set": "Integration",
+    "name": "DistributedPublishRoundTrip/natsjetstream",
+    "n": 9428,
+    "ns_op": 127165,
+    "b_op": 3609,
+    "allocs_op": 60
   },
   {
     "set": "Integration",
     "name": "DistributedPublishRoundTrip/nats",
-    "n": 16544,
-    "ns_op": 72068,
-    "b_op": 698,
-    "allocs_op": 19
+    "n": 16068,
+    "ns_op": 73316,
+    "b_op": 681,
+    "allocs_op": 18
   },
   {
     "set": "Integration",
     "name": "DistributedPublishRoundTrip/redis",
-    "n": 12373,
-    "ns_op": 93439,
-    "b_op": 930,
-    "allocs_op": 32
+    "n": 12543,
+    "ns_op": 95149,
+    "b_op": 914,
+    "allocs_op": 31
+  },
+  {
+    "set": "Integration",
+    "name": "DistributedPublishRoundTrip/sns",
+    "n": 457,
+    "ns_op": 2553117,
+    "b_op": 104563,
+    "allocs_op": 1271
   }
 ]

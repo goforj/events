@@ -148,15 +148,15 @@ sh scripts/refresh-bench-snapshot.sh
 <!-- bench:embed:start -->
 These charts compare one publish-plus-delivery round trip for `sync` and each enabled distributed driver fixture.
 
-Note: `gcppubsub` is excluded from the default charts because the Pub/Sub emulator is not representative enough for backend latency comparison. Benchmark it explicitly with `INTEGRATION_DRIVER=gcppubsub` when needed.
+Note: `sns` and `gcppubsub` run through local emulators in this repo, so read those results as development approximations rather than direct managed-service latency comparisons.
 
-![Events backend latency chart](docs/bench/benchmarks_ns.svg)
+![Events backend latency chart](docs/bench/benchmarks_ns.svg?v=1773131451)
 
-![Events backend throughput chart](docs/bench/benchmarks_ops.svg)
+![Events backend throughput chart](docs/bench/benchmarks_ops.svg?v=1773131451)
 
-![Events backend bytes chart](docs/bench/benchmarks_bytes.svg)
+![Events backend bytes chart](docs/bench/benchmarks_bytes.svg?v=1773131451)
 
-![Events backend allocations chart](docs/bench/benchmarks_allocs.svg)
+![Events backend allocations chart](docs/bench/benchmarks_allocs.svg?v=1773131451)
 <!-- bench:embed:end -->
 
 These checks are for obvious regression detection, not for noisy micro-optimism

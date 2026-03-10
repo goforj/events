@@ -16,6 +16,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -184,12 +185,13 @@ func parseBenchRow(set, name, nStr, nsStr, bStr, allocStr, line string) benchRow
 
 func renderSection(rows []benchRow) string {
 	var buf bytes.Buffer
+	cacheBust := strconv.FormatInt(time.Now().Unix(), 10)
 	buf.WriteString("These charts compare one publish-plus-delivery round trip for `sync` and each enabled distributed driver fixture.\n\n")
-	buf.WriteString("Note: `gcppubsub` is excluded from the default charts because the Pub/Sub emulator is not representative enough for backend latency comparison. Benchmark it explicitly with `INTEGRATION_DRIVER=gcppubsub` when needed.\n\n")
-	buf.WriteString("![Events backend latency chart](docs/bench/benchmarks_ns.svg)\n\n")
-	buf.WriteString("![Events backend throughput chart](docs/bench/benchmarks_ops.svg)\n\n")
-	buf.WriteString("![Events backend bytes chart](docs/bench/benchmarks_bytes.svg)\n\n")
-	buf.WriteString("![Events backend allocations chart](docs/bench/benchmarks_allocs.svg)\n")
+	buf.WriteString("Note: `sns` and `gcppubsub` run through local emulators in this repo, so read those results as development approximations rather than direct managed-service latency comparisons.\n\n")
+	buf.WriteString("![Events backend latency chart](docs/bench/benchmarks_ns.svg?v=" + cacheBust + ")\n\n")
+	buf.WriteString("![Events backend throughput chart](docs/bench/benchmarks_ops.svg?v=" + cacheBust + ")\n\n")
+	buf.WriteString("![Events backend bytes chart](docs/bench/benchmarks_bytes.svg?v=" + cacheBust + ")\n\n")
+	buf.WriteString("![Events backend allocations chart](docs/bench/benchmarks_allocs.svg?v=" + cacheBust + ")\n")
 
 	return strings.TrimSpace(buf.String())
 }
@@ -390,10 +392,14 @@ func displayDriverName(name string) string {
 		return "Google Pub/Sub"
 	case "kafka":
 		return "Kafka"
+	case "natsjetstream":
+		return "NATS JetStream"
 	case "nats":
 		return "NATS"
 	case "redis":
 		return "Redis"
+	case "sns":
+		return "SNS"
 	default:
 		return name
 	}
@@ -407,10 +413,14 @@ func driverColor(label string) string {
 		return "#4285F4"
 	case "Kafka":
 		return "#231F20"
+	case "NATS JetStream":
+		return "#1E88E5"
 	case "NATS":
 		return "#27AAE1"
 	case "Redis":
 		return "#DC382D"
+	case "SNS":
+		return "#FF9900"
 	default:
 		return "#38BDF8"
 	}
@@ -493,7 +503,7 @@ func integrationDriverSelection() string {
 	if value := strings.TrimSpace(os.Getenv("INTEGRATION_DRIVER")); value != "" {
 		return value
 	}
-	return "kafka,nats,redis"
+	return "gcppubsub,kafka,nats,natsjetstream,redis,sns"
 }
 
 func selectedDriverNames() map[string]bool {
