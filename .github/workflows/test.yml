@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  unit:
+  modules:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,8 +22,10 @@ jobs:
             docs/go.sum
             driver/gcppubsubevents/go.sum
             driver/kafkaevents/go.sum
+            driver/natsjetstreamevents/go.sum
             driver/natsevents/go.sum
             driver/redisevents/go.sum
+            driver/snsevents/go.sum
             integration/go.sum
       - name: Test All Modules
         run: sh scripts/test-all-modules.sh
@@ -55,8 +57,10 @@ jobs:
             docs/go.sum
             driver/gcppubsubevents/go.sum
             driver/kafkaevents/go.sum
+            driver/natsjetstreamevents/go.sum
             driver/natsevents/go.sum
             driver/redisevents/go.sum
+            driver/snsevents/go.sum
             integration/go.sum
       - name: Test Examples
         run: |
@@ -80,8 +84,10 @@ jobs:
             docs/go.sum
             driver/gcppubsubevents/go.sum
             driver/kafkaevents/go.sum
+            driver/natsjetstreamevents/go.sum
             driver/natsevents/go.sum
             driver/redisevents/go.sum
+            driver/snsevents/go.sum
             integration/go.sum
       - name: Test Integration
         run: sh scripts/test-integration.sh
