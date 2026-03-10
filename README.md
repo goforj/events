@@ -178,7 +178,7 @@ or hard CI performance gates.
 | **Core** | [Bus.Driver](#bus-driver) [Bus.Publish](#bus-publish) [Bus.PublishContext](#bus-publishcontext) [Bus.Ready](#bus-ready) [Bus.ReadyContext](#bus-readycontext) [Bus.Subscribe](#bus-subscribe) [Bus.SubscribeContext](#bus-subscribecontext) [events.Bus](#events-bus) [events.Subscription](#events-subscription) [events.TopicEvent](#events-topicevent) |
 | **Driver Config** | [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
 | **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) |
-| **Drivers** | [Driver.Close](#driver-close) [Driver.Driver](#driver-driver) [Driver.PublishContext](#driver-publishcontext) [Driver.Ready](#driver-ready) [Driver.SubscribeContext](#driver-subscribecontext) [gcppubsubevents.Driver](#gcppubsubevents-driver) [kafkaevents.Driver](#kafkaevents-driver) [natsevents.Driver](#natsevents-driver) [redisevents.Driver](#redisevents-driver) |
+| **Drivers** | [Driver.Close](#driver-close) [Driver.Driver](#driver-driver) [Driver.PublishContext](#driver-publishcontext) [Driver.Ready](#driver-ready) [Driver.SubscribeContext](#driver-subscribecontext) |
 | **Testing** | [Fake.Bus](#fake-bus) [Fake.Count](#fake-count) [Fake.Records](#fake-records) [Fake.Reset](#fake-reset) [events.Fake](#events-fake) [events.NewFake](#events-newfake) [events.Record](#events-record) |
 
 
@@ -525,62 +525,16 @@ driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
 
 Close closes the underlying Pub/Sub client.
 
-_Example: close a NATS driver_
-
-```go
-driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-```
-
-_Example: close a Redis driver_
-
 ```go
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-```
-
-_Example: close a Kafka driver_
-
-```go
-driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-```
-
-_Example: close a Google Pub/Sub driver_
-
-```go
-driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-	ProjectID: "events-project",
-	URI:       "127.0.0.1:8085",
-})
 ```
 
 ### <a id="driver-driver"></a>Driver.Driver
 
 Driver reports the active backend kind.
 
-_Example: inspect the driver kind_
-
 ```go
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-```
-
-_Example: inspect the driver kind_
-
-```go
-driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-```
-
-_Example: inspect the driver kind_
-
-```go
-driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-```
-
-_Example: inspect the driver kind_
-
-```go
-driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-	ProjectID: "events-project",
-	URI:       "127.0.0.1:8085",
-})
 ```
 
 ### <a id="driver-publishcontext"></a>Driver.PublishContext
@@ -617,46 +571,6 @@ sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ct
 	return nil
 })
 fmt.Println(sub != nil)
-// Output: true
-```
-
-### <a id="gcppubsubevents-driver"></a>gcppubsubevents.Driver
-
-Driver is a Google Pub/Sub-backed events transport.
-
-```go
-var driver *gcppubsubevents.Driver
-fmt.Println(driver == nil)
-// Output: true
-```
-
-### <a id="kafkaevents-driver"></a>kafkaevents.Driver
-
-Driver is a Kafka-backed events transport.
-
-```go
-var driver *kafkaevents.Driver
-fmt.Println(driver == nil)
-// Output: true
-```
-
-### <a id="natsevents-driver"></a>natsevents.Driver
-
-Driver is a NATS-backed events transport.
-
-```go
-var driver *natsevents.Driver
-fmt.Println(driver == nil)
-// Output: true
-```
-
-### <a id="redisevents-driver"></a>redisevents.Driver
-
-Driver is a Redis pub/sub-backed events transport.
-
-```go
-var driver *redisevents.Driver
-fmt.Println(driver == nil)
 // Output: true
 ```
 

@@ -113,14 +113,6 @@ func New(ctx context.Context, cfg Config) (*Driver, error) {
 
 // Driver reports the active backend kind.
 // @group Drivers
-//
-// Example: inspect the driver kind
-//
-//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-//		ProjectID: "events-project",
-//		URI:       "127.0.0.1:8085",
-//	})
-//	_ = driver
 func (d *Driver) Driver() eventscore.Driver {
 	return eventscore.DriverGCPPubSub
 }
@@ -197,14 +189,6 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 
 // Close closes the underlying Pub/Sub client.
 // @group Drivers
-//
-// Example: close a Google Pub/Sub driver
-//
-//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-//		ProjectID: "events-project",
-//		URI:       "127.0.0.1:8085",
-//	})
-//	_ = driver.Close()
 func (d *Driver) Close() error {
 	d.stopTopics()
 	if d.ownsClient && d.client != nil {

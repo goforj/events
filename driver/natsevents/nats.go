@@ -63,11 +63,6 @@ func New(cfg Config) (*Driver, error) {
 
 // Driver reports the active backend kind.
 // @group Drivers
-//
-// Example: inspect the driver kind
-//
-//	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-//	_ = driver
 func (d *Driver) Driver() eventscore.Driver {
 	return eventscore.DriverNATS
 }
@@ -114,11 +109,6 @@ func (d *Driver) SubscribeContext(_ context.Context, topic string, handler event
 
 // Close drains the underlying NATS connection.
 // @group Drivers
-//
-// Example: close a NATS driver
-//
-//	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-//	_ = driver.Close()
 func (d *Driver) Close() error {
 	d.conn.Close()
 	return nil

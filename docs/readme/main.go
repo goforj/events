@@ -466,7 +466,10 @@ func fileExists(p string) bool {
 }
 
 func skipTypeDoc(pkgName, typeName string) bool {
-	return pkgName == "events" && typeName == "API"
+	if pkgName == "events" && typeName == "API" {
+		return true
+	}
+	return strings.HasSuffix(pkgName, "events") && typeName == "Driver"
 }
 
 func discoverDriverModuleDirs(root string) ([]string, error) {

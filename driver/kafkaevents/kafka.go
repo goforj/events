@@ -94,11 +94,6 @@ func New(cfg Config) (*Driver, error) {
 
 // Driver reports the active backend kind.
 // @group Drivers
-//
-// Example: inspect the driver kind
-//
-//	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-//	_ = driver
 func (d *Driver) Driver() eventscore.Driver {
 	return eventscore.DriverKafka
 }
@@ -183,11 +178,6 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 
 // Close closes the underlying Kafka writer.
 // @group Drivers
-//
-// Example: close a Kafka driver
-//
-//	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-//	_ = driver.Close()
 func (d *Driver) Close() error {
 	return d.writer.Close()
 }
