@@ -77,6 +77,7 @@ go get github.com/goforj/events/driver/natsevents
 go get github.com/goforj/events/driver/redisevents
 go get github.com/goforj/events/driver/kafkaevents
 go get github.com/goforj/events/driver/gcppubsubevents
+go get github.com/goforj/events/driver/snsevents
 ```
 
 ## Drivers
@@ -88,8 +89,9 @@ go get github.com/goforj/events/driver/gcppubsubevents
 |        <img src="https://img.shields.io/badge/nats-27AAE1?logo=natsdotio&logoColor=white" alt="NATS"> | Distributed pub/sub | ✓ | x | x | Subject-based transport with live integration coverage. |
 |      <img src="https://img.shields.io/badge/redis-%23DC382D?logo=redis&logoColor=white" alt="Redis"> | Distributed pub/sub | ✓ | x | x | Redis pub/sub transport; Streams are intentionally deferred. |
 |      <img src="https://img.shields.io/badge/kafka-231F20?logo=apachekafka&logoColor=white" alt="Kafka"> | Distributed topic/log | ✓ | Partial | x | Current driver validates topic-based fan-out compatibility, not full consumer-group semantics. |
+|      <img src="https://img.shields.io/badge/sns-FF9900?logo=buffer&logoColor=white" alt="SNS"> | Distributed topic plus queue | ✓ | Partial | x | SNS fan-out with per-subscription SQS queues to preserve bus-style delivery semantics. |
 | <img src="https://img.shields.io/badge/gcp%20pub%2Fsub-4285F4?logo=googlecloud&logoColor=white" alt="Google Pub/Sub"> | Distributed topic/subscription | ✓ | Partial | x | Emulator-backed Google Pub/Sub integration with per-subscription fan-out mapping. |
-|          <img src="https://img.shields.io/badge/sqs-FF9900?logo=buffer&logoColor=white" alt="SQS"> | Queue target | Planned | ✓ | ✓ | Deferred until a separate async capability surface is intentionally introduced. |
+|          <img src="https://img.shields.io/badge/sqs-232F3E?logo=buffer&logoColor=white" alt="SQS"> | Queue target | Planned | ✓ | ✓ | Deferred until a separate async capability surface is intentionally introduced. |
 
 ## Driver Constructor Quick Examples
 
@@ -108,6 +110,7 @@ import (
 	"github.com/goforj/events/driver/kafkaevents"
 	"github.com/goforj/events/driver/natsevents"
 	"github.com/goforj/events/driver/redisevents"
+	"github.com/goforj/events/driver/snsevents"
 )
 
 func main() {
@@ -122,6 +125,10 @@ func main() {
 	gcppubsubevents.New(ctx, gcppubsubevents.Config{
 		ProjectID: "events-project",
 		URI:       "127.0.0.1:8085",
+	})
+	snsevents.New(snsevents.Config{
+		Region:   "us-east-1",
+		Endpoint: "http://127.0.0.1:4566",
 	})
 }
 ```
@@ -158,9 +165,9 @@ or hard CI performance gates.
 | Group | Functions |
 |------:|-----------|
 | **Bus** | [Driver](#bus-driver) [Ready](#bus-ready) [ReadyContext](#bus-readycontext) |
-| **Config** | [Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
+| **Config** | [Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) [snsevents.Config](#snsevents-config) |
 | **Construction** | [New](#events-new) [NewNull](#events-newnull) [NewSync](#events-newsync) |
-| **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) |
+| **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) [snsevents.New](#snsevents-new) |
 | **Lifecycle** | [Close](#driver-close) |
 | **Options** | [Option](#events-option) [WithCodec](#events-withcodec) |
 | **Publish** | [Publish](#bus-publish) [PublishContext](#bus-publishcontext) [TopicEvent](#events-topicevent) |
@@ -303,6 +310,34 @@ cfg := redisevents.Config{
 }
 ```
 
+### <a id="snsevents-config"></a>snsevents.Config
+
+Config configures SNS transport construction.
+
+_Example: define SNS driver config_
+
+```go
+cfg := snsevents.Config{
+	Region:   "us-east-1",
+	Endpoint: "http://127.0.0.1:4566",
+}
+```
+
+_Example: define SNS driver config with all fields_
+
+```go
+cfg := snsevents.Config{
+	Region:            "us-east-1",
+	Endpoint:          "http://127.0.0.1:4566", // default: "" uses normal AWS resolution
+	SNSClient:         nil,                      // default: nil creates a client from Region and Endpoint
+	SQSClient:         nil,                      // default: nil creates a client from Region and Endpoint
+	TopicNamePrefix:   "events-",                // default: ""
+	QueueNamePrefix:   "events-",                // default: ""
+	WaitTimeSeconds:   1,                        // default: 1
+	VisibilityTimeout: 30,                       // default: 30
+}
+```
+
 ## Construction
 
 ### <a id="events-new"></a>New
@@ -370,6 +405,17 @@ New constructs a Redis pub/sub-backed driver.
 
 ```go
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
+```
+
+### <a id="snsevents-new"></a>snsevents.New
+
+New constructs an SNS-backed driver.
+
+```go
+driver, _ := snsevents.New(snsevents.Config{
+	Region:   "us-east-1",
+	Endpoint: "http://127.0.0.1:4566",
+})
 ```
 
 ## Lifecycle

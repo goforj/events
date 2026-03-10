@@ -21,7 +21,7 @@ run_cover() {
 
 run_integration_cover() {
   out="$1"
-  coverpkg="github.com/goforj/events,github.com/goforj/events/driver/gcppubsubevents,github.com/goforj/events/driver/kafkaevents,github.com/goforj/events/driver/natsevents,github.com/goforj/events/driver/redisevents"
+  coverpkg="github.com/goforj/events,github.com/goforj/events/driver/gcppubsubevents,github.com/goforj/events/driver/kafkaevents,github.com/goforj/events/driver/natsevents,github.com/goforj/events/driver/redisevents,github.com/goforj/events/driver/snsevents"
   (cd integration && go test ./root ./all -coverpkg="${coverpkg}" -coverprofile="${out}")
 }
 
@@ -34,6 +34,7 @@ run_cover "driver/gcppubsubevents" "${tmp_dir}/gcppubsubevents.out"
 run_cover "driver/kafkaevents" "${tmp_dir}/kafkaevents.out"
 run_cover "driver/natsevents" "${tmp_dir}/natsevents.out"
 run_cover "driver/redisevents" "${tmp_dir}/redisevents.out"
+run_cover "driver/snsevents" "${tmp_dir}/snsevents.out"
 
 if [ "${RUN_INTEGRATION:-0}" = "1" ]; then
   run_integration_cover "${tmp_dir}/integration.out"
@@ -50,6 +51,7 @@ for profile in \
   "${tmp_dir}/kafkaevents.out" \
   "${tmp_dir}/natsevents.out" \
   "${tmp_dir}/redisevents.out" \
+  "${tmp_dir}/snsevents.out" \
   "${tmp_dir}/integration.out"
 do
   if [ -f "${profile}" ]; then

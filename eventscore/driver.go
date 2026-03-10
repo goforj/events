@@ -14,6 +14,8 @@ const (
 	DriverRedis Driver = "redis"
 	// DriverKafka identifies a Kafka-backed transport.
 	DriverKafka Driver = "kafka"
+	// DriverSNS identifies an SNS-backed transport.
+	DriverSNS Driver = "sns"
 	// DriverGCPPubSub identifies a Google Pub/Sub-backed transport.
 	DriverGCPPubSub Driver = "gcppubsub"
 	// DriverSQS identifies an SQS-backed transport.

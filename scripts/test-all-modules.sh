@@ -21,6 +21,7 @@ run_tests "driver/gcppubsubevents"
 run_tests "driver/kafkaevents"
 run_tests "driver/natsevents"
 run_tests "driver/redisevents"
+run_tests "driver/snsevents"
 
 if [ "${RUN_INTEGRATION:-0}" = "1" ]; then
   run_tests "integration"

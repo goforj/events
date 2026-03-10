@@ -13,6 +13,7 @@ but transport behavior is not perfectly identical across all implementations.
 | `kafka` | topic/log | distributed | Single-partition topic creation with direct partition reads. |
 | `nats` | pub/sub | distributed | Subject-based fan-out transport. |
 | `redis` | pub/sub | distributed | Channel-based fan-out transport. |
+| `sns` | topic plus queue | distributed | SNS fan-out with one SQS queue per bus subscription. |
 
 ## Semantic Notes
 
@@ -29,8 +30,11 @@ but transport behavior is not perfectly identical across all implementations.
   groups, replay controls, or multi-partition routing semantics.
 - `nats` and `redis` currently model distributed fan-out transport, not durable
   queue semantics.
+- `sns` currently maps each events topic to an SNS topic and creates a
+  dedicated SQS queue per bus subscription so the current contract behaves
+  like fan-out delivery instead of shared-consumer queue semantics.
 - Redis uses pub/sub in the current driver. Redis Streams are intentionally
   deferred until async delivery semantics become a first-class API surface.
 - Kafka consumer-group semantics, partitioning strategy beyond one partition,
-  durable replay tuning, SQS-style async delivery, and richer Google Pub/Sub
+  dedicated SQS queue semantics as a normalized API, and richer Google Pub/Sub
   acknowledgement/retry semantics remain explicit future work.

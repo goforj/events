@@ -134,6 +134,7 @@ func exampleBuildGoMod() string {
 		"\tgithub.com/goforj/events/driver/kafkaevents v0.0.0",
 		"\tgithub.com/goforj/events/driver/natsevents v0.0.0",
 		"\tgithub.com/goforj/events/driver/redisevents v0.0.0",
+		"\tgithub.com/goforj/events/driver/snsevents v0.0.0",
 		")",
 		"",
 		"replace github.com/goforj/events => " + rootSlash,
@@ -142,6 +143,7 @@ func exampleBuildGoMod() string {
 		"replace github.com/goforj/events/driver/kafkaevents => " + rootSlash + "/driver/kafkaevents",
 		"replace github.com/goforj/events/driver/natsevents => " + rootSlash + "/driver/natsevents",
 		"replace github.com/goforj/events/driver/redisevents => " + rootSlash + "/driver/redisevents",
+		"replace github.com/goforj/events/driver/snsevents => " + rootSlash + "/driver/snsevents",
 		"",
 	}
 

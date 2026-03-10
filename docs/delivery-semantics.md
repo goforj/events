@@ -24,6 +24,7 @@ Current driver intent:
 - `nats`: subject-based fan-out transport
 - `redis`: pub/sub fan-out transport
 - `kafka`: topic-based fan-out compatibility over a narrower Kafka mapping
+- `sns`: topic fan-out compatibility via dedicated SQS subscriptions
 - `gcppubsub`: topic/subscription fan-out compatibility over the Pub/Sub emulator
 
 Current distributed drivers are validated against:

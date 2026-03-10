@@ -11,6 +11,7 @@ import (
 	"github.com/goforj/events/driver/kafkaevents"
 	"github.com/goforj/events/driver/natsevents"
 	"github.com/goforj/events/driver/redisevents"
+	"github.com/goforj/events/driver/snsevents"
 	"github.com/goforj/events/eventscore"
 	"github.com/goforj/events/integration/scenario"
 	"github.com/goforj/events/integration/testenv"
@@ -123,6 +124,29 @@ func integrationFixtures(t *testing.T) []driverFixture {
 				return driver
 			},
 		},
+		{
+			name:    "sns",
+			enabled: selected["sns"],
+			factory: func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
+				t.Helper()
+				scenarioProgressf("booting sns test environment")
+				env, err := testenv.StartSNS(ctx)
+				if err != nil {
+					t.Fatalf("StartSNS returned error: %v", err)
+				}
+				t.Cleanup(func() { _ = env.Container.Terminate(context.Background()) })
+
+				driver, err := snsevents.New(snsevents.Config{
+					Region:   env.Region,
+					Endpoint: env.Endpoint,
+				})
+				if err != nil {
+					t.Fatalf("snsevents.New returned error: %v", err)
+				}
+				t.Cleanup(func() { _ = driver.Close() })
+				return driver
+			},
+		},
 	}
 }
 
@@ -140,6 +164,7 @@ func selectedDrivers() map[string]bool {
 			"kafka":     true,
 			"nats":      true,
 			"redis":     true,
+			"sns":       true,
 		}
 	}
 
