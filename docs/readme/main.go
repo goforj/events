@@ -393,11 +393,11 @@ func renderAPI(funcs []*FuncDoc) string {
 
 	for _, group := range groupNames {
 		sort.Slice(byGroup[group], func(i, j int) bool {
-			return byGroup[group][i].DisplayName < byGroup[group][j].DisplayName
+			return visibleName(byGroup[group][i]) < visibleName(byGroup[group][j])
 		})
 		var links []string
 		for _, fn := range byGroup[group] {
-			links = append(links, fmt.Sprintf("[%s](#%s)", fn.DisplayName, fn.Anchor))
+			links = append(links, fmt.Sprintf("[%s](#%s)", visibleName(fn), fn.Anchor))
 		}
 		buf.WriteString(fmt.Sprintf("| **%s** | %s |\n", group, strings.Join(links, " ")))
 	}
@@ -406,7 +406,7 @@ func renderAPI(funcs []*FuncDoc) string {
 	for _, group := range groupNames {
 		buf.WriteString("## " + group + "\n\n")
 		for _, fn := range byGroup[group] {
-			buf.WriteString(fmt.Sprintf("### <a id=\"%s\"></a>%s\n\n", fn.Anchor, fn.DisplayName))
+			buf.WriteString(fmt.Sprintf("### <a id=\"%s\"></a>%s\n\n", fn.Anchor, visibleName(fn)))
 			if fn.Description != "" {
 				buf.WriteString(fn.Description + "\n\n")
 			}
@@ -422,6 +422,13 @@ func renderAPI(funcs []*FuncDoc) string {
 	}
 
 	return strings.TrimRight(buf.String(), "\n")
+}
+
+func visibleName(fn *FuncDoc) string {
+	name := fn.DisplayName
+	name = strings.TrimPrefix(name, "events.")
+	name = strings.TrimPrefix(name, "Bus.")
+	return name
 }
 
 func renderedExamples(fn *FuncDoc) []Example {

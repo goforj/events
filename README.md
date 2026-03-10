@@ -174,20 +174,24 @@ or hard CI performance gates.
 
 | Group | Functions |
 |------:|-----------|
-| **Bus** | [Bus.Driver](#bus-driver) [Bus.Ready](#bus-ready) [Bus.ReadyContext](#bus-readycontext) [events.Bus](#events-bus) |
-| **Config** | [events.Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
-| **Construction** | [events.New](#events-new) [events.NewNull](#events-newnull) [events.NewSync](#events-newsync) |
+| **Bus** | [Bus](#events-bus) [Driver](#bus-driver) [Ready](#bus-ready) [ReadyContext](#bus-readycontext) |
+| **Config** | [Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
+| **Construction** | [New](#events-new) [NewNull](#events-newnull) [NewSync](#events-newsync) |
 | **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) |
 | **Drivers** | [Driver.Close](#driver-close) |
-| **Options** | [events.Option](#events-option) [events.WithCodec](#events-withcodec) |
-| **Publish** | [Bus.Publish](#bus-publish) [Bus.PublishContext](#bus-publishcontext) [events.TopicEvent](#events-topicevent) |
-| **Subscribe** | [Bus.Subscribe](#bus-subscribe) [Bus.SubscribeContext](#bus-subscribecontext) [events.Subscription](#events-subscription) |
-| **Testing** | [Fake.Bus](#fake-bus) [Fake.Count](#fake-count) [Fake.Records](#fake-records) [Fake.Reset](#fake-reset) [events.Fake](#events-fake) [events.NewFake](#events-newfake) [events.Record](#events-record) |
+| **Options** | [Option](#events-option) [WithCodec](#events-withcodec) |
+| **Publish** | [Publish](#bus-publish) [PublishContext](#bus-publishcontext) [TopicEvent](#events-topicevent) |
+| **Subscribe** | [Subscribe](#bus-subscribe) [SubscribeContext](#bus-subscribecontext) [Subscription](#events-subscription) |
+| **Testing** | [Fake](#events-fake) [Fake.Bus](#fake-bus) [Fake.Count](#fake-count) [Fake.Records](#fake-records) [Fake.Reset](#fake-reset) [NewFake](#events-newfake) [Record](#events-record) |
 
 
 ## Bus
 
-### <a id="bus-driver"></a>Bus.Driver
+### <a id="events-bus"></a>Bus
+
+Bus is the root event bus implementation.
+
+### <a id="bus-driver"></a>Driver
 
 Driver reports the active backend.
 
@@ -197,7 +201,7 @@ fmt.Println(bus.Driver())
 // Output: sync
 ```
 
-### <a id="bus-ready"></a>Bus.Ready
+### <a id="bus-ready"></a>Ready
 
 Ready reports whether the bus is ready.
 
@@ -207,7 +211,7 @@ fmt.Println(bus.Ready() == nil)
 // Output: true
 ```
 
-### <a id="bus-readycontext"></a>Bus.ReadyContext
+### <a id="bus-readycontext"></a>ReadyContext
 
 ReadyContext reports whether the bus is ready.
 
@@ -217,13 +221,9 @@ fmt.Println(bus.ReadyContext(context.Background()) == nil)
 // Output: true
 ```
 
-### <a id="events-bus"></a>events.Bus
-
-Bus is the root event bus implementation.
-
 ## Config
 
-### <a id="events-config"></a>events.Config
+### <a id="events-config"></a>Config
 
 Config configures root bus construction.
 
@@ -326,7 +326,7 @@ cfg := redisevents.Config{
 
 ## Construction
 
-### <a id="events-new"></a>events.New
+### <a id="events-new"></a>New
 
 New constructs a root bus for the requested driver.
 
@@ -336,7 +336,7 @@ fmt.Println(bus.Driver())
 // Output: sync
 ```
 
-### <a id="events-newnull"></a>events.NewNull
+### <a id="events-newnull"></a>NewNull
 
 NewNull constructs the root null bus.
 
@@ -346,7 +346,7 @@ fmt.Println(bus.Driver())
 // Output: null
 ```
 
-### <a id="events-newsync"></a>events.NewSync
+### <a id="events-newsync"></a>NewSync
 
 NewSync constructs the root sync bus.
 
@@ -405,11 +405,11 @@ driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
 
 ## Options
 
-### <a id="events-option"></a>events.Option
+### <a id="events-option"></a>Option
 
 Option configures root bus behavior.
 
-### <a id="events-withcodec"></a>events.WithCodec
+### <a id="events-withcodec"></a>WithCodec
 
 WithCodec overrides the default event codec.
 
@@ -421,7 +421,7 @@ fmt.Println(bus.Driver())
 
 ## Publish
 
-### <a id="bus-publish"></a>Bus.Publish
+### <a id="bus-publish"></a>Publish
 
 Publish publishes an event using the background context.
 
@@ -438,7 +438,7 @@ _ = bus.Publish(UserCreated{ID: "123"})
 // Output: 123
 ```
 
-### <a id="bus-publishcontext"></a>Bus.PublishContext
+### <a id="bus-publishcontext"></a>PublishContext
 
 PublishContext publishes an event using the configured codec and dispatch flow.
 
@@ -456,7 +456,7 @@ _ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
 // Output: 123 true
 ```
 
-### <a id="events-topicevent"></a>events.TopicEvent
+### <a id="events-topicevent"></a>TopicEvent
 
 TopicEvent overrides the derived topic for an event.
 
@@ -468,7 +468,7 @@ fmt.Println(event == nil)
 
 ## Subscribe
 
-### <a id="bus-subscribe"></a>Bus.Subscribe
+### <a id="bus-subscribe"></a>Subscribe
 
 Subscribe registers a handler using the background context.
 
@@ -487,7 +487,7 @@ _ = bus.Publish(UserCreated{ID: "123"})
 // Output: 123
 ```
 
-### <a id="bus-subscribecontext"></a>Bus.SubscribeContext
+### <a id="bus-subscribecontext"></a>SubscribeContext
 
 SubscribeContext registers a typed handler.
 
@@ -506,11 +506,21 @@ _ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
 // Output: 123 true
 ```
 
-### <a id="events-subscription"></a>events.Subscription
+### <a id="events-subscription"></a>Subscription
 
 Subscription releases a subscription when closed.
 
 ## Testing
+
+### <a id="events-fake"></a>Fake
+
+Fake provides a root-package testing helper that records published events.
+
+```go
+fake := events.NewFake()
+fmt.Println(fake.Count())
+// Output: 0
+```
 
 ### <a id="fake-bus"></a>Fake.Bus
 
@@ -569,17 +579,7 @@ fmt.Println(fake.Count())
 // Output: 0
 ```
 
-### <a id="events-fake"></a>events.Fake
-
-Fake provides a root-package testing helper that records published events.
-
-```go
-fake := events.NewFake()
-fmt.Println(fake.Count())
-// Output: 0
-```
-
-### <a id="events-newfake"></a>events.NewFake
+### <a id="events-newfake"></a>NewFake
 
 NewFake creates a new fake event harness backed by the root sync bus.
 
@@ -589,7 +589,7 @@ fmt.Println(fake.Count())
 // Output: 0
 ```
 
-### <a id="events-record"></a>events.Record
+### <a id="events-record"></a>Record
 
 Record captures one published event observed by a Fake bus.
 
