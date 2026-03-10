@@ -3,6 +3,7 @@ package testenv
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -26,7 +27,7 @@ func StartSNS(ctx context.Context) (*SNSContainer, error) {
 			"SERVICES":       "sns,sqs",
 			"DEFAULT_REGION": defaultSNSRegion,
 		},
-		WaitingFor: wait.ForListeningPort("4566/tcp"),
+		WaitingFor: wait.ForListeningPort("4566/tcp").WithStartupTimeout(60 * time.Second),
 	}
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,

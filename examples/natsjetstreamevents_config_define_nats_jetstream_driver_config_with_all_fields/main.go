@@ -3,8 +3,8 @@
 package main
 
 import (
+	"github.com/goforj/events"
 	"github.com/goforj/events/driver/natsjetstreamevents"
-	"github.com/nats-io/nats.go/jetstream"
 	"time"
 )
 

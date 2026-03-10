@@ -30,7 +30,7 @@ type overrideDriverEvent struct {
 func (overrideDriverEvent) Topic() string { return "integration.override" }
 
 const (
-	driverSetupTimeout    = 20 * time.Second
+	driverSetupTimeout    = 60 * time.Second
 	driverScenarioTimeout = 10 * time.Second
 	unsubscribeWait       = 150 * time.Millisecond
 )
