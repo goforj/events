@@ -178,7 +178,7 @@ or hard CI performance gates.
 | **Config** | [Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
 | **Construction** | [New](#events-new) [NewNull](#events-newnull) [NewSync](#events-newsync) |
 | **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) |
-| **Drivers** | [Driver.Close](#driver-close) |
+| **Lifecycle** | [Close](#driver-close) |
 | **Options** | [Option](#events-option) [WithCodec](#events-withcodec) |
 | **Publish** | [Publish](#bus-publish) [PublishContext](#bus-publishcontext) [TopicEvent](#events-topicevent) |
 | **Subscribe** | [Subscribe](#bus-subscribe) [SubscribeContext](#bus-subscribecontext) [Subscription](#events-subscription) |
@@ -393,9 +393,9 @@ New constructs a Redis pub/sub-backed driver.
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
 ```
 
-## Drivers
+## Lifecycle
 
-### <a id="driver-close"></a>Driver.Close
+### <a id="driver-close"></a>Close
 
 Close closes the underlying Pub/Sub client.
 

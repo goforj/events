@@ -428,6 +428,7 @@ func visibleName(fn *FuncDoc) string {
 	name := fn.DisplayName
 	name = strings.TrimPrefix(name, "events.")
 	name = strings.TrimPrefix(name, "Bus.")
+	name = strings.TrimPrefix(name, "Driver.")
 	return name
 }
 

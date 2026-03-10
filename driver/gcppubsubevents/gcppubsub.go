@@ -188,7 +188,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 }
 
 // Close closes the underlying Pub/Sub client.
-// @group Drivers
+// @group Lifecycle
 func (d *Driver) Close() error {
 	d.stopTopics()
 	if d.ownsClient && d.client != nil {

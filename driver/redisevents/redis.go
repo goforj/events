@@ -138,7 +138,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 }
 
 // Close closes the underlying Redis client.
-// @group Drivers
+// @group Lifecycle
 //
 // Example: close a Redis driver
 //

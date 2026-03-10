@@ -108,7 +108,7 @@ func (d *Driver) SubscribeContext(_ context.Context, topic string, handler event
 }
 
 // Close drains the underlying NATS connection.
-// @group Drivers
+// @group Lifecycle
 func (d *Driver) Close() error {
 	d.conn.Close()
 	return nil

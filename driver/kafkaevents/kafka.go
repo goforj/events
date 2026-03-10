@@ -177,7 +177,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 }
 
 // Close closes the underlying Kafka writer.
-// @group Drivers
+// @group Lifecycle
 func (d *Driver) Close() error {
 	return d.writer.Close()
 }
