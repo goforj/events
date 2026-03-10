@@ -2,17 +2,13 @@
 
 package main
 
-import (
-	"fmt"
-	"github.com/goforj/events/driver/kafkaevents"
-)
+import "github.com/goforj/events/driver/kafkaevents"
 
 func main() {
 	// Config configures Kafka transport construction.
 
 	// Example: define Kafka driver config
 	cfg := kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}}
-	fmt.Println(cfg.Brokers[0])
-	// Output: 127.0.0.1:9092
+	_ = cfg
 
 }

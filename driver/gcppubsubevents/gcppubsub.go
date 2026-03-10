@@ -44,8 +44,7 @@ type Driver struct {
 //		ProjectID: "events-project",
 //		URI:       "127.0.0.1:8085",
 //	}
-//	fmt.Println(cfg.ProjectID)
-//	// Output: events-project
+//	_ = cfg
 //
 // Example: define Google Pub/Sub driver config with all fields
 //
@@ -54,8 +53,7 @@ type Driver struct {
 //		URI:       "127.0.0.1:8085", // default: "" is invalid unless Client is provided
 //		Client:    nil,              // default: nil creates a client from ProjectID and URI
 //	}
-//	fmt.Println(cfg.ProjectID)
-//	// Output: events-project
+//	_ = cfg
 type Config struct {
 	ProjectID string
 	URI       string

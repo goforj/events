@@ -36,8 +36,7 @@ type Driver struct {
 // Example: define Kafka driver config
 //
 //	cfg := kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}}
-//	fmt.Println(cfg.Brokers[0])
-//	// Output: 127.0.0.1:9092
+//	_ = cfg
 //
 // Example: define Kafka driver config with all fields
 //
@@ -46,8 +45,7 @@ type Driver struct {
 //		Dialer:  nil, // default: nil uses a zero-value kafka.Dialer
 //		Writer:  nil, // default: nil builds a writer with single-message, auto-topic defaults
 //	}
-//	fmt.Println(cfg.Brokers[0])
-//	// Output: 127.0.0.1:9092
+//	_ = cfg
 type Config struct {
 	Brokers []string
 	Dialer  *kafka.Dialer

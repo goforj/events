@@ -2,10 +2,7 @@
 
 package main
 
-import (
-	"fmt"
-	"github.com/goforj/events/driver/natsevents"
-)
+import "github.com/goforj/events/driver/natsevents"
 
 func main() {
 	// Config configures NATS transport construction.
@@ -15,6 +12,5 @@ func main() {
 		URL:  "nats://127.0.0.1:4222",
 		Conn: nil, // default: nil dials URL instead of reusing an existing connection
 	}
-	fmt.Println(cfg.URL)
-	// Output: nats://127.0.0.1:4222
+	_ = cfg
 }

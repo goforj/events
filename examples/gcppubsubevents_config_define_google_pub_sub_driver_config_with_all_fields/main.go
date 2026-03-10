@@ -2,10 +2,7 @@
 
 package main
 
-import (
-	"fmt"
-	"github.com/goforj/events/driver/gcppubsubevents"
-)
+import "github.com/goforj/events/driver/gcppubsubevents"
 
 func main() {
 	// Config configures Google Pub/Sub transport construction.
@@ -16,6 +13,5 @@ func main() {
 		URI:       "127.0.0.1:8085", // default: "" is invalid unless Client is provided
 		Client:    nil,              // default: nil creates a client from ProjectID and URI
 	}
-	fmt.Println(cfg.ProjectID)
-	// Output: events-project
+	_ = cfg
 }

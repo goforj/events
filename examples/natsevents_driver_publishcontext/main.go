@@ -4,15 +4,15 @@ package main
 
 import (
 	"context"
-	"github.com/goforj/events/driver/kafkaevents"
+	"github.com/goforj/events/driver/natsevents"
 	"github.com/goforj/events/eventscore"
 )
 
 func main() {
-	// PublishContext publishes a topic payload to Kafka.
+	// PublishContext publishes a topic payload to NATS.
 
-	// Example: publish a raw message through Kafka
-	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
+	// Example: publish a raw message through NATS
+	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
 	_ = driver.PublishContext(context.Background(), eventscore.Message{
 		Topic:   "users.created",
 		Payload: []byte(`{"id":"123"}`),

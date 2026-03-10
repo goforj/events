@@ -2,17 +2,13 @@
 
 package main
 
-import (
-	"fmt"
-	"github.com/goforj/events/driver/redisevents"
-)
+import "github.com/goforj/events/driver/redisevents"
 
 func main() {
 	// Config configures Redis transport construction.
 
 	// Example: define Redis driver config
 	cfg := redisevents.Config{Addr: "127.0.0.1:6379"}
-	fmt.Println(cfg.Addr)
-	// Output: 127.0.0.1:6379
+	_ = cfg
 
 }

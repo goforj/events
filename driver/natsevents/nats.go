@@ -26,8 +26,7 @@ type Driver struct {
 // Example: define NATS driver config
 //
 //	cfg := natsevents.Config{URL: "nats://127.0.0.1:4222"}
-//	fmt.Println(cfg.URL)
-//	// Output: nats://127.0.0.1:4222
+//	_ = cfg
 //
 // Example: define NATS driver config with all fields
 //
@@ -35,8 +34,7 @@ type Driver struct {
 //		URL:  "nats://127.0.0.1:4222",
 //		Conn: nil, // default: nil dials URL instead of reusing an existing connection
 //	}
-//	fmt.Println(cfg.URL)
-//	// Output: nats://127.0.0.1:4222
+//	_ = cfg
 type Config struct {
 	URL  string
 	Conn *nats.Conn

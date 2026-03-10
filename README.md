@@ -202,8 +202,6 @@ _Example: define bus construction config_
 
 ```go
 cfg := events.Config{Driver: eventscore.DriverSync}
-fmt.Println(cfg.Driver)
-// Output: sync
 ```
 
 _Example: define bus construction config with all fields_
@@ -214,8 +212,6 @@ cfg := events.Config{
 	Codec:     nil,                   // default: nil uses the built-in JSON codec
 	Transport: nil,                   // default: nil keeps dispatch in-process
 }
-fmt.Println(cfg.Driver)
-// Output: sync
 ```
 
 ### <a id="events-new"></a>events.New
@@ -251,12 +247,6 @@ fmt.Println(bus.Driver())
 ### <a id="events-option"></a>events.Option
 
 Option configures root bus behavior.
-
-```go
-opt := events.WithCodec(nil)
-fmt.Println(opt != nil)
-// Output: true
-```
 
 ### <a id="events-withcodec"></a>events.WithCodec
 
@@ -420,8 +410,6 @@ cfg := gcppubsubevents.Config{
 	ProjectID: "events-project",
 	URI:       "127.0.0.1:8085",
 }
-fmt.Println(cfg.ProjectID)
-// Output: events-project
 ```
 
 _Example: define Google Pub/Sub driver config with all fields_
@@ -432,8 +420,6 @@ cfg := gcppubsubevents.Config{
 	URI:       "127.0.0.1:8085", // default: "" is invalid unless Client is provided
 	Client:    nil,              // default: nil creates a client from ProjectID and URI
 }
-fmt.Println(cfg.ProjectID)
-// Output: events-project
 ```
 
 ### <a id="kafkaevents-config"></a>kafkaevents.Config
@@ -444,8 +430,6 @@ _Example: define Kafka driver config_
 
 ```go
 cfg := kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}}
-fmt.Println(cfg.Brokers[0])
-// Output: 127.0.0.1:9092
 ```
 
 _Example: define Kafka driver config with all fields_
@@ -456,8 +440,6 @@ cfg := kafkaevents.Config{
 	Dialer:  nil, // default: nil uses a zero-value kafka.Dialer
 	Writer:  nil, // default: nil builds a writer with single-message, auto-topic defaults
 }
-fmt.Println(cfg.Brokers[0])
-// Output: 127.0.0.1:9092
 ```
 
 ### <a id="natsevents-config"></a>natsevents.Config
@@ -468,8 +450,6 @@ _Example: define NATS driver config_
 
 ```go
 cfg := natsevents.Config{URL: "nats://127.0.0.1:4222"}
-fmt.Println(cfg.URL)
-// Output: nats://127.0.0.1:4222
 ```
 
 _Example: define NATS driver config with all fields_
@@ -479,8 +459,6 @@ cfg := natsevents.Config{
 	URL:  "nats://127.0.0.1:4222",
 	Conn: nil, // default: nil dials URL instead of reusing an existing connection
 }
-fmt.Println(cfg.URL)
-// Output: nats://127.0.0.1:4222
 ```
 
 ### <a id="redisevents-config"></a>redisevents.Config
@@ -491,8 +469,6 @@ _Example: define Redis driver config_
 
 ```go
 cfg := redisevents.Config{Addr: "127.0.0.1:6379"}
-fmt.Println(cfg.Addr)
-// Output: 127.0.0.1:6379
 ```
 
 _Example: define Redis driver config with all fields_
@@ -502,8 +478,6 @@ cfg := redisevents.Config{
 	Addr:   "127.0.0.1:6379",
 	Client: nil, // default: nil constructs a client from Addr
 }
-fmt.Println(cfg.Addr)
-// Output: 127.0.0.1:6379
 ```
 
 ## Driver Constructors

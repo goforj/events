@@ -8,8 +8,7 @@ import "github.com/goforj/events/eventscore"
 // Example: define bus construction config
 //
 //	cfg := events.Config{Driver: eventscore.DriverSync}
-//	fmt.Println(cfg.Driver)
-//	// Output: sync
+//	_ = cfg
 //
 // Example: define bus construction config with all fields
 //
@@ -18,8 +17,7 @@ import "github.com/goforj/events/eventscore"
 //		Codec:     nil,                   // default: nil uses the built-in JSON codec
 //		Transport: nil,                   // default: nil keeps dispatch in-process
 //	}
-//	fmt.Println(cfg.Driver)
-//	// Output: sync
+//	_ = cfg
 type Config struct {
 	// Driver selects the root bus backend.
 	Driver eventscore.Driver

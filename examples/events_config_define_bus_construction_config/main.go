@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/goforj/events"
 	"github.com/goforj/events/eventscore"
 )
@@ -13,7 +12,6 @@ func main() {
 
 	// Example: define bus construction config
 	cfg := events.Config{Driver: eventscore.DriverSync}
-	fmt.Println(cfg.Driver)
-	// Output: sync
+	_ = cfg
 
 }

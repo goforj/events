@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/goforj/events"
 	"github.com/goforj/events/eventscore"
 )
@@ -17,6 +16,5 @@ func main() {
 		Codec:     nil,                   // default: nil uses the built-in JSON codec
 		Transport: nil,                   // default: nil keeps dispatch in-process
 	}
-	fmt.Println(cfg.Driver)
-	// Output: sync
+	_ = cfg
 }

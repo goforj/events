@@ -2,10 +2,7 @@
 
 package main
 
-import (
-	"fmt"
-	"github.com/goforj/events/driver/kafkaevents"
-)
+import "github.com/goforj/events/driver/kafkaevents"
 
 func main() {
 	// Config configures Kafka transport construction.
@@ -16,6 +13,5 @@ func main() {
 		Dialer:  nil, // default: nil uses a zero-value kafka.Dialer
 		Writer:  nil, // default: nil builds a writer with single-message, auto-topic defaults
 	}
-	fmt.Println(cfg.Brokers[0])
-	// Output: 127.0.0.1:9092
+	_ = cfg
 }

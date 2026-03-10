@@ -407,7 +407,7 @@ func renderAPI(funcs []*FuncDoc) string {
 			if fn.Description != "" {
 				buf.WriteString(fn.Description + "\n\n")
 			}
-			for _, ex := range fn.Examples {
+			for _, ex := range renderedExamples(fn) {
 				if ex.Label != "" && len(fn.Examples) > 1 {
 					buf.WriteString(fmt.Sprintf("_Example: %s_\n\n", ex.Label))
 				}
@@ -419,6 +419,13 @@ func renderAPI(funcs []*FuncDoc) string {
 	}
 
 	return strings.TrimRight(buf.String(), "\n")
+}
+
+func renderedExamples(fn *FuncDoc) []Example {
+	if fn.DisplayName == "events.Option" {
+		return nil
+	}
+	return fn.Examples
 }
 
 func replaceAPISection(readme, api string) (string, error) {
