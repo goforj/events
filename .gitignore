@@ -30,3 +30,6 @@ profile.cov
 # Local build cache
 tmp/
 
+# Root-only markdown scratch/docs files except the main README
+/*.md
+!/README.md

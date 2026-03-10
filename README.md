@@ -439,12 +439,6 @@ _ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
 
 TopicEvent overrides the derived topic for an event.
 
-```go
-var event events.TopicEvent
-fmt.Println(event == nil)
-// Output: true
-```
-
 ## Subscribe
 
 ### <a id="bus-subscribe"></a>Subscribe

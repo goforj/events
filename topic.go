@@ -9,12 +9,6 @@ import (
 
 // TopicEvent overrides the derived topic for an event.
 // @group Publish
-//
-// Example: override the derived topic
-//
-//	var event events.TopicEvent
-//	fmt.Println(event == nil)
-//	// Output: true
 type TopicEvent interface {
 	Topic() string
 }
