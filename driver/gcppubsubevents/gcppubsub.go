@@ -74,8 +74,7 @@ const (
 //		ProjectID: "events-project",
 //		URI:       "127.0.0.1:8085",
 //	})
-//	fmt.Println(driver != nil)
-//	// Output: true
+//	_ = driver
 func New(ctx context.Context, cfg Config) (*Driver, error) {
 	if cfg.Client != nil {
 		if cfg.ProjectID == "" {
@@ -121,8 +120,7 @@ func New(ctx context.Context, cfg Config) (*Driver, error) {
 //		ProjectID: "events-project",
 //		URI:       "127.0.0.1:8085",
 //	})
-//	fmt.Println(driver.Driver())
-//	// Output: gcppubsub
+//	_ = driver
 func (d *Driver) Driver() eventscore.Driver {
 	return eventscore.DriverGCPPubSub
 }

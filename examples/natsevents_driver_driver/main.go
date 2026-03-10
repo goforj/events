@@ -2,16 +2,12 @@
 
 package main
 
-import (
-	"fmt"
-	"github.com/goforj/events/driver/natsevents"
-)
+import "github.com/goforj/events/driver/natsevents"
 
 func main() {
 	// Driver reports the active backend kind.
 
 	// Example: inspect the driver kind
 	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-	fmt.Println(driver.Driver())
-	// Output: nats
+	_ = driver
 }

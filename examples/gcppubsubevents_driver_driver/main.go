@@ -4,7 +4,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/goforj/events/driver/gcppubsubevents"
 )
 
@@ -16,6 +15,5 @@ func main() {
 		ProjectID: "events-project",
 		URI:       "127.0.0.1:8085",
 	})
-	fmt.Println(driver.Driver())
-	// Output: gcppubsub
+	_ = driver
 }

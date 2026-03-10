@@ -5,15 +5,19 @@ package main
 import (
 	"context"
 	"github.com/goforj/events/driver/gcppubsubevents"
+	"github.com/goforj/events/eventscore"
 )
 
 func main() {
-	// New constructs a Google Pub/Sub-backed driver.
+	// PublishContext publishes a topic payload to Google Pub/Sub.
 
-	// Example: construct a Google Pub/Sub driver
+	// Example: publish a raw message through Google Pub/Sub
 	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
 		ProjectID: "events-project",
 		URI:       "127.0.0.1:8085",
 	})
-	_ = driver
+	_ = driver.PublishContext(context.Background(), eventscore.Message{
+		Topic:   "users.created",
+		Payload: []byte(`{"id":"123"}`),
+	})
 }

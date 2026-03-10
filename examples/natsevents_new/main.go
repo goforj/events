@@ -2,16 +2,12 @@
 
 package main
 
-import (
-	"fmt"
-	"github.com/goforj/events/driver/natsevents"
-)
+import "github.com/goforj/events/driver/natsevents"
 
 func main() {
 	// New connects a NATS-backed driver from config.
 
 	// Example: construct a NATS driver
 	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-	fmt.Println(driver != nil)
-	// Output: true
+	_ = driver
 }

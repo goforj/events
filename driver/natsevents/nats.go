@@ -46,8 +46,7 @@ type Config struct {
 // Example: construct a NATS driver
 //
 //	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-//	fmt.Println(driver != nil)
-//	// Output: true
+//	_ = driver
 func New(cfg Config) (*Driver, error) {
 	if cfg.Conn != nil {
 		return &Driver{conn: cfg.Conn}, nil
@@ -68,8 +67,7 @@ func New(cfg Config) (*Driver, error) {
 // Example: inspect the driver kind
 //
 //	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-//	fmt.Println(driver.Driver())
-//	// Output: nats
+//	_ = driver
 func (d *Driver) Driver() eventscore.Driver {
 	return eventscore.DriverNATS
 }

@@ -2,16 +2,12 @@
 
 package main
 
-import (
-	"fmt"
-	"github.com/goforj/events/driver/redisevents"
-)
+import "github.com/goforj/events/driver/redisevents"
 
 func main() {
 	// New constructs a Redis pub/sub-backed driver.
 
 	// Example: construct a Redis driver
 	driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-	fmt.Println(driver != nil)
-	// Output: true
+	_ = driver
 }

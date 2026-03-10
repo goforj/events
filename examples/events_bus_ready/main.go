@@ -8,11 +8,10 @@ import (
 )
 
 func main() {
-	// Ready performs a background-context readiness check.
+	// Ready reports whether the bus is ready.
 
-	// Example: check readiness through the interface
-	api, _ := events.NewSync()
-	var bus events.API = api
+	// Example: check readiness
+	bus, _ := events.NewSync()
 	fmt.Println(bus.Ready() == nil)
 	// Output: true
 }

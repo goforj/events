@@ -5,9 +5,9 @@ package main
 import "github.com/goforj/events/driver/kafkaevents"
 
 func main() {
-	// New constructs a Kafka-backed driver.
+	// Driver reports the active backend kind.
 
-	// Example: construct a Kafka driver
+	// Example: inspect the driver kind
 	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
 	_ = driver
 }

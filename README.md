@@ -491,8 +491,6 @@ driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
 	ProjectID: "events-project",
 	URI:       "127.0.0.1:8085",
 })
-fmt.Println(driver != nil)
-// Output: true
 ```
 
 ### <a id="kafkaevents-new"></a>kafkaevents.New
@@ -501,8 +499,6 @@ New constructs a Kafka-backed driver.
 
 ```go
 driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-fmt.Println(driver != nil)
-// Output: true
 ```
 
 ### <a id="natsevents-new"></a>natsevents.New
@@ -511,8 +507,6 @@ New connects a NATS-backed driver from config.
 
 ```go
 driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-fmt.Println(driver != nil)
-// Output: true
 ```
 
 ### <a id="redisevents-new"></a>redisevents.New
@@ -521,8 +515,6 @@ New constructs a Redis pub/sub-backed driver.
 
 ```go
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-fmt.Println(driver != nil)
-// Output: true
 ```
 
 ## Drivers
@@ -574,24 +566,18 @@ _Example: inspect the driver kind_
 
 ```go
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-fmt.Println(driver.Driver())
-// Output: redis
 ```
 
 _Example: inspect the driver kind_
 
 ```go
 driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-fmt.Println(driver.Driver())
-// Output: nats
 ```
 
 _Example: inspect the driver kind_
 
 ```go
 driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-fmt.Println(driver.Driver())
-// Output: kafka
 ```
 
 _Example: inspect the driver kind_
@@ -601,8 +587,6 @@ driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
 	ProjectID: "events-project",
 	URI:       "127.0.0.1:8085",
 })
-fmt.Println(driver.Driver())
-// Output: gcppubsub
 ```
 
 ### <a id="driver-publishcontext"></a>Driver.PublishContext

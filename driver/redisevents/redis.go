@@ -46,8 +46,7 @@ type Config struct {
 // Example: construct a Redis driver
 //
 //	driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-//	fmt.Println(driver != nil)
-//	// Output: true
+//	_ = driver
 func New(cfg Config) (*Driver, error) {
 	if cfg.Client != nil {
 		return &Driver{client: cfg.Client}, nil
@@ -66,8 +65,7 @@ func New(cfg Config) (*Driver, error) {
 // Example: inspect the driver kind
 //
 //	driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-//	fmt.Println(driver.Driver())
-//	// Output: redis
+//	_ = driver
 func (d *Driver) Driver() eventscore.Driver {
 	return eventscore.DriverRedis
 }

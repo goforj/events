@@ -64,8 +64,7 @@ const (
 // Example: construct a Kafka driver
 //
 //	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-//	fmt.Println(driver != nil)
-//	// Output: true
+//	_ = driver
 func New(cfg Config) (*Driver, error) {
 	if len(cfg.Brokers) == 0 {
 		return nil, errors.New("kafkaevents: Brokers are required")
@@ -99,8 +98,7 @@ func New(cfg Config) (*Driver, error) {
 // Example: inspect the driver kind
 //
 //	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-//	fmt.Println(driver.Driver())
-//	// Output: kafka
+//	_ = driver
 func (d *Driver) Driver() eventscore.Driver {
 	return eventscore.DriverKafka
 }
