@@ -199,11 +199,12 @@ func (b *Bus) dispatchMessage(ctx context.Context, msg eventscore.Message) error
 //
 //	bus, _ := events.NewSync()
 //	sub, _ := bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-//		_ = ctx
-//		_ = event
+//		fmt.Println(event.ID)
 //		return nil
 //	})
 //	defer sub.Close()
+//	_ = bus.Publish(UserCreated{ID: "123"})
+//	// Output: 123
 func (b *Bus) Subscribe(handler any) (Subscription, error) {
 	return b.subscribeContext(context.Background(), handler)
 }
@@ -219,11 +220,12 @@ func (b *Bus) Subscribe(handler any) (Subscription, error) {
 //
 //	bus, _ := events.NewSync()
 //	sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
-//		_ = ctx
-//		_ = event
+//		fmt.Println(event.ID, ctx != nil)
 //		return nil
 //	})
 //	defer sub.Close()
+//	_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
+//	// Output: 123 true
 func (b *Bus) SubscribeContext(ctx context.Context, handler any) (Subscription, error) {
 	return b.subscribeContext(ctx, handler)
 }

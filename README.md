@@ -336,11 +336,12 @@ type UserCreated struct {
 
 bus, _ := events.NewSync()
 sub, _ := bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-	_ = ctx
-	_ = event
+	fmt.Println(event.ID)
 	return nil
 })
 defer sub.Close()
+_ = bus.Publish(UserCreated{ID: "123"})
+// Output: 123
 ```
 
 ### <a id="bus-subscribecontext"></a>Bus.SubscribeContext
@@ -354,11 +355,12 @@ type UserCreated struct {
 
 bus, _ := events.NewSync()
 sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
-	_ = ctx
-	_ = event
+	fmt.Println(event.ID, ctx != nil)
 	return nil
 })
 defer sub.Close()
+_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
+// Output: 123 true
 ```
 
 ### <a id="events-bus"></a>events.Bus
@@ -585,43 +587,8 @@ driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
 
 PublishContext publishes a topic payload to Google Pub/Sub.
 
-_Example: publish a raw message through NATS_
-
-```go
-driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-_ = driver.PublishContext(context.Background(), eventscore.Message{
-	Topic:   "users.created",
-	Payload: []byte(`{"id":"123"}`),
-})
-```
-
-_Example: publish a raw message through Redis_
-
 ```go
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-_ = driver.PublishContext(context.Background(), eventscore.Message{
-	Topic:   "users.created",
-	Payload: []byte(`{"id":"123"}`),
-})
-```
-
-_Example: publish a raw message through Kafka_
-
-```go
-driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-_ = driver.PublishContext(context.Background(), eventscore.Message{
-	Topic:   "users.created",
-	Payload: []byte(`{"id":"123"}`),
-})
-```
-
-_Example: publish a raw message through Google Pub/Sub_
-
-```go
-driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-	ProjectID: "events-project",
-	URI:       "127.0.0.1:8085",
-})
 _ = driver.PublishContext(context.Background(), eventscore.Message{
 	Topic:   "users.created",
 	Payload: []byte(`{"id":"123"}`),

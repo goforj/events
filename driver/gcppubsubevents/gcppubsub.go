@@ -145,17 +145,6 @@ func (d *Driver) Ready(ctx context.Context) error {
 
 // PublishContext publishes a topic payload to Google Pub/Sub.
 // @group Drivers
-//
-// Example: publish a raw message through Google Pub/Sub
-//
-//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-//		ProjectID: "events-project",
-//		URI:       "127.0.0.1:8085",
-//	})
-//	_ = driver.PublishContext(context.Background(), eventscore.Message{
-//		Topic:   "users.created",
-//		Payload: []byte(`{"id":"123"}`),
-//	})
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
 	if ctx != nil && ctx.Err() != nil {
 		return ctx.Err()

@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/goforj/events"
 )
 
@@ -17,9 +18,10 @@ func main() {
 
 	bus, _ := events.NewSync()
 	sub, _ := bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-		_ = ctx
-		_ = event
+		fmt.Println(event.ID)
 		return nil
 	})
 	defer sub.Close()
+	_ = bus.Publish(UserCreated{ID: "123"})
+	// Output: 123
 }
