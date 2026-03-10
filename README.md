@@ -602,42 +602,8 @@ fmt.Printf("%T\n", record.Event)
 
 The repository includes lightweight docs tooling under `docs/`.
 
-Fast docs loop:
-
-```bash
-sh scripts/update-docs.sh
-```
-
-Refresh the live benchmark snapshot and regenerate the charts:
-
-```bash
-sh scripts/refresh-bench-snapshot.sh
-```
-
-Update generated README sections and validate required structure:
-
-```bash
-go run ./docs/readme/main.go
-```
-
-Update executed test-count badges:
-
-```bash
-go run ./docs/readme/testcounts/main.go
-```
-
-Generate example programs used by docs checks:
-
-```bash
-go run ./docs/examplegen/main.go
-```
-
-Rerun the fast docs update loop locally:
+Run the watcher to auto-regenerate docs on file changes:
 
 ```bash
 sh docs/watcher.sh
 ```
-
-## Release Tagging
-
-This repository uses per-module tags. Use `scripts/tag-all-modules.sh vX.Y.Z` to apply the root tag plus all driver-module tags in one command. 
