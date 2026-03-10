@@ -36,7 +36,7 @@ type Driver struct {
 }
 
 // Config configures Google Pub/Sub transport construction.
-// @group Driver Config
+// @group Config
 //
 // Example: define Google Pub/Sub driver config
 //

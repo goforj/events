@@ -8,7 +8,7 @@ import (
 )
 
 // Bus is the root event bus implementation.
-// @group Core
+// @group Bus
 type Bus struct {
 	driver    eventscore.Driver
 	codec     Codec
@@ -73,7 +73,7 @@ func NewNull(opts ...Option) (*Bus, error) {
 }
 
 // Driver reports the active backend.
-// @group Core
+// @group Bus
 //
 // Example: inspect the active backend
 //
@@ -85,7 +85,7 @@ func (b *Bus) Driver() eventscore.Driver {
 }
 
 // Ready reports whether the bus is ready.
-// @group Core
+// @group Bus
 //
 // Example: check readiness
 //
@@ -97,7 +97,7 @@ func (b *Bus) Ready() error {
 }
 
 // ReadyContext reports whether the bus is ready.
-// @group Core
+// @group Bus Context
 //
 // Example: check readiness with a caller context
 //
@@ -112,7 +112,7 @@ func (b *Bus) ReadyContext(ctx context.Context) error {
 }
 
 // Publish publishes an event using the background context.
-// @group Core
+// @group Publish
 //
 // Example: publish a typed event
 //
@@ -131,7 +131,7 @@ func (b *Bus) Publish(event any) error {
 }
 
 // PublishContext publishes an event using the configured codec and dispatch flow.
-// @group Core
+// @group Publish Context
 //
 // Example: publish with a caller context
 //
@@ -182,7 +182,7 @@ func (b *Bus) dispatchMessage(ctx context.Context, msg eventscore.Message) error
 }
 
 // Subscribe registers a handler using the background context.
-// @group Core
+// @group Subscribe
 //
 // Example: subscribe to a typed event
 //
@@ -203,7 +203,7 @@ func (b *Bus) Subscribe(handler any) (Subscription, error) {
 }
 
 // SubscribeContext registers a typed handler.
-// @group Core
+// @group Subscribe Context
 //
 // Example: subscribe with a caller context
 //

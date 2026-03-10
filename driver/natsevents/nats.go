@@ -21,7 +21,7 @@ type Driver struct {
 }
 
 // Config configures NATS transport construction.
-// @group Driver Config
+// @group Config
 //
 // Example: define NATS driver config
 //

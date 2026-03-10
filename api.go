@@ -120,7 +120,7 @@ type API interface {
 }
 
 // Subscription releases a subscription when closed.
-// @group Core
+// @group Subscribe
 //
 // Example: close a subscription when done
 //

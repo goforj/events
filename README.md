@@ -174,15 +174,57 @@ or hard CI performance gates.
 
 | Group | Functions |
 |------:|-----------|
-| **Config** | [events.Config](#events-config) |
-| **Construction** | [events.New](#events-new) [events.NewNull](#events-newnull) [events.NewSync](#events-newsync) [events.Option](#events-option) [events.WithCodec](#events-withcodec) |
-| **Core** | [Bus.Driver](#bus-driver) [Bus.Publish](#bus-publish) [Bus.PublishContext](#bus-publishcontext) [Bus.Ready](#bus-ready) [Bus.ReadyContext](#bus-readycontext) [Bus.Subscribe](#bus-subscribe) [Bus.SubscribeContext](#bus-subscribecontext) [events.Bus](#events-bus) [events.Subscription](#events-subscription) [events.TopicEvent](#events-topicevent) |
-| **Driver Config** | [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
+| **Bus** | [Bus.Driver](#bus-driver) [Bus.Ready](#bus-ready) [events.Bus](#events-bus) |
+| **Bus Context** | [Bus.ReadyContext](#bus-readycontext) |
+| **Config** | [events.Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
+| **Construction** | [events.New](#events-new) [events.NewNull](#events-newnull) [events.NewSync](#events-newsync) |
 | **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) |
-| **Drivers** | [Driver.Close](#driver-close) [Driver.Driver](#driver-driver) [Driver.PublishContext](#driver-publishcontext) [Driver.Ready](#driver-ready) [Driver.SubscribeContext](#driver-subscribecontext) |
-| **Options** | [events.Codec](#events-codec) |
+| **Drivers** | [Driver.Close](#driver-close) |
+| **Options** | [events.Option](#events-option) [events.WithCodec](#events-withcodec) |
+| **Publish** | [Bus.Publish](#bus-publish) [events.TopicEvent](#events-topicevent) |
+| **Publish Context** | [Bus.PublishContext](#bus-publishcontext) |
+| **Subscribe** | [Bus.Subscribe](#bus-subscribe) [events.Subscription](#events-subscription) |
+| **Subscribe Context** | [Bus.SubscribeContext](#bus-subscribecontext) |
 | **Testing** | [Fake.Bus](#fake-bus) [Fake.Count](#fake-count) [Fake.Records](#fake-records) [Fake.Reset](#fake-reset) [events.Fake](#events-fake) [events.NewFake](#events-newfake) [events.Record](#events-record) |
 
+
+## Bus
+
+### <a id="bus-driver"></a>Bus.Driver
+
+Driver reports the active backend.
+
+```go
+bus, _ := events.NewSync()
+fmt.Println(bus.Driver())
+// Output: sync
+```
+
+### <a id="bus-ready"></a>Bus.Ready
+
+Ready reports whether the bus is ready.
+
+```go
+bus, _ := events.NewSync()
+fmt.Println(bus.Ready() == nil)
+// Output: true
+```
+
+### <a id="events-bus"></a>events.Bus
+
+Bus is the root event bus implementation.
+
+## Bus Context
+
+### <a id="bus-readycontext"></a>Bus.ReadyContext
+
+ReadyContext reports whether the bus is ready.
+
+```go
+bus, _ := events.NewSync()
+fmt.Println(bus.ReadyContext(context.Background()) == nil)
+// Output: true
+```
 
 ## Config
 
@@ -205,188 +247,6 @@ cfg := events.Config{
 	Transport: nil,                   // default: nil keeps dispatch in-process
 }
 ```
-
-## Construction
-
-### <a id="events-new"></a>events.New
-
-New constructs a root bus for the requested driver.
-
-```go
-bus, _ := events.New(events.Config{Driver: "sync"})
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
-### <a id="events-newnull"></a>events.NewNull
-
-NewNull constructs the root null bus.
-
-```go
-bus, _ := events.NewNull()
-fmt.Println(bus.Driver())
-// Output: null
-```
-
-### <a id="events-newsync"></a>events.NewSync
-
-NewSync constructs the root sync bus.
-
-```go
-bus, _ := events.NewSync()
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
-### <a id="events-option"></a>events.Option
-
-Option configures root bus behavior.
-
-### <a id="events-withcodec"></a>events.WithCodec
-
-WithCodec overrides the default event codec.
-
-```go
-bus, _ := events.NewSync(events.WithCodec(nil))
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
-## Core
-
-### <a id="bus-driver"></a>Bus.Driver
-
-Driver reports the active backend.
-
-```go
-bus, _ := events.NewSync()
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
-### <a id="bus-publish"></a>Bus.Publish
-
-Publish publishes an event using the background context.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-bus, _ := events.NewSync()
-_, _ = bus.Subscribe(func(event UserCreated) {
-	fmt.Println(event.ID)
-})
-_ = bus.Publish(UserCreated{ID: "123"})
-// Output: 123
-```
-
-### <a id="bus-publishcontext"></a>Bus.PublishContext
-
-PublishContext publishes an event using the configured codec and dispatch flow.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-bus, _ := events.NewSync()
-_, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-	fmt.Println(event.ID, ctx != nil)
-	return nil
-})
-_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
-// Output: 123 true
-```
-
-### <a id="bus-ready"></a>Bus.Ready
-
-Ready reports whether the bus is ready.
-
-```go
-bus, _ := events.NewSync()
-fmt.Println(bus.Ready() == nil)
-// Output: true
-```
-
-### <a id="bus-readycontext"></a>Bus.ReadyContext
-
-ReadyContext reports whether the bus is ready.
-
-```go
-bus, _ := events.NewSync()
-fmt.Println(bus.ReadyContext(context.Background()) == nil)
-// Output: true
-```
-
-### <a id="bus-subscribe"></a>Bus.Subscribe
-
-Subscribe registers a handler using the background context.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-bus, _ := events.NewSync()
-sub, _ := bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-	fmt.Println(event.ID)
-	return nil
-})
-defer sub.Close()
-_ = bus.Publish(UserCreated{ID: "123"})
-// Output: 123
-```
-
-### <a id="bus-subscribecontext"></a>Bus.SubscribeContext
-
-SubscribeContext registers a typed handler.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-bus, _ := events.NewSync()
-sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
-	fmt.Println(event.ID, ctx != nil)
-	return nil
-})
-defer sub.Close()
-_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
-// Output: 123 true
-```
-
-### <a id="events-bus"></a>events.Bus
-
-Bus is the root event bus implementation.
-
-### <a id="events-subscription"></a>events.Subscription
-
-Subscription releases a subscription when closed.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-bus, _ := events.NewSync()
-sub, _ := bus.Subscribe(func(UserCreated) {})
-fmt.Println(sub.Close() == nil)
-// Output: true
-```
-
-### <a id="events-topicevent"></a>events.TopicEvent
-
-TopicEvent overrides the derived topic for an event.
-
-```go
-var event events.TopicEvent
-fmt.Println(event == nil)
-// Output: true
-```
-
-## Driver Config
 
 ### <a id="gcppubsubevents-config"></a>gcppubsubevents.Config
 
@@ -469,6 +329,38 @@ cfg := redisevents.Config{
 }
 ```
 
+## Construction
+
+### <a id="events-new"></a>events.New
+
+New constructs a root bus for the requested driver.
+
+```go
+bus, _ := events.New(events.Config{Driver: "sync"})
+fmt.Println(bus.Driver())
+// Output: sync
+```
+
+### <a id="events-newnull"></a>events.NewNull
+
+NewNull constructs the root null bus.
+
+```go
+bus, _ := events.NewNull()
+fmt.Println(bus.Driver())
+// Output: null
+```
+
+### <a id="events-newsync"></a>events.NewSync
+
+NewSync constructs the root sync bus.
+
+```go
+bus, _ := events.NewSync()
+fmt.Println(bus.Driver())
+// Output: sync
+```
+
 ## Driver Constructors
 
 ### <a id="gcppubsubevents-new"></a>gcppubsubevents.New
@@ -516,32 +408,126 @@ Close closes the underlying Pub/Sub client.
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
 ```
 
-### <a id="driver-driver"></a>Driver.Driver
-
-Driver reports the active backend kind.
-
-### <a id="driver-publishcontext"></a>Driver.PublishContext
-
-PublishContext publishes a topic payload to Google Pub/Sub.
-
-### <a id="driver-ready"></a>Driver.Ready
-
-Ready checks Google Pub/Sub connectivity.
-
-### <a id="driver-subscribecontext"></a>Driver.SubscribeContext
-
-SubscribeContext subscribes to a Google Pub/Sub topic and forwards messages.
-
 ## Options
 
-### <a id="events-codec"></a>events.Codec
+### <a id="events-option"></a>events.Option
 
-Codec marshals and unmarshals event payloads.
+Option configures root bus behavior.
+
+### <a id="events-withcodec"></a>events.WithCodec
+
+WithCodec overrides the default event codec.
 
 ```go
-var codec events.Codec
-fmt.Println(codec == nil)
+bus, _ := events.NewSync(events.WithCodec(nil))
+fmt.Println(bus.Driver())
+// Output: sync
+```
+
+## Publish
+
+### <a id="bus-publish"></a>Bus.Publish
+
+Publish publishes an event using the background context.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+bus, _ := events.NewSync()
+_, _ = bus.Subscribe(func(event UserCreated) {
+	fmt.Println(event.ID)
+})
+_ = bus.Publish(UserCreated{ID: "123"})
+// Output: 123
+```
+
+### <a id="events-topicevent"></a>events.TopicEvent
+
+TopicEvent overrides the derived topic for an event.
+
+```go
+var event events.TopicEvent
+fmt.Println(event == nil)
 // Output: true
+```
+
+## Publish Context
+
+### <a id="bus-publishcontext"></a>Bus.PublishContext
+
+PublishContext publishes an event using the configured codec and dispatch flow.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+bus, _ := events.NewSync()
+_, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
+	fmt.Println(event.ID, ctx != nil)
+	return nil
+})
+_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
+// Output: 123 true
+```
+
+## Subscribe
+
+### <a id="bus-subscribe"></a>Bus.Subscribe
+
+Subscribe registers a handler using the background context.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+bus, _ := events.NewSync()
+sub, _ := bus.Subscribe(func(ctx context.Context, event UserCreated) error {
+	fmt.Println(event.ID)
+	return nil
+})
+defer sub.Close()
+_ = bus.Publish(UserCreated{ID: "123"})
+// Output: 123
+```
+
+### <a id="events-subscription"></a>events.Subscription
+
+Subscription releases a subscription when closed.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+bus, _ := events.NewSync()
+sub, _ := bus.Subscribe(func(UserCreated) {})
+fmt.Println(sub.Close() == nil)
+// Output: true
+```
+
+## Subscribe Context
+
+### <a id="bus-subscribecontext"></a>Bus.SubscribeContext
+
+SubscribeContext registers a typed handler.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+bus, _ := events.NewSync()
+sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
+	fmt.Println(event.ID, ctx != nil)
+	return nil
+})
+defer sub.Close()
+_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
+// Output: 123 true
 ```
 
 ## Testing

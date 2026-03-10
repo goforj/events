@@ -21,7 +21,7 @@ type Driver struct {
 }
 
 // Config configures Redis transport construction.
-// @group Driver Config
+// @group Config
 //
 // Example: define Redis driver config
 //

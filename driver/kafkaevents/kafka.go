@@ -31,7 +31,7 @@ type Driver struct {
 }
 
 // Config configures Kafka transport construction.
-// @group Driver Config
+// @group Config
 //
 // Example: define Kafka driver config
 //

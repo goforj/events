@@ -8,7 +8,7 @@ import (
 )
 
 // TopicEvent overrides the derived topic for an event.
-// @group Core
+// @group Publish
 //
 // Example: override the derived topic
 //

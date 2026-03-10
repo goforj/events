@@ -374,6 +374,9 @@ func selectPackage(pkgs map[string]*ast.Package) (string, error) {
 func renderAPI(funcs []*FuncDoc) string {
 	byGroup := map[string][]*FuncDoc{}
 	for _, fd := range funcs {
+		if skipFuncDoc(fd) {
+			continue
+		}
 		byGroup[fd.Group] = append(byGroup[fd.Group], fd)
 	}
 
@@ -432,6 +435,14 @@ func renderedExamples(fn *FuncDoc) []Example {
 	return fn.Examples
 }
 
+func skipFuncDoc(fn *FuncDoc) bool {
+	switch fn.DisplayName {
+	case "Driver.Driver", "Driver.Ready", "Driver.PublishContext", "Driver.SubscribeContext":
+		return true
+	}
+	return false
+}
+
 func replaceAPISection(readme, api string) (string, error) {
 	start := strings.Index(readme, apiStart)
 	end := strings.Index(readme, apiEnd)
@@ -471,6 +482,9 @@ func fileExists(p string) bool {
 
 func skipTypeDoc(pkgName, typeName string) bool {
 	if pkgName == "events" && typeName == "API" {
+		return true
+	}
+	if pkgName == "events" && typeName == "Codec" {
 		return true
 	}
 	return strings.HasSuffix(pkgName, "events") && typeName == "Driver"
