@@ -11,7 +11,15 @@ import (
 	"github.com/goforj/events/eventscore"
 )
 
-type driverEvent struct {
+type publishDriverEvent struct {
+	ID string `json:"id"`
+}
+
+type unsubscribeDriverEvent struct {
+	ID string `json:"id"`
+}
+
+type fanoutDriverEvent struct {
 	ID string `json:"id"`
 }
 
@@ -61,8 +69,8 @@ func RunDriverContract(t *testing.T, factory Factory) {
 			t.Fatalf("events.New returned error: %v", err)
 		}
 
-		done := make(chan driverEvent, 1)
-		sub, err := bus.Subscribe(func(event driverEvent) {
+		done := make(chan publishDriverEvent, 1)
+		sub, err := bus.Subscribe(func(event publishDriverEvent) {
 			done <- event
 		})
 		if err != nil {
@@ -70,7 +78,7 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		}
 		t.Cleanup(func() { _ = sub.Close() })
 
-		if err := bus.PublishContext(ctx, driverEvent{ID: "123"}); err != nil {
+		if err := bus.PublishContext(ctx, publishDriverEvent{ID: "123"}); err != nil {
 			t.Fatalf("PublishContext returned error: %v", err)
 		}
 
@@ -95,7 +103,7 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		}
 
 		delivered := make(chan struct{}, 1)
-		sub, err := bus.Subscribe(func(driverEvent) {
+		sub, err := bus.Subscribe(func(unsubscribeDriverEvent) {
 			delivered <- struct{}{}
 		})
 		if err != nil {
@@ -105,7 +113,7 @@ func RunDriverContract(t *testing.T, factory Factory) {
 			t.Fatalf("Close returned error: %v", err)
 		}
 
-		if err := bus.PublishContext(ctx, driverEvent{ID: "456"}); err != nil {
+		if err := bus.PublishContext(ctx, unsubscribeDriverEvent{ID: "456"}); err != nil {
 			t.Fatalf("PublishContext returned error: %v", err)
 		}
 
@@ -126,10 +134,10 @@ func RunDriverContract(t *testing.T, factory Factory) {
 			t.Fatalf("events.New returned error: %v", err)
 		}
 
-		firstDone := make(chan driverEvent, 1)
-		secondDone := make(chan driverEvent, 1)
+		firstDone := make(chan fanoutDriverEvent, 1)
+		secondDone := make(chan fanoutDriverEvent, 1)
 
-		firstSub, err := bus.Subscribe(func(event driverEvent) {
+		firstSub, err := bus.Subscribe(func(event fanoutDriverEvent) {
 			firstDone <- event
 		})
 		if err != nil {
@@ -137,7 +145,7 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		}
 		t.Cleanup(func() { _ = firstSub.Close() })
 
-		secondSub, err := bus.Subscribe(func(event driverEvent) {
+		secondSub, err := bus.Subscribe(func(event fanoutDriverEvent) {
 			secondDone <- event
 		})
 		if err != nil {
@@ -145,11 +153,11 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		}
 		t.Cleanup(func() { _ = secondSub.Close() })
 
-		if err := bus.PublishContext(ctx, driverEvent{ID: "fanout"}); err != nil {
+		if err := bus.PublishContext(ctx, fanoutDriverEvent{ID: "fanout"}); err != nil {
 			t.Fatalf("PublishContext returned error: %v", err)
 		}
 
-		for name, done := range map[string]chan driverEvent{
+		for name, done := range map[string]chan fanoutDriverEvent{
 			"first":  firstDone,
 			"second": secondDone,
 		} {
