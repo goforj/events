@@ -105,12 +105,6 @@ func (d *Driver) Driver() eventscore.Driver {
 
 // Ready checks Kafka connectivity.
 // @group Drivers
-//
-// Example: check Kafka connectivity
-//
-//	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-//	fmt.Println(driver.Ready(context.Background()) == nil)
-//	// Output: true
 func (d *Driver) Ready(ctx context.Context) error {
 	if ctx != nil && ctx.Err() != nil {
 		return ctx.Err()
@@ -147,17 +141,6 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 
 // SubscribeContext subscribes to a Kafka topic and forwards messages.
 // @group Drivers
-//
-// Example: subscribe to a Kafka topic
-//
-//	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-//	sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
-//		_ = ctx
-//		_ = msg
-//		return nil
-//	})
-//	fmt.Println(sub != nil)
-//	// Output: true
 func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
 	if ctx != nil && ctx.Err() != nil {
 		return nil, ctx.Err()
@@ -212,8 +195,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 // Example: close a Kafka driver
 //
 //	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-//	fmt.Println(driver.Close() == nil)
-//	// Output: true
+//	_ = driver.Close()
 func (d *Driver) Close() error {
 	return d.writer.Close()
 }

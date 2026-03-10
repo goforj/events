@@ -74,12 +74,6 @@ func (d *Driver) Driver() eventscore.Driver {
 
 // Ready checks that the NATS connection is healthy.
 // @group Drivers
-//
-// Example: check NATS connectivity
-//
-//	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-//	fmt.Println(driver.Ready(context.Background()) == nil)
-//	// Output: true
 func (d *Driver) Ready(ctx context.Context) error {
 	if ctx != nil && ctx.Err() != nil {
 		return ctx.Err()
@@ -143,8 +137,7 @@ func (d *Driver) SubscribeContext(_ context.Context, topic string, handler event
 // Example: close a NATS driver
 //
 //	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-//	fmt.Println(driver.Close() == nil)
-//	// Output: true
+//	_ = driver.Close()
 func (d *Driver) Close() error {
 	d.conn.Close()
 	return nil

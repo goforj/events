@@ -2,16 +2,12 @@
 
 package main
 
-import (
-	"fmt"
-	"github.com/goforj/events/driver/kafkaevents"
-)
+import "github.com/goforj/events/driver/kafkaevents"
 
 func main() {
 	// Close closes the underlying Kafka writer.
 
 	// Example: close a Kafka driver
 	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-	fmt.Println(driver.Close() == nil)
-	// Output: true
+	_ = driver.Close()
 }

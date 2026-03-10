@@ -527,24 +527,18 @@ _Example: close a NATS driver_
 
 ```go
 driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-fmt.Println(driver.Close() == nil)
-// Output: true
 ```
 
 _Example: close a Redis driver_
 
 ```go
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-fmt.Println(driver.Close() == nil)
-// Output: true
 ```
 
 _Example: close a Kafka driver_
 
 ```go
 driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-fmt.Println(driver.Close() == nil)
-// Output: true
 ```
 
 _Example: close a Google Pub/Sub driver_
@@ -554,8 +548,6 @@ driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
 	ProjectID: "events-project",
 	URI:       "127.0.0.1:8085",
 })
-fmt.Println(driver.Close() == nil)
-// Output: true
 ```
 
 ### <a id="driver-driver"></a>Driver.Driver
@@ -593,20 +585,20 @@ driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
 
 PublishContext publishes a topic payload to Google Pub/Sub.
 
-_Example: publish a raw message through Redis_
+_Example: publish a raw message through NATS_
 
 ```go
-driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
+driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
 _ = driver.PublishContext(context.Background(), eventscore.Message{
 	Topic:   "users.created",
 	Payload: []byte(`{"id":"123"}`),
 })
 ```
 
-_Example: publish a raw message through NATS_
+_Example: publish a raw message through Redis_
 
 ```go
-driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
+driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
 _ = driver.PublishContext(context.Background(), eventscore.Message{
 	Topic:   "users.created",
 	Payload: []byte(`{"id":"123"}`),
@@ -640,37 +632,8 @@ _ = driver.PublishContext(context.Background(), eventscore.Message{
 
 Ready checks Google Pub/Sub connectivity.
 
-_Example: check Redis connectivity_
-
 ```go
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-fmt.Println(driver.Ready(context.Background()) == nil)
-// Output: true
-```
-
-_Example: check NATS connectivity_
-
-```go
-driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-fmt.Println(driver.Ready(context.Background()) == nil)
-// Output: true
-```
-
-_Example: check Kafka connectivity_
-
-```go
-driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-fmt.Println(driver.Ready(context.Background()) == nil)
-// Output: true
-```
-
-_Example: check Google Pub/Sub connectivity_
-
-```go
-driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-	ProjectID: "events-project",
-	URI:       "127.0.0.1:8085",
-})
 fmt.Println(driver.Ready(context.Background()) == nil)
 // Output: true
 ```
@@ -696,35 +659,6 @@ _Example: subscribe to a raw NATS subject_
 
 ```go
 driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
-	_ = ctx
-	_ = msg
-	return nil
-})
-fmt.Println(sub != nil)
-// Output: true
-```
-
-_Example: subscribe to a Kafka topic_
-
-```go
-driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
-	_ = ctx
-	_ = msg
-	return nil
-})
-fmt.Println(sub != nil)
-// Output: true
-```
-
-_Example: subscribe to a Google Pub/Sub topic_
-
-```go
-driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-	ProjectID: "events-project",
-	URI:       "127.0.0.1:8085",
-})
 sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
 	_ = ctx
 	_ = msg

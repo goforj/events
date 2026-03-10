@@ -127,15 +127,6 @@ func (d *Driver) Driver() eventscore.Driver {
 
 // Ready checks Google Pub/Sub connectivity.
 // @group Drivers
-//
-// Example: check Google Pub/Sub connectivity
-//
-//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-//		ProjectID: "events-project",
-//		URI:       "127.0.0.1:8085",
-//	})
-//	fmt.Println(driver.Ready(context.Background()) == nil)
-//	// Output: true
 func (d *Driver) Ready(ctx context.Context) error {
 	if ctx != nil && ctx.Err() != nil {
 		return ctx.Err()
@@ -180,20 +171,6 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 
 // SubscribeContext subscribes to a Google Pub/Sub topic and forwards messages.
 // @group Drivers
-//
-// Example: subscribe to a Google Pub/Sub topic
-//
-//	driver, _ := gcppubsubevents.New(context.Background(), gcppubsubevents.Config{
-//		ProjectID: "events-project",
-//		URI:       "127.0.0.1:8085",
-//	})
-//	sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
-//		_ = ctx
-//		_ = msg
-//		return nil
-//	})
-//	fmt.Println(sub != nil)
-//	// Output: true
 func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
 	if ctx != nil && ctx.Err() != nil {
 		return nil, ctx.Err()
@@ -238,8 +215,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 //		ProjectID: "events-project",
 //		URI:       "127.0.0.1:8085",
 //	})
-//	fmt.Println(driver.Close() == nil)
-//	// Output: true
+//	_ = driver.Close()
 func (d *Driver) Close() error {
 	d.stopTopics()
 	if d.ownsClient && d.client != nil {

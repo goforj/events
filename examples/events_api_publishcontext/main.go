@@ -9,14 +9,15 @@ import (
 )
 
 func main() {
-	// PublishContext publishes an event using the configured codec and dispatch flow.
+	// PublishContext dispatches an event with the provided context.
 
 	// Example: publish with a caller context
 	type UserCreated struct {
 		ID string `json:"id"`
 	}
 
-	bus, _ := events.NewSync()
+	api, _ := events.NewSync()
+	var bus events.API = api
 	_, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
 		fmt.Println(event.ID, ctx != nil)
 		return nil

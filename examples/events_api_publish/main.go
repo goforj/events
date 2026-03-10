@@ -8,14 +8,15 @@ import (
 )
 
 func main() {
-	// Publish publishes an event using the background context.
+	// Publish dispatches an event with the background context.
 
-	// Example: publish a typed event
+	// Example: publish a typed event through the interface
 	type UserCreated struct {
 		ID string `json:"id"`
 	}
 
-	bus, _ := events.NewSync()
+	api, _ := events.NewSync()
+	var bus events.API = api
 	_, _ = bus.Subscribe(func(event UserCreated) {
 		fmt.Println(event.ID)
 	})

@@ -143,8 +143,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 // Example: close a Redis driver
 //
 //	driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-//	fmt.Println(driver.Close() == nil)
-//	// Output: true
+//	_ = driver.Close()
 func (d *Driver) Close() error {
 	return d.client.Close()
 }
