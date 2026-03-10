@@ -10,6 +10,8 @@ const (
 	DriverNull Driver = "null"
 	// DriverNATS identifies a NATS-backed transport.
 	DriverNATS Driver = "nats"
+	// DriverNATSJetStream identifies a NATS JetStream-backed transport.
+	DriverNATSJetStream Driver = "natsjetstream"
 	// DriverRedis identifies a Redis-backed transport.
 	DriverRedis Driver = "redis"
 	// DriverKafka identifies a Kafka-backed transport.

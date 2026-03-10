@@ -22,6 +22,7 @@ transport guarantees differ from local dispatch.
 Current driver intent:
 
 - `nats`: subject-based fan-out transport
+- `natsjetstream`: stream-backed fan-out compatibility via ephemeral JetStream consumers
 - `redis`: pub/sub fan-out transport
 - `kafka`: topic-based fan-out compatibility over a narrower Kafka mapping
 - `sns`: topic fan-out compatibility via dedicated SQS subscriptions

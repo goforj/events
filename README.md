@@ -76,6 +76,7 @@ Optional distributed backends are separate modules. Keep dependencies lean and i
 go get github.com/goforj/events/driver/natsevents
 go get github.com/goforj/events/driver/redisevents
 go get github.com/goforj/events/driver/kafkaevents
+go get github.com/goforj/events/driver/natsjetstreamevents
 go get github.com/goforj/events/driver/gcppubsubevents
 go get github.com/goforj/events/driver/snsevents
 ```
@@ -87,6 +88,7 @@ go get github.com/goforj/events/driver/snsevents
 |      <img src="https://img.shields.io/badge/sync-546E7A?logo=go&logoColor=white" alt="Sync"> | In-process | ✓ | x | x | Root-backed synchronous dispatch in the caller path. |
 |     <img src="https://img.shields.io/badge/null-9e9e9e?logo=probot&logoColor=white" alt="Null"> | Drop-only | x | x | x | Root-backed no-op transport for disabled eventing and tests. |
 |        <img src="https://img.shields.io/badge/nats-27AAE1?logo=natsdotio&logoColor=white" alt="NATS"> | Distributed pub/sub | ✓ | x | x | Subject-based transport with live integration coverage. |
+| <img src="https://img.shields.io/badge/nats%20jetstream-1E88E5?logo=natsdotio&logoColor=white" alt="NATS JetStream"> | Distributed stream | ✓ | Partial | x | Ephemeral JetStream consumers preserve subscribe/close semantics while adding durable stream storage. |
 |      <img src="https://img.shields.io/badge/redis-%23DC382D?logo=redis&logoColor=white" alt="Redis"> | Distributed pub/sub | ✓ | x | x | Redis pub/sub transport; Streams are intentionally deferred. |
 |      <img src="https://img.shields.io/badge/kafka-231F20?logo=apachekafka&logoColor=white" alt="Kafka"> | Distributed topic/log | ✓ | Partial | x | Current driver validates topic-based fan-out compatibility, not full consumer-group semantics. |
 |      <img src="https://img.shields.io/badge/sns-FF9900?logo=buffer&logoColor=white" alt="SNS"> | Distributed topic plus queue | ✓ | Partial | x | SNS fan-out with per-subscription SQS queues to preserve bus-style delivery semantics. |
@@ -108,6 +110,7 @@ import (
 	"github.com/goforj/events"
 	"github.com/goforj/events/driver/gcppubsubevents"
 	"github.com/goforj/events/driver/kafkaevents"
+	"github.com/goforj/events/driver/natsjetstreamevents"
 	"github.com/goforj/events/driver/natsevents"
 	"github.com/goforj/events/driver/redisevents"
 	"github.com/goforj/events/driver/snsevents"
@@ -120,6 +123,7 @@ func main() {
 	events.NewNull()
 
 	natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
+	natsjetstreamevents.New(natsjetstreamevents.Config{URL: "nats://127.0.0.1:4222"})
 	redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
 	kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
 	gcppubsubevents.New(ctx, gcppubsubevents.Config{
@@ -165,9 +169,9 @@ or hard CI performance gates.
 | Group | Functions |
 |------:|-----------|
 | **Bus** | [Driver](#bus-driver) [Ready](#bus-ready) [ReadyContext](#bus-readycontext) |
-| **Config** | [Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) [snsevents.Config](#snsevents-config) |
+| **Config** | [Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [natsjetstreamevents.Config](#natsjetstreamevents-config) [redisevents.Config](#redisevents-config) [snsevents.Config](#snsevents-config) |
 | **Construction** | [New](#events-new) [NewNull](#events-newnull) [NewSync](#events-newsync) |
-| **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) [snsevents.New](#snsevents-new) |
+| **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [natsjetstreamevents.New](#natsjetstreamevents-new) [redisevents.New](#redisevents-new) [snsevents.New](#snsevents-new) |
 | **Lifecycle** | [Close](#driver-close) |
 | **Options** | [Option](#events-option) [WithCodec](#events-withcodec) |
 | **Publish** | [Publish](#bus-publish) [PublishContext](#bus-publishcontext) [TopicEvent](#events-topicevent) |
@@ -291,6 +295,31 @@ cfg := natsevents.Config{
 }
 ```
 
+### <a id="natsjetstreamevents-config"></a>natsjetstreamevents.Config
+
+Config configures NATS JetStream transport construction.
+
+_Example: define NATS JetStream driver config_
+
+```go
+cfg := natsjetstreamevents.Config{URL: "nats://127.0.0.1:4222"}
+```
+
+_Example: define NATS JetStream driver config with all fields_
+
+```go
+cfg := natsjetstreamevents.Config{
+	URL:               "nats://127.0.0.1:4222",
+	Conn:              nil,                    // default: nil dials URL instead of reusing an existing connection
+	SubjectPrefix:     "events.",              // default: "events."
+	StreamNamePrefix:  "EVENTS_",              // default: "EVENTS_"
+	InactiveThreshold: 30 * time.Second,       // default: 30s
+	AckWait:           30 * time.Second,       // default: 30s
+	FetchMaxWait:      250 * time.Millisecond, // default: 250ms
+	Storage:           jetstream.MemoryStorage,// default: MemoryStorage
+}
+```
+
 ### <a id="redisevents-config"></a>redisevents.Config
 
 Config configures Redis transport construction.
@@ -397,6 +426,14 @@ New connects a NATS-backed driver from config.
 
 ```go
 driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
+```
+
+### <a id="natsjetstreamevents-new"></a>natsjetstreamevents.New
+
+New connects a NATS JetStream-backed driver from config.
+
+```go
+driver, _ := natsjetstreamevents.New(natsjetstreamevents.Config{URL: "nats://127.0.0.1:4222"})
 ```
 
 ### <a id="redisevents-new"></a>redisevents.New

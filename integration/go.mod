@@ -6,6 +6,7 @@ require (
 	github.com/goforj/events v0.0.0
 	github.com/goforj/events/driver/gcppubsubevents v0.0.0
 	github.com/goforj/events/driver/kafkaevents v0.0.0
+	github.com/goforj/events/driver/natsjetstreamevents v0.0.0
 	github.com/goforj/events/driver/natsevents v0.0.0
 	github.com/goforj/events/driver/redisevents v0.0.0
 	github.com/goforj/events/driver/snsevents v0.0.0
@@ -128,6 +129,8 @@ replace github.com/goforj/events/eventscore => ../eventscore
 replace github.com/goforj/events/driver/gcppubsubevents => ../driver/gcppubsubevents
 
 replace github.com/goforj/events/driver/kafkaevents => ../driver/kafkaevents
+
+replace github.com/goforj/events/driver/natsjetstreamevents => ../driver/natsjetstreamevents
 
 replace github.com/goforj/events/driver/natsevents => ../driver/natsevents
 

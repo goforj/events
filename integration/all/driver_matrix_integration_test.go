@@ -10,6 +10,7 @@ import (
 	"github.com/goforj/events/driver/gcppubsubevents"
 	"github.com/goforj/events/driver/kafkaevents"
 	"github.com/goforj/events/driver/natsevents"
+	"github.com/goforj/events/driver/natsjetstreamevents"
 	"github.com/goforj/events/driver/redisevents"
 	"github.com/goforj/events/driver/snsevents"
 	"github.com/goforj/events/eventscore"
@@ -79,6 +80,26 @@ func integrationFixtures(t *testing.T) []driverFixture {
 				driver, err := kafkaevents.New(kafkaevents.Config{Brokers: env.Brokers})
 				if err != nil {
 					t.Fatalf("kafkaevents.New returned error: %v", err)
+				}
+				t.Cleanup(func() { _ = driver.Close() })
+				return driver
+			},
+		},
+		{
+			name:    "natsjetstream",
+			enabled: selected["natsjetstream"],
+			factory: func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
+				t.Helper()
+				scenarioProgressf("booting natsjetstream test environment")
+				env, err := testenv.StartNATSJetStream(ctx)
+				if err != nil {
+					t.Fatalf("StartNATSJetStream returned error: %v", err)
+				}
+				t.Cleanup(func() { _ = env.Container.Terminate(context.Background()) })
+
+				driver, err := natsjetstreamevents.New(natsjetstreamevents.Config{URL: env.URL})
+				if err != nil {
+					t.Fatalf("natsjetstreamevents.New returned error: %v", err)
 				}
 				t.Cleanup(func() { _ = driver.Close() })
 				return driver
@@ -160,11 +181,12 @@ func selectedDrivers() map[string]bool {
 	value := strings.TrimSpace(strings.ToLower(os.Getenv("INTEGRATION_DRIVER")))
 	if value == "" {
 		return map[string]bool{
-			"gcppubsub": true,
-			"kafka":     true,
-			"nats":      true,
-			"redis":     true,
-			"sns":       true,
+			"gcppubsub":     true,
+			"kafka":         true,
+			"natsjetstream": true,
+			"nats":          true,
+			"redis":         true,
+			"sns":           true,
 		}
 	}
 

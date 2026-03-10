@@ -11,6 +11,7 @@ but transport behavior is not perfectly identical across all implementations.
 | `null` | drop-only | local | Publish succeeds without delivery. |
 | `gcppubsub` | topic/subscription | distributed | Emulator-backed topic plus per-subscription fan-out mapping. |
 | `kafka` | topic/log | distributed | Single-partition topic creation with direct partition reads. |
+| `natsjetstream` | stream/consumer | distributed | JetStream-backed stream retention with one ephemeral consumer per subscription. |
 | `nats` | pub/sub | distributed | Subject-based fan-out transport. |
 | `redis` | pub/sub | distributed | Channel-based fan-out transport. |
 | `sns` | topic plus queue | distributed | SNS fan-out with one SQS queue per bus subscription. |
@@ -25,6 +26,9 @@ but transport behavior is not perfectly identical across all implementations.
 - `kafka` currently maps each events topic to a single-partition Kafka topic
   and reads partition `0` directly for each subscription so the current
   contract behaves like fan-out delivery.
+- `natsjetstream` currently maps each events topic to a JetStream stream and
+  creates an ephemeral pull consumer per bus subscription so subscribe/close
+  remains explicit while stream durability stays opt-in at the driver layer.
 - Kafka support is intentionally narrower than native Kafka capabilities:
   the current driver validates topic-based fan-out compatibility, not consumer
   groups, replay controls, or multi-partition routing semantics.

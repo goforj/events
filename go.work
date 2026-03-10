@@ -5,6 +5,7 @@ use (
 	./docs
 	./driver/gcppubsubevents
 	./driver/kafkaevents
+	./driver/natsjetstreamevents
 	./driver/natsevents
 	./driver/redisevents
 	./driver/snsevents
