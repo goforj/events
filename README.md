@@ -126,24 +126,7 @@ func main() {
 }
 ```
 
-## How It Works
-
-```mermaid
-flowchart LR
-    A[App publishes typed event] --> B[events.Bus resolves topic and encodes payload]
-    B --> C[Driver transports topic plus payload]
-    C --> D[Subscriber handler receives decoded typed event]
-```
-
 ## Benchmarks
-
-Benchmark smoke is intentionally narrow. It tracks the hot in-process paths and, when enabled, a minimal distributed round-trip benchmark through the integration harness.
-
-Normal docs iteration should render from the saved benchmark snapshot, not re-run live backend benchmarks. Use:
-
-```bash
-sh scripts/update-docs.sh
-```
 
 To refresh the live benchmark snapshot and regenerate the charts:
 
