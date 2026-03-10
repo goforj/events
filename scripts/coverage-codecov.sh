@@ -6,6 +6,7 @@ export GOCACHE="${GOCACHE:-/tmp/events-gocache}"
 
 tmp_dir="${PWD}/tmp/coverage"
 mkdir -p "${tmp_dir}"
+output_file="${COVERAGE_OUTPUT:-coverage.txt}"
 
 run_cover() {
   dir="$1"
@@ -39,7 +40,7 @@ if [ "${RUN_INTEGRATION:-0}" = "1" ]; then
   run_integration_cover "${tmp_dir}/integration.out"
 fi
 
-echo "mode: set" > coverage.out
+echo "mode: set" > "${output_file}"
 for profile in \
   "${tmp_dir}/root.out" \
   "${tmp_dir}/eventscore.out" \
@@ -54,8 +55,8 @@ for profile in \
   "${tmp_dir}/integration.out"
 do
   if [ -f "${profile}" ]; then
-    tail -n +2 "${profile}" >> coverage.out
+    tail -n +2 "${profile}" >> "${output_file}"
   fi
 done
 
-go tool cover -func=coverage.out
+go tool cover -func="${output_file}"

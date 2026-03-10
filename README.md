@@ -13,7 +13,7 @@
     <a href="https://golang.org"><img src="https://img.shields.io/badge/go-1.25+-blue?logo=go" alt="Go version"></a>
     <img src="https://img.shields.io/github/v/tag/goforj/events?label=version&sort=semver" alt="Latest tag">
     <a href="https://goreportcard.com/report/github.com/goforj/events"><img src="https://goreportcard.com/badge/github.com/goforj/events" alt="Go Report Card"></a>
-    <a href="https://codecov.io/gh/goforj/events"><img src="https://codecov.io/gh/goforj/events/graph/badge.svg" alt="Codecov"></a>
+    <a href="https://codecov.io/gh/goforj/events"><img src="https://codecov.io/gh/goforj/events/graph/badge.svg?token=07N6F71OXM" alt="Codecov"></a>
 <!-- test-count:embed:start -->
   <img src="https://img.shields.io/badge/unit_tests-25-brightgreen" alt="Unit tests (executed count)">
   <img src="https://img.shields.io/badge/integration_tests-62-blue" alt="Integration tests (executed count)">

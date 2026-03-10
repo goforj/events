@@ -33,5 +33,11 @@ jobs:
         run: sh scripts/check-docs.sh
       - name: Aggregate Coverage
         run: RUN_INTEGRATION=1 sh scripts/coverage-codecov.sh
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.txt
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: Benchmark Smoke
         run: sh scripts/check-bench-smoke.sh
