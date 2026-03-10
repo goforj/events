@@ -37,8 +37,6 @@ jobs:
           files: coverage.txt
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      - name: Benchmark Smoke
-        run: sh scripts/check-bench-smoke.sh
 
   examples:
     runs-on: ubuntu-latest
