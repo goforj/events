@@ -515,10 +515,11 @@ func writeExampleMain(base, slug string, fd *FuncDoc, ex Example, importPath str
 		{re: regexp.MustCompile(`\btime\.`), imp: "time"},
 		{re: regexp.MustCompile(`\bfilepath\.`), imp: "path/filepath"},
 		{re: regexp.MustCompile(`\beventscore\.`), imp: "github.com/goforj/events/eventscore"},
+		{re: regexp.MustCompile(`\bjetstream\.`), imp: "github.com/nats-io/nats.go/jetstream"},
 	}
 	for _, mod := range modules {
 		patternImports = append(patternImports, importPattern{
-			re:  regexp.MustCompile(`\b` + regexp.QuoteMeta(mod.PackageName) + `\.`),
+			re:  regexp.MustCompile(`(^|[^[:alnum:]_\"])` + regexp.QuoteMeta(mod.PackageName) + `\.`),
 			imp: mod.ImportPath,
 		})
 	}
