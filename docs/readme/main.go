@@ -148,13 +148,18 @@ func parseFuncsInDir(funcs map[string]*FuncDoc, dir string) error {
 						Description: extractDescription(gen.Doc),
 						Examples:    extractExamplesFromGroup(fset, gen.Doc),
 					}
-					if existing, ok := funcs[key]; ok {
-						existing.Examples = append(existing.Examples, fd.Examples...)
-					} else {
-						funcs[key] = fd
+					if !skipTypeDoc(pkgName, ts.Name.Name) {
+						if existing, ok := funcs[key]; ok {
+							existing.Examples = append(existing.Examples, fd.Examples...)
+						} else {
+							funcs[key] = fd
+						}
 					}
 
 					if iface, ok := ts.Type.(*ast.InterfaceType); ok {
+						if skipTypeDoc(pkgName, ts.Name.Name) {
+							continue
+						}
 						typeGroup := extractGroup(gen.Doc)
 						for _, field := range iface.Methods.List {
 							if len(field.Names) == 0 || field.Doc == nil {
@@ -451,6 +456,10 @@ func findRoot() (string, error) {
 func fileExists(p string) bool {
 	_, err := os.Stat(p)
 	return err == nil
+}
+
+func skipTypeDoc(pkgName, typeName string) bool {
+	return pkgName == "events" && typeName == "API"
 }
 
 func discoverDriverModuleDirs(root string) ([]string, error) {

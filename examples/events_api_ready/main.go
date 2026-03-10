@@ -8,11 +8,11 @@ import (
 )
 
 func main() {
-	// Bus returns the wrapped API to inject into code under test.
+	// Ready performs a background-context readiness check.
 
-	// Example: inject the fake bus into application code
-	fake := events.NewFake()
-	bus := fake.Bus()
+	// Example: check readiness through the interface
+	api, _ := events.NewSync()
+	var bus events.API = api
 	fmt.Println(bus.Ready() == nil)
 	// Output: true
 }

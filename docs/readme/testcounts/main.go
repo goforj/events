@@ -98,7 +98,7 @@ func countIntegrationRunEvents(integrationDir string, integrationNames map[strin
 		return 0, nil
 	}
 
-	args := []string{"test", "-tags=integration", "./all", "-run", runPattern, "-count=1", "-json"}
+	args := []string{"test", "./...", "-run", runPattern, "-count=1", "-json"}
 	cmd := exec.Command("go", args...)
 	cmd.Dir = integrationDir
 	var out bytes.Buffer
@@ -133,9 +133,6 @@ func integrationTopLevelTests(root string) (map[string]struct{}, error) {
 		if err != nil {
 			return err
 		}
-		if !hasIntegrationBuildTag(src) {
-			return nil
-		}
 
 		fset := token.NewFileSet()
 		file, err := parser.ParseFile(fset, path, src, 0)
@@ -158,11 +155,6 @@ func integrationTopLevelTests(root string) (map[string]struct{}, error) {
 	}
 
 	return names, nil
-}
-
-func hasIntegrationBuildTag(src []byte) bool {
-	text := string(src)
-	return strings.Contains(text, "//go:build integration") || strings.Contains(text, "// +build integration")
 }
 
 func buildTopLevelRunPattern(names map[string]struct{}) string {

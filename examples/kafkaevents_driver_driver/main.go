@@ -3,16 +3,15 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"github.com/goforj/events/driver/kafkaevents"
 )
 
 func main() {
-	// Ready checks Kafka connectivity.
+	// Driver reports the active backend kind.
 
-	// Example: check Kafka connectivity
+	// Example: inspect the driver kind
 	driver, _ := kafkaevents.New(kafkaevents.Config{Brokers: []string{"127.0.0.1:9092"}})
-	fmt.Println(driver.Ready(context.Background()) == nil)
-	// Output: true
+	fmt.Println(driver.Driver())
+	// Output: kafka
 }

@@ -15,8 +15,8 @@
     <a href="https://goreportcard.com/report/github.com/goforj/events"><img src="https://goreportcard.com/badge/github.com/goforj/events" alt="Go Report Card"></a>
     <a href="https://codecov.io/gh/goforj/events"><img src="https://codecov.io/gh/goforj/events/graph/badge.svg" alt="Codecov"></a>
 <!-- test-count:embed:start -->
-    <img src="https://img.shields.io/badge/unit_tests-93-brightgreen" alt="Unit tests (executed count)">
-    <img src="https://img.shields.io/badge/integration_tests-62-blue" alt="Integration tests (executed count)">
+  <img src="https://img.shields.io/badge/unit_tests-25-brightgreen" alt="Unit tests (executed count)">
+  <img src="https://img.shields.io/badge/integration_tests-0-blue" alt="Integration tests (executed count)">
 <!-- test-count:embed:end -->
 </p>
 
@@ -137,12 +137,9 @@ flowchart LR
 
 ## Benchmarks
 
-Benchmark smoke is intentionally narrow. It tracks the hot in-process paths and,
-when enabled, a minimal distributed round-trip benchmark through the
-integration harness.
+Benchmark smoke is intentionally narrow. It tracks the hot in-process paths and, when enabled, a minimal distributed round-trip benchmark through the integration harness.
 
-Normal docs iteration should render from the saved benchmark snapshot, not
-re-run live backend benchmarks. Use:
+Normal docs iteration should render from the saved benchmark snapshot, not re-run live backend benchmarks. Use:
 
 ```bash
 sh scripts/update-docs.sh
@@ -178,7 +175,7 @@ or hard CI performance gates.
 | Group | Functions |
 |------:|-----------|
 | **Construction** | [events.Codec](#events-codec) [events.Config](#events-config) [events.New](#events-new) [events.NewNull](#events-newnull) [events.NewSync](#events-newsync) [events.Option](#events-option) [events.WithCodec](#events-withcodec) |
-| **Core** | [Bus.Driver](#bus-driver) [Bus.Publish](#bus-publish) [Bus.PublishContext](#bus-publishcontext) [Bus.Ready](#bus-ready) [Bus.ReadyContext](#bus-readycontext) [Bus.Subscribe](#bus-subscribe) [Bus.SubscribeContext](#bus-subscribecontext) [events.API](#events-api) [events.API.Driver](#api-driver) [events.API.Publish](#api-publish) [events.API.PublishContext](#api-publishcontext) [events.API.Ready](#api-ready) [events.API.ReadyContext](#api-readycontext) [events.API.Subscribe](#api-subscribe) [events.API.SubscribeContext](#api-subscribecontext) [events.Bus](#events-bus) [events.Subscription](#events-subscription) [events.TopicEvent](#events-topicevent) |
+| **Core** | [Bus.Driver](#bus-driver) [Bus.Publish](#bus-publish) [Bus.PublishContext](#bus-publishcontext) [Bus.Ready](#bus-ready) [Bus.ReadyContext](#bus-readycontext) [Bus.Subscribe](#bus-subscribe) [Bus.SubscribeContext](#bus-subscribecontext) [events.Bus](#events-bus) [events.Subscription](#events-subscription) [events.TopicEvent](#events-topicevent) |
 | **Driver Config** | [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
 | **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) |
 | **Drivers** | [Driver.Close](#driver-close) [Driver.Driver](#driver-driver) [Driver.PublishContext](#driver-publishcontext) [Driver.Ready](#driver-ready) [Driver.SubscribeContext](#driver-subscribecontext) [gcppubsubevents.Driver](#gcppubsubevents-driver) [kafkaevents.Driver](#kafkaevents-driver) [natsevents.Driver](#natsevents-driver) [redisevents.Driver](#redisevents-driver) |
@@ -366,125 +363,6 @@ type UserCreated struct {
 }
 
 bus, _ := events.NewSync()
-sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
-	_ = ctx
-	_ = event
-	return nil
-})
-defer sub.Close()
-```
-
-### <a id="events-api"></a>events.API
-
-API is the root application-facing bus contract.
-
-```go
-api, _ := events.NewSync()
-var bus events.API = api
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
-### <a id="api-driver"></a>events.API.Driver
-
-Driver reports the active bus backend.
-
-```go
-api, _ := events.NewSync()
-var bus events.API = api
-fmt.Println(bus.Driver())
-// Output: sync
-```
-
-### <a id="api-publish"></a>events.API.Publish
-
-Publish dispatches an event with the background context.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-api, _ := events.NewSync()
-var bus events.API = api
-_, _ = bus.Subscribe(func(event UserCreated) {
-	fmt.Println(event.ID)
-})
-_ = bus.Publish(UserCreated{ID: "123"})
-// Output: 123
-```
-
-### <a id="api-publishcontext"></a>events.API.PublishContext
-
-PublishContext dispatches an event with the provided context.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-api, _ := events.NewSync()
-var bus events.API = api
-_, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-	fmt.Println(event.ID, ctx != nil)
-	return nil
-})
-_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
-// Output: 123 true
-```
-
-### <a id="api-ready"></a>events.API.Ready
-
-Ready performs a background-context readiness check.
-
-```go
-api, _ := events.NewSync()
-var bus events.API = api
-fmt.Println(bus.Ready() == nil)
-// Output: true
-```
-
-### <a id="api-readycontext"></a>events.API.ReadyContext
-
-ReadyContext performs a readiness check with the provided context.
-
-```go
-api, _ := events.NewSync()
-var bus events.API = api
-fmt.Println(bus.ReadyContext(context.Background()) == nil)
-// Output: true
-```
-
-### <a id="api-subscribe"></a>events.API.Subscribe
-
-Subscribe registers a typed handler using the background context.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-api, _ := events.NewSync()
-var bus events.API = api
-sub, _ := bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-	_ = ctx
-	_ = event
-	return nil
-})
-defer sub.Close()
-```
-
-### <a id="api-subscribecontext"></a>events.API.SubscribeContext
-
-SubscribeContext registers a typed handler with the provided context.
-
-```go
-type UserCreated struct {
-	ID string `json:"id"`
-}
-
-api, _ := events.NewSync()
-var bus events.API = api
 sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
 	_ = ctx
 	_ = event
