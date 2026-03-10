@@ -174,7 +174,7 @@ or hard CI performance gates.
 
 | Group | Functions |
 |------:|-----------|
-| **Bus** | [Bus](#events-bus) [Driver](#bus-driver) [Ready](#bus-ready) [ReadyContext](#bus-readycontext) |
+| **Bus** | [Driver](#bus-driver) [Ready](#bus-ready) [ReadyContext](#bus-readycontext) |
 | **Config** | [Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
 | **Construction** | [New](#events-new) [NewNull](#events-newnull) [NewSync](#events-newsync) |
 | **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) |
@@ -186,10 +186,6 @@ or hard CI performance gates.
 
 
 ## Bus
-
-### <a id="events-bus"></a>Bus
-
-Bus is the root event bus implementation.
 
 ### <a id="bus-driver"></a>Driver
 
@@ -509,6 +505,21 @@ _ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
 ### <a id="events-subscription"></a>Subscription
 
 Subscription releases a subscription when closed.
+
+```go
+type UserCreated struct {
+	ID string `json:"id"`
+}
+
+bus, _ := events.NewSync()
+sub, _ := bus.Subscribe(func(event UserCreated) {
+	fmt.Println("received", event.ID)
+})
+_ = bus.Publish(UserCreated{ID: "123"})
+_ = sub.Close()
+_ = bus.Publish(UserCreated{ID: "456"})
+// Output: received 123
+```
 
 ## Testing
 

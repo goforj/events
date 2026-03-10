@@ -495,6 +495,9 @@ func skipTypeDoc(pkgName, typeName string) bool {
 	if pkgName == "events" && typeName == "Codec" {
 		return true
 	}
+	if pkgName == "events" && typeName == "Bus" {
+		return true
+	}
 	return strings.HasSuffix(pkgName, "events") && typeName == "Driver"
 }
 

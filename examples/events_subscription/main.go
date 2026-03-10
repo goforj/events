@@ -10,13 +10,17 @@ import (
 func main() {
 	// Subscription releases a subscription when closed.
 
-	// Example: close a subscription when done
+	// Example: unsubscribe from a typed event
 	type UserCreated struct {
 		ID string `json:"id"`
 	}
 
 	bus, _ := events.NewSync()
-	sub, _ := bus.Subscribe(func(UserCreated) {})
-	fmt.Println(sub.Close() == nil)
-	// Output: true
+	sub, _ := bus.Subscribe(func(event UserCreated) {
+		fmt.Println("received", event.ID)
+	})
+	_ = bus.Publish(UserCreated{ID: "123"})
+	_ = sub.Close()
+	_ = bus.Publish(UserCreated{ID: "456"})
+	// Output: received 123
 }
