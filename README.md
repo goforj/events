@@ -642,23 +642,8 @@ fmt.Println(driver.Ready(context.Background()) == nil)
 
 SubscribeContext subscribes to a Google Pub/Sub topic and forwards messages.
 
-_Example: subscribe to a Redis channel_
-
 ```go
 driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
-	_ = ctx
-	_ = msg
-	return nil
-})
-fmt.Println(sub != nil)
-// Output: true
-```
-
-_Example: subscribe to a raw NATS subject_
-
-```go
-driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
 sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
 	_ = ctx
 	_ = msg

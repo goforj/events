@@ -464,18 +464,17 @@ func writeMain(base string, fd *FuncDoc, importPath string, modules []moduleInfo
 		return fmt.Errorf("import path cannot be empty")
 	}
 
-	if err := removeGeneratedExampleDirs(base, fd.Slug); err != nil {
+	expectedSlugs := make(map[string]struct{}, len(fd.Examples))
+	for i, ex := range fd.Examples {
+		expectedSlugs[exampleSlug(fd, ex, i)] = struct{}{}
+	}
+
+	if err := pruneGeneratedExampleDirs(base, fd.Slug, expectedSlugs); err != nil {
 		return err
 	}
 
 	for i, ex := range fd.Examples {
-		slug := strings.ToLower(fd.Slug)
-		if len(fd.Examples) > 1 {
-			slug += "_" + slugify(ex.Label)
-			if ex.Label == "" {
-				slug += fmt.Sprintf("_%d", i+1)
-			}
-		}
+		slug := exampleSlug(fd, ex, i)
 		if err := writeExampleMain(base, slug, fd, ex, importPath, modules); err != nil {
 			return err
 		}
@@ -562,10 +561,21 @@ func writeExampleMain(base, slug string, fd *FuncDoc, ex Example, importPath str
 	if err != nil {
 		return fmt.Errorf("format example file: %w", err)
 	}
-	return os.WriteFile(filepath.Join(dir, "main.go"), formatted, 0o644)
+	return writeFileIfChanged(filepath.Join(dir, "main.go"), formatted, 0o644)
 }
 
-func removeGeneratedExampleDirs(base, slug string) error {
+func exampleSlug(fd *FuncDoc, ex Example, index int) string {
+	slug := strings.ToLower(fd.Slug)
+	if len(fd.Examples) > 1 {
+		slug += "_" + slugify(ex.Label)
+		if ex.Label == "" {
+			slug += fmt.Sprintf("_%d", index+1)
+		}
+	}
+	return slug
+}
+
+func pruneGeneratedExampleDirs(base, slug string, expected map[string]struct{}) error {
 	patterns := []string{
 		filepath.Join(base, strings.ToLower(slug)),
 		filepath.Join(base, strings.ToLower(slug)+"_*"),
@@ -588,12 +598,26 @@ func removeGeneratedExampleDirs(base, slug string) error {
 				!bytes.HasPrefix(data, []byte("//go:build ignore")) {
 				continue
 			}
+			if _, ok := expected[filepath.Base(match)]; ok {
+				continue
+			}
 			if err := os.RemoveAll(match); err != nil {
 				return err
 			}
 		}
 	}
 	return nil
+}
+
+func writeFileIfChanged(path string, data []byte, perm os.FileMode) error {
+	existing, err := os.ReadFile(path)
+	if err == nil && bytes.Equal(existing, data) {
+		return nil
+	}
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	return os.WriteFile(path, data, perm)
 }
 
 func slugify(label string) string {

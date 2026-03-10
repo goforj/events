@@ -103,17 +103,6 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 
 // SubscribeContext subscribes to a NATS subject and forwards messages.
 // @group Drivers
-//
-// Example: subscribe to a raw NATS subject
-//
-//	driver, _ := natsevents.New(natsevents.Config{URL: "nats://127.0.0.1:4222"})
-//	sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
-//		_ = ctx
-//		_ = msg
-//		return nil
-//	})
-//	fmt.Println(sub != nil)
-//	// Output: true
 func (d *Driver) SubscribeContext(_ context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
 	sub, err := d.conn.Subscribe(topic, func(msg *nats.Msg) {
 		_ = handler(context.Background(), eventscore.Message{

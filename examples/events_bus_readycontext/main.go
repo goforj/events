@@ -9,11 +9,10 @@ import (
 )
 
 func main() {
-	// ReadyContext performs a readiness check with the provided context.
+	// ReadyContext reports whether the bus is ready.
 
 	// Example: check readiness with a caller context
-	api, _ := events.NewSync()
-	var bus events.API = api
+	bus, _ := events.NewSync()
 	fmt.Println(bus.ReadyContext(context.Background()) == nil)
 	// Output: true
 }
