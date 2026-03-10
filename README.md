@@ -174,25 +174,17 @@ or hard CI performance gates.
 
 | Group | Functions |
 |------:|-----------|
-| **Construction** | [events.Codec](#events-codec) [events.Config](#events-config) [events.New](#events-new) [events.NewNull](#events-newnull) [events.NewSync](#events-newsync) [events.Option](#events-option) [events.WithCodec](#events-withcodec) |
+| **Config** | [events.Config](#events-config) |
+| **Construction** | [events.New](#events-new) [events.NewNull](#events-newnull) [events.NewSync](#events-newsync) [events.Option](#events-option) [events.WithCodec](#events-withcodec) |
 | **Core** | [Bus.Driver](#bus-driver) [Bus.Publish](#bus-publish) [Bus.PublishContext](#bus-publishcontext) [Bus.Ready](#bus-ready) [Bus.ReadyContext](#bus-readycontext) [Bus.Subscribe](#bus-subscribe) [Bus.SubscribeContext](#bus-subscribecontext) [events.Bus](#events-bus) [events.Subscription](#events-subscription) [events.TopicEvent](#events-topicevent) |
 | **Driver Config** | [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [redisevents.Config](#redisevents-config) |
 | **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [redisevents.New](#redisevents-new) |
 | **Drivers** | [Driver.Close](#driver-close) [Driver.Driver](#driver-driver) [Driver.PublishContext](#driver-publishcontext) [Driver.Ready](#driver-ready) [Driver.SubscribeContext](#driver-subscribecontext) |
+| **Options** | [events.Codec](#events-codec) |
 | **Testing** | [Fake.Bus](#fake-bus) [Fake.Count](#fake-count) [Fake.Records](#fake-records) [Fake.Reset](#fake-reset) [events.Fake](#events-fake) [events.NewFake](#events-newfake) [events.Record](#events-record) |
 
 
-## Construction
-
-### <a id="events-codec"></a>events.Codec
-
-Codec marshals and unmarshals event payloads.
-
-```go
-var codec events.Codec
-fmt.Println(codec == nil)
-// Output: true
-```
+## Config
 
 ### <a id="events-config"></a>events.Config
 
@@ -213,6 +205,8 @@ cfg := events.Config{
 	Transport: nil,                   // default: nil keeps dispatch in-process
 }
 ```
+
+## Construction
 
 ### <a id="events-new"></a>events.New
 
@@ -366,13 +360,6 @@ _ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
 ### <a id="events-bus"></a>events.Bus
 
 Bus is the root event bus implementation.
-
-```go
-bus, _ := events.NewSync()
-var root *events.Bus = bus
-fmt.Println(root.Driver())
-// Output: sync
-```
 
 ### <a id="events-subscription"></a>events.Subscription
 
@@ -533,44 +520,27 @@ driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
 
 Driver reports the active backend kind.
 
-```go
-driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-```
-
 ### <a id="driver-publishcontext"></a>Driver.PublishContext
 
 PublishContext publishes a topic payload to Google Pub/Sub.
-
-```go
-driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-_ = driver.PublishContext(context.Background(), eventscore.Message{
-	Topic:   "users.created",
-	Payload: []byte(`{"id":"123"}`),
-})
-```
 
 ### <a id="driver-ready"></a>Driver.Ready
 
 Ready checks Google Pub/Sub connectivity.
 
-```go
-driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-fmt.Println(driver.Ready(context.Background()) == nil)
-// Output: true
-```
-
 ### <a id="driver-subscribecontext"></a>Driver.SubscribeContext
 
 SubscribeContext subscribes to a Google Pub/Sub topic and forwards messages.
 
+## Options
+
+### <a id="events-codec"></a>events.Codec
+
+Codec marshals and unmarshals event payloads.
+
 ```go
-driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
-sub, _ := driver.SubscribeContext(context.Background(), "users.created", func(ctx context.Context, msg eventscore.Message) error {
-	_ = ctx
-	_ = msg
-	return nil
-})
-fmt.Println(sub != nil)
+var codec events.Codec
+fmt.Println(codec == nil)
 // Output: true
 ```
 

@@ -3,7 +3,7 @@ package events
 import "encoding/json"
 
 // Codec marshals and unmarshals event payloads.
-// @group Construction
+// @group Options
 //
 // Example: define a custom codec
 //

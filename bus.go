@@ -9,13 +9,6 @@ import (
 
 // Bus is the root event bus implementation.
 // @group Core
-//
-// Example: keep a concrete bus reference
-//
-//	bus, _ := events.NewSync()
-//	var root *events.Bus = bus
-//	fmt.Println(root.Driver())
-//	// Output: sync
 type Bus struct {
 	driver    eventscore.Driver
 	codec     Codec

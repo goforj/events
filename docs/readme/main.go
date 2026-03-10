@@ -425,6 +425,10 @@ func renderedExamples(fn *FuncDoc) []Example {
 	if fn.DisplayName == "events.Option" {
 		return nil
 	}
+	switch fn.DisplayName {
+	case "Driver.Driver", "Driver.Ready", "Driver.PublishContext", "Driver.SubscribeContext":
+		return nil
+	}
 	return fn.Examples
 }
 
