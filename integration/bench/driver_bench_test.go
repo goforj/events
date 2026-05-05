@@ -72,7 +72,7 @@ func BenchmarkDistributedPublishRoundTrip(b *testing.B) {
 
 func publishAndAwait(ctx context.Context, bus events.API, delivered <-chan benchEvent, id string) error {
 	payload := benchEvent{ID: id}
-	if err := bus.PublishContext(ctx, payload); err != nil {
+	if err := bus.WithContext(ctx).Publish(payload); err != nil {
 		return err
 	}
 	select {

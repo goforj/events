@@ -78,8 +78,8 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		}
 		t.Cleanup(func() { _ = sub.Close() })
 
-		if err := bus.PublishContext(ctx, publishDriverEvent{ID: "123"}); err != nil {
-			t.Fatalf("PublishContext returned error: %v", err)
+		if err := bus.WithContext(ctx).Publish(publishDriverEvent{ID: "123"}); err != nil {
+			t.Fatalf("WithContext(...).Publish returned error: %v", err)
 		}
 
 		select {
@@ -113,8 +113,8 @@ func RunDriverContract(t *testing.T, factory Factory) {
 			t.Fatalf("Close returned error: %v", err)
 		}
 
-		if err := bus.PublishContext(ctx, unsubscribeDriverEvent{ID: "456"}); err != nil {
-			t.Fatalf("PublishContext returned error: %v", err)
+		if err := bus.WithContext(ctx).Publish(unsubscribeDriverEvent{ID: "456"}); err != nil {
+			t.Fatalf("WithContext(...).Publish returned error: %v", err)
 		}
 
 		select {
@@ -153,8 +153,8 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		}
 		t.Cleanup(func() { _ = secondSub.Close() })
 
-		if err := bus.PublishContext(ctx, fanoutDriverEvent{ID: "fanout"}); err != nil {
-			t.Fatalf("PublishContext returned error: %v", err)
+		if err := bus.WithContext(ctx).Publish(fanoutDriverEvent{ID: "fanout"}); err != nil {
+			t.Fatalf("WithContext(...).Publish returned error: %v", err)
 		}
 
 		for name, done := range map[string]chan fanoutDriverEvent{
@@ -191,8 +191,8 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		}
 		t.Cleanup(func() { _ = sub.Close() })
 
-		if err := bus.PublishContext(ctx, overrideDriverEvent{ID: "override"}); err != nil {
-			t.Fatalf("PublishContext returned error: %v", err)
+		if err := bus.WithContext(ctx).Publish(overrideDriverEvent{ID: "override"}); err != nil {
+			t.Fatalf("WithContext(...).Publish returned error: %v", err)
 		}
 
 		select {

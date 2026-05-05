@@ -143,8 +143,8 @@ func TestBusWithTransportUsesBackgroundContextForNilPublishContext(t *testing.T)
 		t.Fatalf("New returned error: %v", err)
 	}
 
-	if err := bus.PublishContext(nil, userCreated{}); err != nil {
-		t.Fatalf("PublishContext returned error: %v", err)
+	if err := bus.WithContext(nil).Publish(userCreated{}); err != nil {
+		t.Fatalf("WithContext(nil).Publish returned error: %v", err)
 	}
 	if transport.lastCtx == nil {
 		t.Fatal("expected non-nil context to be forwarded")

@@ -69,16 +69,24 @@ type recordingBus struct {
 	records []Record
 }
 
+type boundRecordingBus struct {
+	parent *recordingBus
+	inner  events.API
+}
+
 func (b *recordingBus) Driver() eventscore.Driver {
 	return b.inner.Driver()
 }
 
-func (b *recordingBus) Ready() error {
-	return b.inner.Ready()
+func (b *recordingBus) WithContext(ctx context.Context) events.API {
+	return &boundRecordingBus{
+		parent: b,
+		inner:  b.inner.WithContext(ctx),
+	}
 }
 
-func (b *recordingBus) ReadyContext(ctx context.Context) error {
-	return b.inner.ReadyContext(ctx)
+func (b *recordingBus) Ready() error {
+	return b.inner.Ready()
 }
 
 func (b *recordingBus) Publish(event any) error {
@@ -88,19 +96,8 @@ func (b *recordingBus) Publish(event any) error {
 	return b.inner.Publish(event)
 }
 
-func (b *recordingBus) PublishContext(ctx context.Context, event any) error {
-	b.mu.Lock()
-	b.records = append(b.records, Record{Event: event})
-	b.mu.Unlock()
-	return b.inner.PublishContext(ctx, event)
-}
-
 func (b *recordingBus) Subscribe(handler any) (events.Subscription, error) {
 	return b.inner.Subscribe(handler)
-}
-
-func (b *recordingBus) SubscribeContext(ctx context.Context, handler any) (events.Subscription, error) {
-	return b.inner.SubscribeContext(ctx, handler)
 }
 
 func (b *recordingBus) Records() []Record {
@@ -115,4 +112,30 @@ func (b *recordingBus) Reset() {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.records = nil
+}
+
+func (b *boundRecordingBus) WithContext(ctx context.Context) events.API {
+	return &boundRecordingBus{
+		parent: b.parent,
+		inner:  b.parent.inner.WithContext(ctx),
+	}
+}
+
+func (b *boundRecordingBus) Driver() eventscore.Driver {
+	return b.inner.Driver()
+}
+
+func (b *boundRecordingBus) Ready() error {
+	return b.inner.Ready()
+}
+
+func (b *boundRecordingBus) Publish(event any) error {
+	b.parent.mu.Lock()
+	b.parent.records = append(b.parent.records, Record{Event: event})
+	b.parent.mu.Unlock()
+	return b.inner.Publish(event)
+}
+
+func (b *boundRecordingBus) Subscribe(handler any) (events.Subscription, error) {
+	return b.inner.Subscribe(handler)
 }

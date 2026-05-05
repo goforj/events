@@ -14,6 +14,7 @@ type Bus struct {
 	codec     Codec
 	transport eventscore.DriverAPI
 	mu        sync.RWMutex
+	ctx       context.Context
 
 	handlers      map[string][]registeredHandler
 	transportSubs map[string]eventscore.Subscription
@@ -72,6 +73,14 @@ func NewNull(opts ...Option) (*Bus, error) {
 	return New(Config{Driver: eventscore.DriverNull}, opts...)
 }
 
+// WithContext returns a derived bus handle bound to ctx for subsequent operations.
+// @group Bus
+func (b *Bus) WithContext(ctx context.Context) API {
+	clone := *b
+	clone.ctx = ctx
+	return &clone
+}
+
 // Driver reports the active backend.
 // @group Bus
 //
@@ -84,6 +93,13 @@ func (b *Bus) Driver() eventscore.Driver {
 	return b.driver
 }
 
+func (b *Bus) context() context.Context {
+	if b == nil || b.ctx == nil {
+		return context.Background()
+	}
+	return b.ctx
+}
+
 // Ready reports whether the bus is ready.
 // @group Bus
 //
@@ -93,18 +109,10 @@ func (b *Bus) Driver() eventscore.Driver {
 //	fmt.Println(bus.Ready() == nil)
 //	// Output: true
 func (b *Bus) Ready() error {
-	return b.ReadyContext(context.Background())
+	return b.ready(b.context())
 }
 
-// ReadyContext reports whether the bus is ready.
-// @group Bus
-//
-// Example: check readiness with a caller context
-//
-//	bus, _ := events.NewSync()
-//	fmt.Println(bus.ReadyContext(context.Background()) == nil)
-//	// Output: true
-func (b *Bus) ReadyContext(ctx context.Context) error {
+func (b *Bus) ready(ctx context.Context) error {
 	if b.transport != nil {
 		return b.transport.Ready(ctx)
 	}
@@ -127,26 +135,10 @@ func (b *Bus) ReadyContext(ctx context.Context) error {
 //	_ = bus.Publish(UserCreated{ID: "123"})
 //	// Output: 123
 func (b *Bus) Publish(event any) error {
-	return b.PublishContext(context.Background(), event)
+	return b.publish(b.context(), event)
 }
 
-// PublishContext publishes an event using the configured codec and dispatch flow.
-// @group Publish
-//
-// Example: publish with a caller context
-//
-//	type UserCreated struct {
-//		ID string `json:"id"`
-//	}
-//
-//	bus, _ := events.NewSync()
-//	_, _ = bus.Subscribe(func(ctx context.Context, event UserCreated) error {
-//		fmt.Println(event.ID, ctx != nil)
-//		return nil
-//	})
-//	_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
-//	// Output: 123 true
-func (b *Bus) PublishContext(ctx context.Context, event any) error {
+func (b *Bus) publish(ctx context.Context, event any) error {
 	if b.driver == eventscore.DriverNull {
 		return nil
 	}
@@ -199,31 +191,10 @@ func (b *Bus) dispatchMessage(ctx context.Context, msg eventscore.Message) error
 //	_ = bus.Publish(UserCreated{ID: "123"})
 //	// Output: 123
 func (b *Bus) Subscribe(handler any) (Subscription, error) {
-	return b.subscribeContext(context.Background(), handler)
+	return b.subscribe(b.context(), handler)
 }
 
-// SubscribeContext registers a typed handler.
-// @group Subscribe
-//
-// Example: subscribe with a caller context
-//
-//	type UserCreated struct {
-//		ID string `json:"id"`
-//	}
-//
-//	bus, _ := events.NewSync()
-//	sub, _ := bus.SubscribeContext(context.Background(), func(ctx context.Context, event UserCreated) error {
-//		fmt.Println(event.ID, ctx != nil)
-//		return nil
-//	})
-//	defer sub.Close()
-//	_ = bus.PublishContext(context.Background(), UserCreated{ID: "123"})
-//	// Output: 123 true
-func (b *Bus) SubscribeContext(ctx context.Context, handler any) (Subscription, error) {
-	return b.subscribeContext(ctx, handler)
-}
-
-func (b *Bus) subscribeContext(ctx context.Context, handler any) (Subscription, error) {
+func (b *Bus) subscribe(ctx context.Context, handler any) (Subscription, error) {
 	registered, err := newRegisteredHandler(handler)
 	if err != nil {
 		return nil, err

@@ -47,7 +47,7 @@ func TestReadyUsesBackgroundContext(t *testing.T) {
 	if err := bus.Ready(); err != nil {
 		t.Fatalf("Ready returned error: %v", err)
 	}
-	if err := bus.ReadyContext(nil); err != nil {
-		t.Fatalf("ReadyContext returned error: %v", err)
+	if err := bus.WithContext(nil).Ready(); err != nil {
+		t.Fatalf("WithContext(nil).Ready returned error: %v", err)
 	}
 }

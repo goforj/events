@@ -20,8 +20,8 @@ func TestNewFakeSupportsReadyAndContextPublish(t *testing.T) {
 	if err := fake.Bus().Ready(); err != nil {
 		t.Fatalf("Ready returned error: %v", err)
 	}
-	if err := fake.Bus().PublishContext(context.Background(), userCreated{}); err != nil {
-		t.Fatalf("PublishContext returned error: %v", err)
+	if err := fake.Bus().WithContext(context.Background()).Publish(userCreated{}); err != nil {
+		t.Fatalf("WithContext(...).Publish returned error: %v", err)
 	}
 	records := fake.Records()
 	if len(records) != 1 {

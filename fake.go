@@ -123,16 +123,24 @@ type fakeBus struct {
 	records []Record
 }
 
+type boundFakeBus struct {
+	parent *fakeBus
+	inner  API
+}
+
 func (b *fakeBus) Driver() eventscore.Driver {
 	return b.inner.Driver()
 }
 
-func (b *fakeBus) Ready() error {
-	return b.inner.Ready()
+func (b *fakeBus) WithContext(ctx context.Context) API {
+	return &boundFakeBus{
+		parent: b,
+		inner:  b.inner.WithContext(ctx),
+	}
 }
 
-func (b *fakeBus) ReadyContext(ctx context.Context) error {
-	return b.inner.ReadyContext(ctx)
+func (b *fakeBus) Ready() error {
+	return b.inner.Ready()
 }
 
 func (b *fakeBus) Publish(event any) error {
@@ -142,19 +150,8 @@ func (b *fakeBus) Publish(event any) error {
 	return b.inner.Publish(event)
 }
 
-func (b *fakeBus) PublishContext(ctx context.Context, event any) error {
-	b.mu.Lock()
-	b.records = append(b.records, Record{Event: event})
-	b.mu.Unlock()
-	return b.inner.PublishContext(ctx, event)
-}
-
 func (b *fakeBus) Subscribe(handler any) (Subscription, error) {
 	return b.inner.Subscribe(handler)
-}
-
-func (b *fakeBus) SubscribeContext(ctx context.Context, handler any) (Subscription, error) {
-	return b.inner.SubscribeContext(ctx, handler)
 }
 
 func (b *fakeBus) Records() []Record {
@@ -169,4 +166,30 @@ func (b *fakeBus) Reset() {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.records = nil
+}
+
+func (b *boundFakeBus) WithContext(ctx context.Context) API {
+	return &boundFakeBus{
+		parent: b.parent,
+		inner:  b.parent.inner.WithContext(ctx),
+	}
+}
+
+func (b *boundFakeBus) Driver() eventscore.Driver {
+	return b.inner.Driver()
+}
+
+func (b *boundFakeBus) Ready() error {
+	return b.inner.Ready()
+}
+
+func (b *boundFakeBus) Publish(event any) error {
+	b.parent.mu.Lock()
+	b.parent.records = append(b.parent.records, Record{Event: event})
+	b.parent.mu.Unlock()
+	return b.inner.Publish(event)
+}
+
+func (b *boundFakeBus) Subscribe(handler any) (Subscription, error) {
+	return b.inner.Subscribe(handler)
 }

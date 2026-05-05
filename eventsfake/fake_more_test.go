@@ -20,9 +20,9 @@ func TestFakeBusDriverAndSubscribeContext(t *testing.T) {
 	if got := fake.Bus().Driver(); got != eventscore.DriverSync {
 		t.Fatalf("Driver() = %q, want %q", got, eventscore.DriverSync)
 	}
-	sub, err := fake.Bus().SubscribeContext(context.Background(), func(fakeEvent) {})
+	sub, err := fake.Bus().WithContext(context.Background()).Subscribe(func(fakeEvent) {})
 	if err != nil {
-		t.Fatalf("SubscribeContext returned error: %v", err)
+		t.Fatalf("WithContext(...).Subscribe returned error: %v", err)
 	}
 	if err := sub.Close(); err != nil {
 		t.Fatalf("Close returned error: %v", err)
@@ -34,8 +34,8 @@ func TestFakeBusReadyAndSubscribe(t *testing.T) {
 	if err := fake.Bus().Ready(); err != nil {
 		t.Fatalf("Ready returned error: %v", err)
 	}
-	if err := fake.Bus().ReadyContext(context.Background()); err != nil {
-		t.Fatalf("ReadyContext returned error: %v", err)
+	if err := fake.Bus().WithContext(context.Background()).Ready(); err != nil {
+		t.Fatalf("WithContext(...).Ready returned error: %v", err)
 	}
 	sub, err := fake.Bus().Subscribe(func(fakeEvent) {})
 	if err != nil {
@@ -48,8 +48,8 @@ func TestFakeBusReadyAndSubscribe(t *testing.T) {
 
 func TestFakeBusPublishContextAndRecords(t *testing.T) {
 	fake := New()
-	if err := fake.Bus().PublishContext(context.Background(), fakeEvent{}); err != nil {
-		t.Fatalf("PublishContext returned error: %v", err)
+	if err := fake.Bus().WithContext(context.Background()).Publish(fakeEvent{}); err != nil {
+		t.Fatalf("WithContext(...).Publish returned error: %v", err)
 	}
 	records := fake.Records()
 	if len(records) != 1 {
