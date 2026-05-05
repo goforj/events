@@ -154,7 +154,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 			message, err := reader.ReadMessage(workerCtx)
 			switch {
 			case err == nil:
-				_ = handler(context.Background(), eventscore.Message{
+				_ = handler(workerCtx, eventscore.Message{
 					Topic:   message.Topic,
 					Payload: message.Value,
 				})

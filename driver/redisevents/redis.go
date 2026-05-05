@@ -127,7 +127,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 				if !ok {
 					return
 				}
-				_ = handler(context.Background(), eventscore.Message{
+				_ = handler(workerCtx, eventscore.Message{
 					Topic:   msg.Channel,
 					Payload: []byte(msg.Payload),
 				})

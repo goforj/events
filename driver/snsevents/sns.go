@@ -401,7 +401,7 @@ func (d *Driver) pollQueue(ctx context.Context, queueURL, topic string, handler 
 			continue
 		}
 		for _, message := range out.Messages {
-			_ = handler(context.Background(), eventscore.Message{
+			_ = handler(ctx, eventscore.Message{
 				Topic:   topic,
 				Payload: []byte(aws.ToString(message.Body)),
 			})

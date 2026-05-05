@@ -240,7 +240,7 @@ func (d *Driver) consume(ctx context.Context, topic string, consumer jetstream.C
 		msg, err := messages.Next(jetstream.NextMaxWait(d.fetchMaxWait))
 		switch {
 		case err == nil:
-			_ = handler(context.Background(), eventscore.Message{
+			_ = handler(ctx, eventscore.Message{
 				Topic:   topic,
 				Payload: msg.Data(),
 			})

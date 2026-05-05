@@ -167,11 +167,11 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 	}
 	sub.ReceiveSettings.NumGoroutines = 1
 
-	workerCtx, cancel := context.WithCancel(context.Background())
+	workerCtx, cancel := context.WithCancel(ctx)
 	done := make(chan error, 1)
 	go func() {
 		err := sub.Receive(workerCtx, func(_ context.Context, msg *gpubsub.Message) {
-			_ = handler(context.Background(), eventscore.Message{
+			_ = handler(workerCtx, eventscore.Message{
 				Topic:   topic,
 				Payload: msg.Data,
 			})
