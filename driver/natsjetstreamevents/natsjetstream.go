@@ -203,7 +203,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 		return nil, err
 	}
 
-	workerCtx, cancel := context.WithCancel(context.Background())
+	workerCtx, cancel := context.WithCancel(ctx)
 	done := make(chan struct{})
 	go func() {
 		defer close(done)

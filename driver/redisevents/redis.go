@@ -116,7 +116,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 		return nil, err
 	}
 	ch := pubsub.Channel()
-	workerCtx, cancel := context.WithCancel(context.Background())
+	workerCtx, cancel := context.WithCancel(ctx)
 	go func() {
 		defer cancel()
 		for {

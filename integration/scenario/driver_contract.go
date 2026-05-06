@@ -29,6 +29,10 @@ type overrideDriverEvent struct {
 
 func (overrideDriverEvent) Topic() string { return "integration.override" }
 
+type deliveryContextDriverEvent struct {
+	ID string `json:"id"`
+}
+
 const (
 	driverSetupTimeout    = 60 * time.Second
 	driverScenarioTimeout = 10 * time.Second
@@ -202,6 +206,48 @@ func RunDriverContract(t *testing.T, factory Factory) {
 			}
 		case <-ctx.Done():
 			t.Fatal("timed out waiting for override-routed distributed delivery")
+		}
+	})
+
+	t.Run("delivery_context", func(t *testing.T) {
+		progressf("running delivery context propagation scenario")
+		ctx, cancel := context.WithTimeout(context.Background(), driverScenarioTimeout)
+		defer cancel()
+
+		bus, err := events.New(events.Config{Transport: driver})
+		if err != nil {
+			t.Fatalf("events.New returned error: %v", err)
+		}
+
+		type ctxKey string
+		const key ctxKey = "integration-delivery-context"
+		subscribeCtx := context.WithValue(ctx, key, "preserved")
+
+		done := make(chan string, 1)
+		sub, err := bus.WithContext(subscribeCtx).Subscribe(func(msgCtx context.Context, event deliveryContextDriverEvent) error {
+			if event.ID != "ctx" {
+				t.Fatalf("event ID = %q, want %q", event.ID, "ctx")
+			}
+			got, _ := msgCtx.Value(key).(string)
+			done <- got
+			return nil
+		})
+		if err != nil {
+			t.Fatalf("WithContext(...).Subscribe returned error: %v", err)
+		}
+		t.Cleanup(func() { _ = sub.Close() })
+
+		if err := bus.Publish(deliveryContextDriverEvent{ID: "ctx"}); err != nil {
+			t.Fatalf("Publish returned error: %v", err)
+		}
+
+		select {
+		case got := <-done:
+			if got != "preserved" {
+				t.Fatalf("delivery context value = %q, want %q", got, "preserved")
+			}
+		case <-ctx.Done():
+			t.Fatal("timed out waiting for delivery context propagation")
 		}
 	})
 }
