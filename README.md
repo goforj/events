@@ -168,15 +168,15 @@ or hard CI performance gates.
 
 | Group | Functions |
 |------:|-----------|
-| **Bus** | [Driver](#bus-driver) [Ready](#bus-ready) [WithContext](#bus-withcontext) |
-| **Config** | [Config](#events-config) [gcppubsubevents.Config](#gcppubsubevents-config) [kafkaevents.Config](#kafkaevents-config) [natsevents.Config](#natsevents-config) [natsjetstreamevents.Config](#natsjetstreamevents-config) [redisevents.Config](#redisevents-config) [snsevents.Config](#snsevents-config) |
-| **Construction** | [New](#events-new) [NewNull](#events-newnull) [NewSync](#events-newsync) |
-| **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) [kafkaevents.New](#kafkaevents-new) [natsevents.New](#natsevents-new) [natsjetstreamevents.New](#natsjetstreamevents-new) [redisevents.New](#redisevents-new) [snsevents.New](#snsevents-new) |
+| **Bus** | [Driver](#bus-driver) · [Ready](#bus-ready) · [WithContext](#bus-withcontext) |
+| **Config** | [Config](#events-config) · [gcppubsubevents.Config](#gcppubsubevents-config) · [kafkaevents.Config](#kafkaevents-config) · [natsevents.Config](#natsevents-config) · [natsjetstreamevents.Config](#natsjetstreamevents-config) · [redisevents.Config](#redisevents-config) · [snsevents.Config](#snsevents-config) |
+| **Construction** | [New](#events-new) · [NewNull](#events-newnull) · [NewSync](#events-newsync) |
+| **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) · [kafkaevents.New](#kafkaevents-new) · [natsevents.New](#natsevents-new) · [natsjetstreamevents.New](#natsjetstreamevents-new) · [redisevents.New](#redisevents-new) · [snsevents.New](#snsevents-new) |
 | **Lifecycle** | [Close](#driver-close) |
-| **Options** | [Option](#events-option) [WithCodec](#events-withcodec) |
-| **Publish** | [Publish](#bus-publish) [TopicEvent](#events-topicevent) |
-| **Subscribe** | [Subscribe](#bus-subscribe) [Subscription](#events-subscription) |
-| **Testing** | [Fake](#events-fake) [Fake.Bus](#fake-bus) [Fake.Count](#fake-count) [Fake.Records](#fake-records) [Fake.Reset](#fake-reset) [NewFake](#events-newfake) [Record](#events-record) |
+| **Options** | [Option](#events-option) · [WithCodec](#events-withcodec) |
+| **Publish** | [Publish](#bus-publish) · [TopicEvent](#events-topicevent) |
+| **Subscribe** | [Subscribe](#bus-subscribe) · [Subscription](#events-subscription) |
+| **Testing** | [Fake](#events-fake) · [Fake.Bus](#fake-bus) · [Fake.Count](#fake-count) · [Fake.Records](#fake-records) · [Fake.Reset](#fake-reset) · [NewFake](#events-newfake) · [Record](#events-record) |
 
 
 ## Bus
