@@ -13,6 +13,13 @@ The root `sync` bus is the reference behavior.
 - handler order is deterministic
 - the first handler error is returned from `Publish`
 - subscription teardown is explicit via `Subscription.Close()`
+- context-bound handles share the same bus state; deriving a handle does not
+  clone subscriptions or synchronization
+- concurrent subscriptions for one topic share one transport setup, and all
+  callers observe the same setup failure
+- the last local subscription closes its transport subscription without
+  holding the bus registry lock; a close error is returned and remains stable
+  across repeated `Close` calls
 
 ## Distributed Semantics
 
@@ -34,6 +41,16 @@ Current distributed drivers are validated against:
 - topic override routing
 - unsubscribe behavior
 - multiple-subscription fan-out behavior
+
+Driver callbacks forward handler errors to the transport callback boundary,
+but the current distributed drivers intentionally do not normalize retries or
+redelivery from those errors. Backend acknowledgement behavior is therefore a
+driver property, not a portable `events` guarantee.
+
+`Subscribe` suppresses callbacks until the transport setup handshake has
+completed and ignores callbacks from a retired subscription generation. This
+prevents a closing backend callback from reaching handlers registered against
+a replacement subscription.
 
 ## What events Does Not Promise
 

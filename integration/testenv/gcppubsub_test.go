@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// TestStartGCPPubSub verifies the Pub/Sub test environment starts and reports a usable endpoint.
 func TestStartGCPPubSub(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()

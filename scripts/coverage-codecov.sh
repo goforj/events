@@ -2,21 +2,27 @@
 
 set -eu
 
-export GOCACHE="${GOCACHE:-/tmp/events-gocache}"
+export GOCACHE="${GOCACHE:-/tmp/gocache}"
+export GOMODCACHE="${GOMODCACHE:-/tmp/gomodcache}"
 
-tmp_dir="${PWD}/tmp/coverage"
-mkdir -p "${tmp_dir}"
+tmp_base="${COVERAGE_TMP_DIR:-${TMPDIR:-/tmp}}"
+mkdir -p "${tmp_base}"
+tmp_dir="$(mktemp -d "${tmp_base}/events-coverage.XXXXXX")"
+trap 'rm -rf "${tmp_dir}"' EXIT
+trap 'exit 1' HUP INT TERM
 output_file="${COVERAGE_OUTPUT:-coverage.txt}"
 
 run_cover() {
   dir="$1"
   out="$2"
   pattern="${3:-./...}"
-  packages=$(cd "${dir}" && go list ${pattern} 2>/dev/null || true)
+  if ! packages=$(cd "${dir}" && go list "${pattern}" 2>/dev/null); then
+    return 0
+  fi
   if [ -z "${packages}" ]; then
     return 0
   fi
-  (cd "${dir}" && go test ${pattern} -coverprofile="${out}")
+  (cd "${dir}" && go test "${pattern}" -coverprofile="${out}")
 }
 
 run_integration_cover() {

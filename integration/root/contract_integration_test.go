@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events/eventstest"
 )
 
+// TestSyncContractIntegration runs the shared delivery contract against the synchronous root bus.
 func TestSyncContractIntegration(t *testing.T) {
 	eventstest.RunBusContract(t, func(testing.TB) events.API {
 		bus, err := events.NewSync()

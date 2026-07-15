@@ -4,6 +4,7 @@ package main
 
 import "github.com/goforj/events/driver/natsevents"
 
+// main keeps this generated example compile-checked.
 func main() {
 	// New connects a NATS-backed driver from config.
 

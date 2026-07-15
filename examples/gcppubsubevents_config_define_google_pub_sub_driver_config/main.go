@@ -4,6 +4,7 @@ package main
 
 import "github.com/goforj/events/driver/gcppubsubevents"
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Config configures Google Pub/Sub transport construction.
 

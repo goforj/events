@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events/eventscore"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Config configures root bus construction.
 

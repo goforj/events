@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events/driver/kafkaevents"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Driver is a Kafka-backed events transport.
 

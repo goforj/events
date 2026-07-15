@@ -74,10 +74,12 @@ type boundRecordingBus struct {
 	inner  events.API
 }
 
+// Driver preserves the wrapped backend identity for code exercised through the fake.
 func (b *recordingBus) Driver() eventscore.Driver {
 	return b.inner.Driver()
 }
 
+// WithContext keeps context-bound operations attached to the same recording state.
 func (b *recordingBus) WithContext(ctx context.Context) events.API {
 	return &boundRecordingBus{
 		parent: b,
@@ -85,10 +87,12 @@ func (b *recordingBus) WithContext(ctx context.Context) events.API {
 	}
 }
 
+// Ready delegates readiness so the fake preserves the wrapped bus contract.
 func (b *recordingBus) Ready() error {
 	return b.inner.Ready()
 }
 
+// Publish records the attempt before delegation so failed publishes remain observable in tests.
 func (b *recordingBus) Publish(event any) error {
 	b.mu.Lock()
 	b.records = append(b.records, Record{Event: event})
@@ -96,10 +100,12 @@ func (b *recordingBus) Publish(event any) error {
 	return b.inner.Publish(event)
 }
 
+// Subscribe delegates handler registration without introducing fake-only delivery semantics.
 func (b *recordingBus) Subscribe(handler any) (events.Subscription, error) {
 	return b.inner.Subscribe(handler)
 }
 
+// Records returns a snapshot so callers cannot mutate concurrent fake state.
 func (b *recordingBus) Records() []Record {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -108,12 +114,14 @@ func (b *recordingBus) Records() []Record {
 	return out
 }
 
+// Reset clears shared recording state without replacing the wrapped bus.
 func (b *recordingBus) Reset() {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.records = nil
 }
 
+// WithContext rebinds operations while preserving the parent recorder.
 func (b *boundRecordingBus) WithContext(ctx context.Context) events.API {
 	return &boundRecordingBus{
 		parent: b.parent,
@@ -121,14 +129,17 @@ func (b *boundRecordingBus) WithContext(ctx context.Context) events.API {
 	}
 }
 
+// Driver preserves the wrapped context-bound backend identity.
 func (b *boundRecordingBus) Driver() eventscore.Driver {
 	return b.inner.Driver()
 }
 
+// Ready delegates through the bound handle so its context remains effective.
 func (b *boundRecordingBus) Ready() error {
 	return b.inner.Ready()
 }
 
+// Publish records through the shared parent before context-bound delegation.
 func (b *boundRecordingBus) Publish(event any) error {
 	b.parent.mu.Lock()
 	b.parent.records = append(b.parent.records, Record{Event: event})
@@ -136,6 +147,7 @@ func (b *boundRecordingBus) Publish(event any) error {
 	return b.inner.Publish(event)
 }
 
+// Subscribe delegates through the bound handle so subscription context remains effective.
 func (b *boundRecordingBus) Subscribe(handler any) (events.Subscription, error) {
 	return b.inner.Subscribe(handler)
 }

@@ -3,7 +3,7 @@ module github.com/goforj/events/driver/natsevents
 go 1.25.0
 
 require (
-	github.com/goforj/events/eventscore v0.0.0
+	github.com/goforj/events/eventscore v0.2.0
 	github.com/nats-io/nats-server/v2 v2.12.0
 	github.com/nats-io/nats.go v1.46.1
 )
@@ -20,7 +20,3 @@ require (
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/time v0.13.0 // indirect
 )
-
-replace github.com/goforj/events => ../..
-
-replace github.com/goforj/events/eventscore => ../../eventscore

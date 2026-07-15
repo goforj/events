@@ -8,6 +8,7 @@ import (
 	"github.com/goforj/events/driver/redisevents"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Ready checks Redis connectivity.
 

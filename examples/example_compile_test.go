@@ -1,3 +1,4 @@
+// Package examples compile-checks every generated documentation program.
 package examples
 
 import (
@@ -13,6 +14,7 @@ import (
 	"testing"
 )
 
+// TestExamplesBuild verifies every generated example remains a compilable standalone program.
 func TestExamplesBuild(t *testing.T) {
 	t.Parallel()
 
@@ -45,6 +47,7 @@ func TestExamplesBuild(t *testing.T) {
 	}
 }
 
+// abs produces the absolute paths required by Go's overlay file format.
 func abs(path string) string {
 	absolute, err := filepath.Abs(path)
 	if err != nil {
@@ -53,6 +56,7 @@ func abs(path string) string {
 	return absolute
 }
 
+// buildExample compiles one ignored example through an isolated temporary module and source overlay.
 func buildExample(exampleDir string) error {
 	orig := filepath.Join(exampleDir, "main.go")
 
@@ -114,6 +118,7 @@ func buildExample(exampleDir string) error {
 	return nil
 }
 
+// exampleBuildGoMod binds every sibling module to the workspace for hermetic example compilation.
 func exampleBuildGoMod() string {
 	root := abs("..")
 	sep := string(filepath.Separator)
@@ -152,6 +157,7 @@ func exampleBuildGoMod() string {
 	return strings.Join(lines, "\n")
 }
 
+// stripBuildTags removes documentation-only ignore constraints from the overlaid source.
 func stripBuildTags(src []byte) []byte {
 	lines := strings.Split(string(src), "\n")
 

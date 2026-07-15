@@ -3,15 +3,15 @@ module github.com/goforj/events/integration
 go 1.25.0
 
 require (
-	github.com/goforj/events v0.0.0
-	github.com/goforj/events/driver/gcppubsubevents v0.0.0
-	github.com/goforj/events/driver/kafkaevents v0.0.0
-	github.com/goforj/events/driver/natsjetstreamevents v0.0.0
-	github.com/goforj/events/driver/natsevents v0.0.0
-	github.com/goforj/events/driver/redisevents v0.0.0
-	github.com/goforj/events/driver/snsevents v0.0.0
-	github.com/goforj/events/eventscore v0.0.0
-	github.com/goforj/events/eventstest v0.0.0
+	github.com/goforj/events v0.2.0
+	github.com/goforj/events/driver/gcppubsubevents v0.2.0
+	github.com/goforj/events/driver/kafkaevents v0.2.0
+	github.com/goforj/events/driver/natsevents v0.2.0
+	github.com/goforj/events/driver/natsjetstreamevents v0.2.0
+	github.com/goforj/events/driver/redisevents v0.2.0
+	github.com/goforj/events/driver/snsevents v0.2.0
+	github.com/goforj/events/eventscore v0.2.0
+	github.com/goforj/events/eventstest v0.2.0
 	github.com/testcontainers/testcontainers-go v0.39.0
 	github.com/testcontainers/testcontainers-go/modules/gcloud v0.39.0
 	github.com/testcontainers/testcontainers-go/modules/kafka v0.39.0

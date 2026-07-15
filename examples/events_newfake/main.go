@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// NewFake creates a new fake event harness backed by the root sync bus.
 

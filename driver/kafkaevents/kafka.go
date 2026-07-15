@@ -101,7 +101,8 @@ func (d *Driver) Driver() eventscore.Driver {
 // Ready checks Kafka connectivity.
 // @group Drivers
 func (d *Driver) Ready(ctx context.Context) error {
-	if ctx != nil && ctx.Err() != nil {
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
 		return ctx.Err()
 	}
 	conn, err := d.dialer.DialContext(ctx, "tcp", d.brokers[0])
@@ -114,7 +115,8 @@ func (d *Driver) Ready(ctx context.Context) error {
 // PublishContext publishes a topic payload to Kafka.
 // @group Drivers
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
-	if ctx != nil && ctx.Err() != nil {
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
 		return ctx.Err()
 	}
 	if err := d.ensureTopic(ctx, msg.Topic); err != nil {
@@ -129,8 +131,12 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 // SubscribeContext subscribes to a Kafka topic and forwards messages.
 // @group Drivers
 func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
-	if ctx != nil && ctx.Err() != nil {
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
 		return nil, ctx.Err()
+	}
+	if handler == nil {
+		return nil, errors.New("kafkaevents: handler is required")
 	}
 	if err := d.ensureTopic(ctx, topic); err != nil {
 		return nil, err
@@ -169,11 +175,19 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 		}
 	}()
 
-	return subscription{
+	return &subscription{
 		cancel: cancel,
 		done:   done,
 		reader: reader,
 	}, nil
+}
+
+// normalizeContext keeps direct driver calls consistent with the root bus facade.
+func normalizeContext(ctx context.Context) context.Context {
+	if ctx == nil {
+		return context.Background()
+	}
+	return ctx
 }
 
 // Close closes the underlying Kafka writer.
@@ -182,8 +196,10 @@ func (d *Driver) Close() error {
 	return d.writer.Close()
 }
 
+// ensureTopic creates each single-partition compatibility topic at most once per driver.
 func (d *Driver) ensureTopic(ctx context.Context, topic string) error {
-	if ctx != nil && ctx.Err() != nil {
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
 		return ctx.Err()
 	}
 	if d.topicEnsured(topic) {
@@ -225,6 +241,7 @@ func (d *Driver) ensureTopic(ctx context.Context, topic string) error {
 	return nil
 }
 
+// topicEnsured keeps the common publish path free of the creation mutex after setup.
 func (d *Driver) topicEnsured(topic string) bool {
 	d.ensuredMu.RLock()
 	defer d.ensuredMu.RUnlock()
@@ -236,11 +253,16 @@ type subscription struct {
 	cancel context.CancelFunc
 	done   <-chan struct{}
 	reader *kafka.Reader
+	once   sync.Once
+	err    error
 }
 
-func (s subscription) Close() error {
-	s.cancel()
-	err := s.reader.Close()
-	<-s.done
-	return err
+// Close cancels delivery once and keeps the first teardown result for repeated calls.
+func (s *subscription) Close() error {
+	s.once.Do(func() {
+		s.cancel()
+		s.err = s.reader.Close()
+		<-s.done
+	})
+	return s.err
 }

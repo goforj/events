@@ -39,6 +39,16 @@ but transport behavior is not perfectly identical across all implementations.
   like fan-out delivery instead of shared-consumer queue semantics.
 - Redis uses pub/sub in the current driver. Redis Streams are intentionally
   deferred until async delivery semantics become a first-class API surface.
+- Event payload bytes remain codec-owned and drivers transport them without a
+  library envelope; the default codec continues to use JSON.
+- Local construction accepts only `sync` and `null` without a transport.
+  Distributed driver names require a matching `Config.Transport`, preventing
+  a configured distributed backend from silently behaving like the sync bus.
+- Nil contexts normalize to `context.Background()`. Typed-nil codecs and
+  transports are rejected during construction instead of failing on first use.
+- Distributed handler errors do not currently define a portable ack, retry, or
+  redelivery contract. Each backend keeps the behavior documented by its
+  driver until such semantics become a first-class API surface.
 - Kafka consumer-group semantics, partitioning strategy beyond one partition,
   dedicated SQS queue semantics as a normalized API, and richer Google Pub/Sub
   acknowledgement/retry semantics remain explicit future work.

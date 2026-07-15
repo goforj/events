@@ -8,6 +8,7 @@ import (
 	"github.com/goforj/events/eventscore"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// PublishContext publishes a topic payload via Redis pub/sub.
 

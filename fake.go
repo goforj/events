@@ -128,10 +128,12 @@ type boundFakeBus struct {
 	inner  API
 }
 
+// Driver preserves the wrapped backend identity for code exercised through the fake.
 func (b *fakeBus) Driver() eventscore.Driver {
 	return b.inner.Driver()
 }
 
+// WithContext keeps context-bound operations attached to the same recording state.
 func (b *fakeBus) WithContext(ctx context.Context) API {
 	return &boundFakeBus{
 		parent: b,
@@ -139,10 +141,12 @@ func (b *fakeBus) WithContext(ctx context.Context) API {
 	}
 }
 
+// Ready delegates readiness so the fake preserves the wrapped bus contract.
 func (b *fakeBus) Ready() error {
 	return b.inner.Ready()
 }
 
+// Publish records the attempt before delegation so failed publishes remain observable in tests.
 func (b *fakeBus) Publish(event any) error {
 	b.mu.Lock()
 	b.records = append(b.records, Record{Event: event})
@@ -150,10 +154,12 @@ func (b *fakeBus) Publish(event any) error {
 	return b.inner.Publish(event)
 }
 
+// Subscribe delegates handler registration without introducing fake-only delivery semantics.
 func (b *fakeBus) Subscribe(handler any) (Subscription, error) {
 	return b.inner.Subscribe(handler)
 }
 
+// Records returns a snapshot so callers cannot mutate concurrent fake state.
 func (b *fakeBus) Records() []Record {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -162,12 +168,14 @@ func (b *fakeBus) Records() []Record {
 	return out
 }
 
+// Reset clears shared recording state without replacing the wrapped bus.
 func (b *fakeBus) Reset() {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.records = nil
 }
 
+// WithContext rebinds operations while preserving the parent recorder.
 func (b *boundFakeBus) WithContext(ctx context.Context) API {
 	return &boundFakeBus{
 		parent: b.parent,
@@ -175,14 +183,17 @@ func (b *boundFakeBus) WithContext(ctx context.Context) API {
 	}
 }
 
+// Driver preserves the wrapped context-bound backend identity.
 func (b *boundFakeBus) Driver() eventscore.Driver {
 	return b.inner.Driver()
 }
 
+// Ready delegates through the bound handle so its context remains effective.
 func (b *boundFakeBus) Ready() error {
 	return b.inner.Ready()
 }
 
+// Publish records through the shared parent before context-bound delegation.
 func (b *boundFakeBus) Publish(event any) error {
 	b.parent.mu.Lock()
 	b.parent.records = append(b.parent.records, Record{Event: event})
@@ -190,6 +201,7 @@ func (b *boundFakeBus) Publish(event any) error {
 	return b.inner.Publish(event)
 }
 
+// Subscribe delegates through the bound handle so subscription context remains effective.
 func (b *boundFakeBus) Subscribe(handler any) (Subscription, error) {
 	return b.inner.Subscribe(handler)
 }

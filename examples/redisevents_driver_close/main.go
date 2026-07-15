@@ -4,6 +4,7 @@ package main
 
 import "github.com/goforj/events/driver/redisevents"
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Close closes the underlying Redis client.
 

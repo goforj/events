@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// TopicEvent overrides the derived topic for an event.
 

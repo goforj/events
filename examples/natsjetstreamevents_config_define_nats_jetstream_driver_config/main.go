@@ -4,6 +4,7 @@ package main
 
 import "github.com/goforj/events/driver/natsjetstreamevents"
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Config configures NATS JetStream transport construction.
 

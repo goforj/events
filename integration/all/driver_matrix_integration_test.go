@@ -1,3 +1,4 @@
+// Package all verifies the shared contract across every enabled distributed driver.
 package all
 
 import (
@@ -24,6 +25,7 @@ type driverFixture struct {
 	factory scenario.Factory
 }
 
+// TestDriverContract_AllDrivers runs the same delivery contract across every configured transport.
 func TestDriverContract_AllDrivers(t *testing.T) {
 	for _, fixture := range integrationFixtures(t) {
 		if !fixture.enabled {
@@ -36,6 +38,7 @@ func TestDriverContract_AllDrivers(t *testing.T) {
 	}
 }
 
+// integrationFixtures maps each selected broker environment to the shared contract factory.
 func integrationFixtures(t *testing.T) []driverFixture {
 	t.Helper()
 
@@ -171,12 +174,14 @@ func integrationFixtures(t *testing.T) []driverFixture {
 	}
 }
 
+// scenarioProgressf emits lifecycle details only when verbose test output was requested.
 func scenarioProgressf(format string, args ...any) {
 	if testing.Verbose() {
 		fmt.Fprintf(os.Stderr, "[integration] "+format+"\n", args...)
 	}
 }
 
+// selectedDrivers parses INTEGRATION_DRIVER while defaulting to every supported transport.
 func selectedDrivers() map[string]bool {
 	value := strings.TrimSpace(strings.ToLower(os.Getenv("INTEGRATION_DRIVER")))
 	if value == "" {

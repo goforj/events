@@ -11,6 +11,7 @@ import (
 	"github.com/goforj/events/eventscore"
 )
 
+// TestDriverConstant verifies the SNS registry identifier remains stable.
 func TestDriverConstant(t *testing.T) {
 	driver := &Driver{}
 	if got := driver.Driver(); got != eventscore.DriverSNS {
@@ -18,6 +19,7 @@ func TestDriverConstant(t *testing.T) {
 	}
 }
 
+// TestNewBuildsClientsWithDefaults verifies region defaults and client factories receive resolved settings.
 func TestNewBuildsClientsWithDefaults(t *testing.T) {
 	driver, err := New(Config{Endpoint: "http://127.0.0.1:4566"})
 	if err != nil {
@@ -37,6 +39,7 @@ func TestNewBuildsClientsWithDefaults(t *testing.T) {
 	}
 }
 
+// TestReadyHonorsContext verifies canceled readiness probes stop before SNS access.
 func TestReadyHonorsContext(t *testing.T) {
 	driver := &Driver{snsClient: stubSNSClient{}}
 
@@ -48,6 +51,7 @@ func TestReadyHonorsContext(t *testing.T) {
 	}
 }
 
+// TestPublishContextHonorsContext verifies canceled publishes do not reach SNS.
 func TestPublishContextHonorsContext(t *testing.T) {
 	driver := &Driver{snsClient: stubSNSClient{}, sqsClient: stubSQSClient{}, topics: make(map[string]string)}
 
@@ -60,6 +64,7 @@ func TestPublishContextHonorsContext(t *testing.T) {
 	}
 }
 
+// TestPublishContextPublishesToEnsuredTopic verifies publication uses the cached or newly created topic ARN.
 func TestPublishContextPublishesToEnsuredTopic(t *testing.T) {
 	snsClient := &recordingSNSClient{}
 	driver := &Driver{
@@ -83,6 +88,7 @@ func TestPublishContextPublishesToEnsuredTopic(t *testing.T) {
 	}
 }
 
+// TestEnsureTopicCachesTopicARN verifies repeated setup avoids duplicate SNS topic creation.
 func TestEnsureTopicCachesTopicARN(t *testing.T) {
 	snsClient := &recordingSNSClient{}
 	driver := &Driver{
@@ -107,6 +113,7 @@ func TestEnsureTopicCachesTopicARN(t *testing.T) {
 	}
 }
 
+// TestSubscriptionCloseDeletesQueueAndUnsubscribes verifies SNS/SQS subscription resources are fully released.
 func TestSubscriptionCloseDeletesQueueAndUnsubscribes(t *testing.T) {
 	snsClient := &recordingSNSClient{}
 	sqsClient := &recordingSQSClient{}
@@ -132,6 +139,7 @@ func TestSubscriptionCloseDeletesQueueAndUnsubscribes(t *testing.T) {
 	}
 }
 
+// TestSanitizeName verifies generated AWS resource names contain only supported characters and lengths.
 func TestSanitizeName(t *testing.T) {
 	got := sanitizeName("events/orders.created", 80)
 	if got != "events-orders-created" {
@@ -141,48 +149,59 @@ func TestSanitizeName(t *testing.T) {
 
 type stubSNSClient struct{}
 
+// CreateTopic fails so canceled operations prove they never reach SNS setup.
 func (stubSNSClient) CreateTopic(context.Context, *sns.CreateTopicInput, ...func(*sns.Options)) (*sns.CreateTopicOutput, error) {
 	return nil, errors.New("unexpected CreateTopic call")
 }
 
+// ListTopics returns an empty page for readiness probes that do reach the stub.
 func (stubSNSClient) ListTopics(context.Context, *sns.ListTopicsInput, ...func(*sns.Options)) (*sns.ListTopicsOutput, error) {
 	return &sns.ListTopicsOutput{}, nil
 }
 
+// Publish accepts messages when a test needs a side-effect-free SNS client.
 func (stubSNSClient) Publish(context.Context, *sns.PublishInput, ...func(*sns.Options)) (*sns.PublishOutput, error) {
 	return &sns.PublishOutput{}, nil
 }
 
+// Subscribe returns an empty response for tests that do not inspect subscription metadata.
 func (stubSNSClient) Subscribe(context.Context, *sns.SubscribeInput, ...func(*sns.Options)) (*sns.SubscribeOutput, error) {
 	return &sns.SubscribeOutput{}, nil
 }
 
+// Unsubscribe accepts cleanup when no call recording is required.
 func (stubSNSClient) Unsubscribe(context.Context, *sns.UnsubscribeInput, ...func(*sns.Options)) (*sns.UnsubscribeOutput, error) {
 	return &sns.UnsubscribeOutput{}, nil
 }
 
 type stubSQSClient struct{}
 
+// CreateQueue fails so canceled operations prove they never begin SQS setup.
 func (stubSQSClient) CreateQueue(context.Context, *sqs.CreateQueueInput, ...func(*sqs.Options)) (*sqs.CreateQueueOutput, error) {
 	return nil, errors.New("unexpected CreateQueue call")
 }
 
+// DeleteMessage accepts acknowledgements when queue state is outside the assertion.
 func (stubSQSClient) DeleteMessage(context.Context, *sqs.DeleteMessageInput, ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
 	return &sqs.DeleteMessageOutput{}, nil
 }
 
+// DeleteQueue accepts cleanup when the deleted URL is not under test.
 func (stubSQSClient) DeleteQueue(context.Context, *sqs.DeleteQueueInput, ...func(*sqs.Options)) (*sqs.DeleteQueueOutput, error) {
 	return &sqs.DeleteQueueOutput{}, nil
 }
 
+// GetQueueAttributes fails so unexpected queue-policy reads remain visible.
 func (stubSQSClient) GetQueueAttributes(context.Context, *sqs.GetQueueAttributesInput, ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
 	return nil, errors.New("unexpected GetQueueAttributes call")
 }
 
+// ReceiveMessage returns no deliveries for tests that never start the receive loop.
 func (stubSQSClient) ReceiveMessage(context.Context, *sqs.ReceiveMessageInput, ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
 	return &sqs.ReceiveMessageOutput{}, nil
 }
 
+// SetQueueAttributes fails so unexpected queue-policy writes remain visible.
 func (stubSQSClient) SetQueueAttributes(context.Context, *sqs.SetQueueAttributesInput, ...func(*sqs.Options)) (*sqs.SetQueueAttributesOutput, error) {
 	return nil, errors.New("unexpected SetQueueAttributes call")
 }
@@ -194,6 +213,7 @@ type recordingSNSClient struct {
 	unsubscribeARN   string
 }
 
+// CreateTopic records creation count and returns the ARN derived from the requested name.
 func (c *recordingSNSClient) CreateTopic(_ context.Context, input *sns.CreateTopicInput, _ ...func(*sns.Options)) (*sns.CreateTopicOutput, error) {
 	c.createTopicCalls++
 	return &sns.CreateTopicOutput{
@@ -201,22 +221,26 @@ func (c *recordingSNSClient) CreateTopic(_ context.Context, input *sns.CreateTop
 	}, nil
 }
 
+// ListTopics returns an empty page because recording tests exercise creation directly.
 func (c *recordingSNSClient) ListTopics(context.Context, *sns.ListTopicsInput, ...func(*sns.Options)) (*sns.ListTopicsOutput, error) {
 	return &sns.ListTopicsOutput{}, nil
 }
 
+// Publish records the resolved topic ARN and serialized message for assertions.
 func (c *recordingSNSClient) Publish(_ context.Context, input *sns.PublishInput, _ ...func(*sns.Options)) (*sns.PublishOutput, error) {
 	c.publishTopicARN = aws.ToString(input.TopicArn)
 	c.publishMessage = aws.ToString(input.Message)
 	return &sns.PublishOutput{}, nil
 }
 
+// Subscribe returns a stable ARN so cleanup tests can verify the matching unsubscribe call.
 func (c *recordingSNSClient) Subscribe(context.Context, *sns.SubscribeInput, ...func(*sns.Options)) (*sns.SubscribeOutput, error) {
 	return &sns.SubscribeOutput{
 		SubscriptionArn: aws.String("arn:aws:sns:us-east-1:000000000000:sub"),
 	}, nil
 }
 
+// Unsubscribe records the ARN released by subscription cleanup.
 func (c *recordingSNSClient) Unsubscribe(_ context.Context, input *sns.UnsubscribeInput, _ ...func(*sns.Options)) (*sns.UnsubscribeOutput, error) {
 	c.unsubscribeARN = aws.ToString(input.SubscriptionArn)
 	return &sns.UnsubscribeOutput{}, nil
@@ -226,27 +250,33 @@ type recordingSQSClient struct {
 	deletedQueueURL string
 }
 
+// CreateQueue returns an empty response because queue creation details are not asserted here.
 func (c *recordingSQSClient) CreateQueue(context.Context, *sqs.CreateQueueInput, ...func(*sqs.Options)) (*sqs.CreateQueueOutput, error) {
 	return &sqs.CreateQueueOutput{}, nil
 }
 
+// DeleteMessage accepts acknowledgements without adding unrelated recording state.
 func (c *recordingSQSClient) DeleteMessage(context.Context, *sqs.DeleteMessageInput, ...func(*sqs.Options)) (*sqs.DeleteMessageOutput, error) {
 	return &sqs.DeleteMessageOutput{}, nil
 }
 
+// DeleteQueue records the URL released by subscription cleanup.
 func (c *recordingSQSClient) DeleteQueue(_ context.Context, input *sqs.DeleteQueueInput, _ ...func(*sqs.Options)) (*sqs.DeleteQueueOutput, error) {
 	c.deletedQueueURL = aws.ToString(input.QueueUrl)
 	return &sqs.DeleteQueueOutput{}, nil
 }
 
+// GetQueueAttributes returns an empty policy view when setup details are not asserted.
 func (c *recordingSQSClient) GetQueueAttributes(context.Context, *sqs.GetQueueAttributesInput, ...func(*sqs.Options)) (*sqs.GetQueueAttributesOutput, error) {
 	return &sqs.GetQueueAttributesOutput{}, nil
 }
 
+// ReceiveMessage returns no deliveries because cleanup tests do not run a consumer loop.
 func (c *recordingSQSClient) ReceiveMessage(context.Context, *sqs.ReceiveMessageInput, ...func(*sqs.Options)) (*sqs.ReceiveMessageOutput, error) {
 	return &sqs.ReceiveMessageOutput{}, nil
 }
 
+// SetQueueAttributes accepts policy setup without adding assertions unrelated to cleanup.
 func (c *recordingSQSClient) SetQueueAttributes(context.Context, *sqs.SetQueueAttributesInput, ...func(*sqs.Options)) (*sqs.SetQueueAttributesOutput, error) {
 	return &sqs.SetQueueAttributesOutput{}, nil
 }

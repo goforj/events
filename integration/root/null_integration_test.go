@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events/eventstest"
 )
 
+// TestNullIntegrationPublishIsNoop verifies the root null bus never delivers published events.
 func TestNullIntegrationPublishIsNoop(t *testing.T) {
 	eventstest.RunNullBusContract(t, func(testing.TB) events.API {
 		bus, err := events.NewNull()

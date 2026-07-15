@@ -2,6 +2,7 @@ package events
 
 import "testing"
 
+// BenchmarkPublishNoSubscribers measures synchronous publish overhead without handler dispatch.
 func BenchmarkPublishNoSubscribers(b *testing.B) {
 	bus, err := NewSync()
 	if err != nil {
@@ -16,6 +17,7 @@ func BenchmarkPublishNoSubscribers(b *testing.B) {
 	}
 }
 
+// BenchmarkPublishOneSubscriber measures synchronous dispatch to one no-op handler.
 func BenchmarkPublishOneSubscriber(b *testing.B) {
 	bus, err := NewSync()
 	if err != nil {
@@ -34,6 +36,7 @@ func BenchmarkPublishOneSubscriber(b *testing.B) {
 	}
 }
 
+// BenchmarkSyncPublishRoundTrip measures publish plus observable synchronous delivery.
 func BenchmarkSyncPublishRoundTrip(b *testing.B) {
 	bus, err := NewSync()
 	if err != nil {
@@ -63,6 +66,7 @@ func BenchmarkSyncPublishRoundTrip(b *testing.B) {
 	}
 }
 
+// BenchmarkPublishMultipleSubscribers measures fan-out cost across four handlers.
 func BenchmarkPublishMultipleSubscribers(b *testing.B) {
 	bus, err := NewSync()
 	if err != nil {
@@ -83,6 +87,7 @@ func BenchmarkPublishMultipleSubscribers(b *testing.B) {
 	}
 }
 
+// BenchmarkResolveTopic measures reflection-based topic derivation for an ordinary event.
 func BenchmarkResolveTopic(b *testing.B) {
 	event := userCreated{}
 	b.ResetTimer()
@@ -93,6 +98,7 @@ func BenchmarkResolveTopic(b *testing.B) {
 	}
 }
 
+// BenchmarkNewRegisteredHandler measures validation and adapter creation for a typed handler.
 func BenchmarkNewRegisteredHandler(b *testing.B) {
 	handler := func(userCreated) error { return nil }
 	b.ResetTimer()

@@ -4,6 +4,7 @@ package main
 
 import "github.com/goforj/events/driver/snsevents"
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Config configures SNS transport construction.
 

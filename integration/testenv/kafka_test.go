@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// TestStartKafka verifies the Kafka test environment starts and reports reachable brokers.
 func TestStartKafka(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()

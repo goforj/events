@@ -10,12 +10,14 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// TestNewRequiresBrokers verifies Kafka construction rejects an empty broker list.
 func TestNewRequiresBrokers(t *testing.T) {
 	if _, err := New(Config{}); err == nil {
 		t.Fatal("expected error")
 	}
 }
 
+// TestDriverConstant verifies the Kafka registry identifier remains stable.
 func TestDriverConstant(t *testing.T) {
 	driver := &Driver{}
 	if got := driver.Driver(); got != eventscore.DriverKafka {
@@ -23,6 +25,7 @@ func TestDriverConstant(t *testing.T) {
 	}
 }
 
+// TestNewWithWriter verifies injected writers bypass broker validation and ownership.
 func TestNewWithWriter(t *testing.T) {
 	writer := &kafka.Writer{}
 	driver, err := New(Config{
@@ -37,6 +40,7 @@ func TestNewWithWriter(t *testing.T) {
 	}
 }
 
+// TestNewDefaultsAndCopiesBrokers verifies constructor defaults do not alias caller broker slices.
 func TestNewDefaultsAndCopiesBrokers(t *testing.T) {
 	cfg := Config{Brokers: []string{"127.0.0.1:9092"}}
 
@@ -63,6 +67,7 @@ func TestNewDefaultsAndCopiesBrokers(t *testing.T) {
 	}
 }
 
+// TestReadyHonorsContext verifies canceled readiness probes do not dial Kafka.
 func TestReadyHonorsContext(t *testing.T) {
 	driver, err := New(Config{Brokers: []string{"127.0.0.1:9092"}})
 	if err != nil {
@@ -77,6 +82,7 @@ func TestReadyHonorsContext(t *testing.T) {
 	}
 }
 
+// TestReadyReturnsDialError verifies broker dial failures remain observable.
 func TestReadyReturnsDialError(t *testing.T) {
 	driver, err := New(Config{Brokers: []string{"127.0.0.1:1"}})
 	if err != nil {
@@ -91,6 +97,7 @@ func TestReadyReturnsDialError(t *testing.T) {
 	}
 }
 
+// TestPublishContextHonorsContext verifies canceled publishes never write a Kafka message.
 func TestPublishContextHonorsContext(t *testing.T) {
 	driver, err := New(Config{Brokers: []string{"127.0.0.1:9092"}})
 	if err != nil {
@@ -106,6 +113,7 @@ func TestPublishContextHonorsContext(t *testing.T) {
 	}
 }
 
+// TestPublishContextReturnsEnsureTopicError verifies topic provisioning failures prevent publication.
 func TestPublishContextReturnsEnsureTopicError(t *testing.T) {
 	driver, err := New(Config{Brokers: []string{"127.0.0.1:1"}})
 	if err != nil {
@@ -121,6 +129,7 @@ func TestPublishContextReturnsEnsureTopicError(t *testing.T) {
 	}
 }
 
+// TestSubscribeContextHonorsContext verifies canceled subscriptions allocate no Kafka reader.
 func TestSubscribeContextHonorsContext(t *testing.T) {
 	driver, err := New(Config{Brokers: []string{"127.0.0.1:9092"}})
 	if err != nil {
@@ -137,6 +146,7 @@ func TestSubscribeContextHonorsContext(t *testing.T) {
 	}
 }
 
+// TestSubscribeContextReturnsEnsureTopicError verifies provisioning failures prevent consumer startup.
 func TestSubscribeContextReturnsEnsureTopicError(t *testing.T) {
 	driver, err := New(Config{Brokers: []string{"127.0.0.1:1"}})
 	if err != nil {
@@ -154,6 +164,7 @@ func TestSubscribeContextReturnsEnsureTopicError(t *testing.T) {
 	}
 }
 
+// TestEnsureTopicHonorsContext verifies canceled topic setup stops before broker access.
 func TestEnsureTopicHonorsContext(t *testing.T) {
 	driver, err := New(Config{Brokers: []string{"127.0.0.1:9092"}})
 	if err != nil {
@@ -168,6 +179,7 @@ func TestEnsureTopicHonorsContext(t *testing.T) {
 	}
 }
 
+// TestEnsureTopicReturnsDialError verifies Kafka provisioning retains connection failures.
 func TestEnsureTopicReturnsDialError(t *testing.T) {
 	driver, err := New(Config{Brokers: []string{"127.0.0.1:1"}})
 	if err != nil {
@@ -186,6 +198,7 @@ func TestEnsureTopicReturnsDialError(t *testing.T) {
 	}
 }
 
+// TestEnsureTopicSkipsDialWhenAlreadyCached verifies cached topics avoid repeated controller calls.
 func TestEnsureTopicSkipsDialWhenAlreadyCached(t *testing.T) {
 	driver, err := New(Config{Brokers: []string{"127.0.0.1:1"}})
 	if err != nil {
@@ -202,6 +215,7 @@ func TestEnsureTopicSkipsDialWhenAlreadyCached(t *testing.T) {
 	}
 }
 
+// TestClose verifies Kafka driver shutdown closes owned resources exactly once.
 func TestClose(t *testing.T) {
 	driver, err := New(Config{
 		Brokers: []string{"127.0.0.1:9092"},
@@ -215,6 +229,7 @@ func TestClose(t *testing.T) {
 	}
 }
 
+// TestSubscriptionClose verifies Kafka reader cancellation and cleanup are idempotent.
 func TestSubscriptionClose(t *testing.T) {
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:   []string{"127.0.0.1:9092"},

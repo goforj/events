@@ -184,6 +184,9 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
+	if handler == nil {
+		return nil, errors.New("natsjetstreamevents: handler is required")
+	}
 	subject := d.subject(topic)
 	streamName, err := d.ensureStream(ctx, topic, subject)
 	if err != nil {
@@ -210,7 +213,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 		d.consume(workerCtx, topic, consumer, handler)
 	}()
 
-	return subscription{
+	return &subscription{
 		cancel:       cancel,
 		done:         done,
 		driver:       d,
@@ -226,6 +229,7 @@ func (d *Driver) Close() error {
 	return nil
 }
 
+// consume acknowledges every delivered event because retries are not part of the portable events contract.
 func (d *Driver) consume(ctx context.Context, topic string, consumer jetstream.Consumer, handler eventscore.MessageHandler) {
 	messages, err := consumer.Messages()
 	if err != nil {
@@ -255,6 +259,7 @@ func (d *Driver) consume(ctx context.Context, topic string, consumer jetstream.C
 	}
 }
 
+// ensureStream serializes lazy stream creation so publishers and subscribers converge on one stream.
 func (d *Driver) ensureStream(ctx context.Context, topic, subject string) (string, error) {
 	if ctx.Err() != nil {
 		return "", ctx.Err()
@@ -283,6 +288,7 @@ func (d *Driver) ensureStream(ctx context.Context, topic, subject string) (strin
 	return streamName, nil
 }
 
+// cachedStream keeps established topic routing on a read-only fast path.
 func (d *Driver) cachedStream(topic string) (string, bool) {
 	d.streamsMu.RLock()
 	defer d.streamsMu.RUnlock()
@@ -290,18 +296,22 @@ func (d *Driver) cachedStream(topic string) (string, bool) {
 	return name, ok
 }
 
+// subject isolates application event topics beneath the configured JetStream prefix.
 func (d *Driver) subject(topic string) string {
 	return d.subjectPrefix + topic
 }
 
+// streamName maps a topic into JetStream's resource-name constraints.
 func (d *Driver) streamName(topic string) string {
 	return sanitizeName(d.streamNamePrefix+topic, maxNameLen)
 }
 
+// consumerName gives each bus subscription an independent ephemeral consumer.
 func (d *Driver) consumerName(topic string) string {
 	return sanitizeName(fmt.Sprintf("C_%s_%d", topic, nextConsumerID.Add(1)), maxNameLen)
 }
 
+// sanitizeName applies the shared JetStream resource-name constraints and length limit.
 func sanitizeName(value string, maxLen int) string {
 	value = nameSanitizer.ReplaceAllString(value, "_")
 	value = strings.Trim(value, "_")
@@ -314,6 +324,7 @@ func sanitizeName(value string, maxLen int) string {
 	return value
 }
 
+// normalizeContext keeps nil contexts safe at the exported driver boundary.
 func normalizeContext(ctx context.Context) context.Context {
 	if ctx == nil {
 		return context.Background()
@@ -327,10 +338,16 @@ type subscription struct {
 	driver       *Driver
 	streamName   string
 	consumerName string
+	once         sync.Once
+	err          error
 }
 
-func (s subscription) Close() error {
-	s.cancel()
-	<-s.done
-	return s.driver.js.DeleteConsumer(context.Background(), s.streamName, s.consumerName)
+// Close cancels delivery once and keeps the first teardown result for repeated calls.
+func (s *subscription) Close() error {
+	s.once.Do(func() {
+		s.cancel()
+		<-s.done
+		s.err = s.driver.js.DeleteConsumer(context.Background(), s.streamName, s.consumerName)
+	})
+	return s.err
 }

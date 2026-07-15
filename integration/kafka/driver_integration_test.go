@@ -1,3 +1,4 @@
+// Package kafka applies the shared integration contract to Kafka.
 package kafka
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/goforj/events/integration/testenv"
 )
 
+// TestKafkaDriverIntegration runs the shared driver contract against the Kafka test broker.
 func TestKafkaDriverIntegration(t *testing.T) {
 	scenario.RunDriverContract(t, func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
 		t.Helper()

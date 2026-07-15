@@ -1,3 +1,4 @@
+// Package scenario provides the shared distributed-driver integration contract.
 package scenario
 
 import (
@@ -27,6 +28,7 @@ type overrideDriverEvent struct {
 	ID string `json:"id"`
 }
 
+// Topic keeps the integration override case independent of Go type-name derivation.
 func (overrideDriverEvent) Topic() string { return "integration.override" }
 
 type deliveryContextDriverEvent struct {
@@ -252,6 +254,7 @@ func RunDriverContract(t *testing.T, factory Factory) {
 	})
 }
 
+// progressf emits fixture progress only when verbose test output was requested.
 func progressf(format string, args ...any) {
 	if testing.Verbose() {
 		fmt.Fprintf(os.Stderr, "[integration] "+format+"\n", args...)

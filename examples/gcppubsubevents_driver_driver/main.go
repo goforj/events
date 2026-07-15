@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events/driver/gcppubsubevents"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Driver reports the active backend kind.
 

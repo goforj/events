@@ -19,14 +19,20 @@ type fakeTransport struct {
 	lastCtx      context.Context
 }
 
+// newFakeTransport initializes the in-memory subscription table used by transport delegation tests.
 func newFakeTransport() *fakeTransport {
 	return &fakeTransport{subscribers: make(map[string]eventscore.MessageHandler)}
 }
 
+// Driver reports a stable concrete driver so bus construction can exercise transport configuration.
 func (f *fakeTransport) Driver() eventscore.Driver { return eventscore.DriverNATS }
+
+// Ready returns the configured readiness failure without contacting an external broker.
 func (f *fakeTransport) Ready(context.Context) error {
 	return f.readyErr
 }
+
+// PublishContext records the message and synchronously invokes the topic subscriber.
 func (f *fakeTransport) PublishContext(ctx context.Context, msg eventscore.Message) error {
 	f.lastCtx = ctx
 	if f.publishErr != nil {
@@ -41,6 +47,8 @@ func (f *fakeTransport) PublishContext(ctx context.Context, msg eventscore.Messa
 	}
 	return nil
 }
+
+// SubscribeContext installs one topic handler and returns a subscription that removes it.
 func (f *fakeTransport) SubscribeContext(_ context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
 	if f.subscribeErr != nil {
 		return nil, f.subscribeErr
@@ -57,11 +65,13 @@ func (f *fakeTransport) SubscribeContext(_ context.Context, topic string, handle
 
 type fakeTransportSubscription func()
 
+// Close invokes the captured removal function exactly as a transport subscription would.
 func (f fakeTransportSubscription) Close() error {
 	f()
 	return nil
 }
 
+// TestBusWithTransportDelegatesReady verifies readiness reaches the configured transport driver.
 func TestBusWithTransportDelegatesReady(t *testing.T) {
 	want := errors.New("not ready")
 	transport := newFakeTransport()
@@ -75,6 +85,7 @@ func TestBusWithTransportDelegatesReady(t *testing.T) {
 	}
 }
 
+// TestBusWithTransportPublishesAndReceives verifies transport payloads round-trip through registered handlers.
 func TestBusWithTransportPublishesAndReceives(t *testing.T) {
 	transport := newFakeTransport()
 	bus, err := New(Config{Transport: transport})
@@ -100,6 +111,7 @@ func TestBusWithTransportPublishesAndReceives(t *testing.T) {
 	}
 }
 
+// TestTransportSubscriptionClosesWhenLastHandlerRemoved verifies shared transport subscriptions outlive individual handlers only as needed.
 func TestTransportSubscriptionClosesWhenLastHandlerRemoved(t *testing.T) {
 	transport := newFakeTransport()
 	bus, err := New(Config{Transport: transport})
@@ -121,6 +133,7 @@ func TestTransportSubscriptionClosesWhenLastHandlerRemoved(t *testing.T) {
 	}
 }
 
+// TestBusWithTransportPropagatesPublishError verifies driver publish failures remain observable.
 func TestBusWithTransportPropagatesPublishError(t *testing.T) {
 	want := errors.New("publish failed")
 	transport := newFakeTransport()
@@ -136,6 +149,7 @@ func TestBusWithTransportPropagatesPublishError(t *testing.T) {
 	}
 }
 
+// TestBusWithTransportUsesBackgroundContextForNilPublishContext verifies nil publish contexts are normalized before driver calls.
 func TestBusWithTransportUsesBackgroundContextForNilPublishContext(t *testing.T) {
 	transport := newFakeTransport()
 	bus, err := New(Config{Transport: transport})
@@ -151,6 +165,7 @@ func TestBusWithTransportUsesBackgroundContextForNilPublishContext(t *testing.T)
 	}
 }
 
+// TestBusWithTransportRollsBackHandlerOnSubscribeError verifies failed transport setup leaves no registered handler behind.
 func TestBusWithTransportRollsBackHandlerOnSubscribeError(t *testing.T) {
 	want := errors.New("subscribe failed")
 	transport := newFakeTransport()
