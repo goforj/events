@@ -52,8 +52,9 @@ while IFS= read -r module_dir; do
       go mod init "example.com/events-release-check/$consumer_name" >/dev/null
     GOWORK=off GOCACHE="$gocache" GOMODCACHE="$gomodcache" GOPROXY="$release_proxy" GONOPROXY=none \
       go mod download "$module_path@$version"
+    # Testing a downloaded dependency requires loading its test-only module graph explicitly.
     GOWORK=off GOCACHE="$gocache" GOMODCACHE="$gomodcache" GOPROXY="$release_proxy" GONOPROXY=none \
-      go get "$module_path@$version"
+      go get -t "$module_path@$version"
     resolved="$(GOWORK=off GOCACHE="$gocache" GOMODCACHE="$gomodcache" GOPROXY="$release_proxy" GONOPROXY=none \
       go list -m -f '{{.Version}}' "$module_path")"
     if [[ "$resolved" != "$version" ]]; then
