@@ -1,3 +1,4 @@
+// Package gcppubsub applies the shared integration contract to Google Pub/Sub.
 package gcppubsub
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/goforj/events/integration/testenv"
 )
 
+// TestGCPPubSubDriverIntegration runs the shared driver contract against the Pub/Sub emulator.
 func TestGCPPubSubDriverIntegration(t *testing.T) {
 	scenario.RunDriverContract(t, func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
 		t.Helper()

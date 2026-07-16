@@ -1,3 +1,4 @@
+// Package redis applies the shared integration contract to Redis pub/sub.
 package redis
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/goforj/events/integration/testenv"
 )
 
+// TestRedisDriverIntegration runs the shared driver contract against the Redis test server.
 func TestRedisDriverIntegration(t *testing.T) {
 	scenario.RunDriverContract(t, func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
 		t.Helper()

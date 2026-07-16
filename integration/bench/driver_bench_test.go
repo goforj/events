@@ -1,3 +1,4 @@
+// Package bench benchmarks distributed-driver round trips through the public events API.
 package bench
 
 import (
@@ -29,6 +30,7 @@ type benchEvent struct {
 	ID string `json:"id"`
 }
 
+// BenchmarkDistributedPublishRoundTrip measures end-to-end delivery latency for each selected broker.
 func BenchmarkDistributedPublishRoundTrip(b *testing.B) {
 	for _, fixture := range benchmarkFixtures(b) {
 		if !fixture.enabled {
@@ -70,6 +72,7 @@ func BenchmarkDistributedPublishRoundTrip(b *testing.B) {
 	}
 }
 
+// publishAndAwait requires the broker to return the matching event before the shared deadline.
 func publishAndAwait(ctx context.Context, bus events.API, delivered <-chan benchEvent, id string) error {
 	payload := benchEvent{ID: id}
 	if err := bus.WithContext(ctx).Publish(payload); err != nil {
@@ -86,6 +89,7 @@ func publishAndAwait(ctx context.Context, bus events.API, delivered <-chan bench
 	}
 }
 
+// benchmarkFixtures constructs broker-specific drivers and registers complete resource cleanup.
 func benchmarkFixtures(tb testing.TB) []benchFixture {
 	tb.Helper()
 
@@ -215,6 +219,7 @@ func benchmarkFixtures(tb testing.TB) []benchFixture {
 	}
 }
 
+// selectedBenchDrivers parses INTEGRATION_DRIVER while defaulting to the complete benchmark matrix.
 func selectedBenchDrivers() map[string]bool {
 	value := strings.TrimSpace(strings.ToLower(os.Getenv("INTEGRATION_DRIVER")))
 	if value == "" {

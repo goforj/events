@@ -21,6 +21,7 @@ const (
 	apiEnd   = "<!-- api:embed:end -->"
 )
 
+// main reports README generation failures through a non-zero process exit.
 func main() {
 	if err := run(); err != nil {
 		fmt.Println("Error:", err)
@@ -29,6 +30,7 @@ func main() {
 	fmt.Println("✔ API section updated in README.md")
 }
 
+// run refreshes only the generated API section of the repository README.
 func run() error {
 	root, err := findRoot()
 	if err != nil {
@@ -56,6 +58,7 @@ func run() error {
 	return os.WriteFile(readmePath, []byte(out), 0o644)
 }
 
+// FuncDoc carries one documented API entry in its rendered form.
 type FuncDoc struct {
 	Name        string
 	DisplayName string
@@ -65,6 +68,7 @@ type FuncDoc struct {
 	Examples    []Example
 }
 
+// Example retains source order while carrying one rendered documentation sample.
 type Example struct {
 	Label string
 	Code  string
@@ -76,6 +80,7 @@ var (
 	exampleHeader = regexp.MustCompile(`(?i)^\s*Example:\s*(.*)$`)
 )
 
+// parseFuncs merges root and driver APIs into one documentation index.
 func parseFuncs(root string) ([]*FuncDoc, error) {
 	funcs := map[string]*FuncDoc{}
 
@@ -103,6 +108,7 @@ func parseFuncs(root string) ([]*FuncDoc, error) {
 	return out, nil
 }
 
+// parseFuncsInDir extracts exported declarations without compiling optional driver dependencies.
 func parseFuncsInDir(funcs map[string]*FuncDoc, dir string) error {
 	fset := token.NewFileSet()
 	pkgs, err := parser.ParseDir(
@@ -233,6 +239,7 @@ func parseFuncsInDir(funcs map[string]*FuncDoc, dir string) error {
 	return nil
 }
 
+// extractGroup assigns declarations without an annotation to a stable fallback section.
 func extractGroup(group *ast.CommentGroup) string {
 	for _, c := range group.List {
 		line := strings.TrimSpace(strings.TrimPrefix(c.Text, "//"))
@@ -243,6 +250,7 @@ func extractGroup(group *ast.CommentGroup) string {
 	return "Other"
 }
 
+// extractGroupWithDefault lets interface methods inherit their enclosing API group.
 func extractGroupWithDefault(group *ast.CommentGroup, fallback string) string {
 	if group == nil {
 		return fallback
@@ -256,6 +264,7 @@ func extractGroupWithDefault(group *ast.CommentGroup, fallback string) string {
 	return fallback
 }
 
+// extractDescription omits generator annotations and example bodies from API prose.
 func extractDescription(group *ast.CommentGroup) string {
 	var lines []string
 	for _, c := range group.List {
@@ -271,10 +280,12 @@ func extractDescription(group *ast.CommentGroup) string {
 	return strings.TrimSpace(strings.Join(lines, "\n"))
 }
 
+// extractExamples keeps function-specific parsing behind the shared comment-group parser.
 func extractExamples(fset *token.FileSet, fn *ast.FuncDecl) []Example {
 	return extractExamplesFromGroup(fset, fn.Doc)
 }
 
+// extractExamplesFromGroup parses all labeled examples while retaining their source positions.
 func extractExamplesFromGroup(fset *token.FileSet, group *ast.CommentGroup) []Example {
 	var out []Example
 	var current []string
@@ -316,6 +327,7 @@ func extractExamplesFromGroup(fset *token.FileSet, group *ast.CommentGroup) []Ex
 	return out
 }
 
+// extractReceiverName distinguishes methods from package-level functions in rendered names.
 func extractReceiverName(fn *ast.FuncDecl) string {
 	if fn.Recv == nil || len(fn.Recv.List) == 0 {
 		return ""
@@ -323,6 +335,7 @@ func extractReceiverName(fn *ast.FuncDecl) string {
 	return recvTypeName(fn.Recv.List[0].Type)
 }
 
+// recvTypeName unwraps supported receiver syntax to the declared type name.
 func recvTypeName(expr ast.Expr) string {
 	switch t := expr.(type) {
 	case *ast.Ident:
@@ -340,6 +353,7 @@ func recvTypeName(expr ast.Expr) string {
 	}
 }
 
+// selectPackage prefers the library package when ignored main files share its directory.
 func selectPackage(pkgs map[string]*ast.Package) (string, error) {
 	if len(pkgs) == 0 {
 		return "", fmt.Errorf("no packages found")
@@ -371,6 +385,7 @@ func selectPackage(pkgs map[string]*ast.Package) (string, error) {
 	return candidates[0].name, nil
 }
 
+// renderAPI emits deterministic grouping, ordering, anchors, and examples for reviewable README diffs.
 func renderAPI(funcs []*FuncDoc) string {
 	byGroup := map[string][]*FuncDoc{}
 	for _, fd := range funcs {
@@ -424,6 +439,7 @@ func renderAPI(funcs []*FuncDoc) string {
 	return strings.TrimRight(buf.String(), "\n")
 }
 
+// visibleName removes redundant root receiver prefixes from reader-facing API labels.
 func visibleName(fn *FuncDoc) string {
 	name := fn.DisplayName
 	name = strings.TrimPrefix(name, "events.")
@@ -432,6 +448,7 @@ func visibleName(fn *FuncDoc) string {
 	return name
 }
 
+// renderedExamples suppresses examples that would duplicate higher-level construction guidance.
 func renderedExamples(fn *FuncDoc) []Example {
 	if fn.DisplayName == "events.Option" {
 		return nil
@@ -443,6 +460,7 @@ func renderedExamples(fn *FuncDoc) []Example {
 	return fn.Examples
 }
 
+// skipFuncDoc keeps repeated driver contract methods out of the generated API index.
 func skipFuncDoc(fn *FuncDoc) bool {
 	switch fn.DisplayName {
 	case "Driver.Driver", "Driver.Ready", "Driver.PublishContext", "Driver.SubscribeContext":
@@ -451,6 +469,7 @@ func skipFuncDoc(fn *FuncDoc) bool {
 	return false
 }
 
+// replaceAPISection requires both markers so generation cannot overwrite hand-written README content.
 func replaceAPISection(readme, api string) (string, error) {
 	start := strings.Index(readme, apiStart)
 	end := strings.Index(readme, apiEnd)
@@ -466,6 +485,7 @@ func replaceAPISection(readme, api string) (string, error) {
 	return out.String(), nil
 }
 
+// findRoot locates the repository without assuming the generator's invocation directory.
 func findRoot() (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -483,11 +503,13 @@ func findRoot() (string, error) {
 	return "", fmt.Errorf("could not find project root")
 }
 
+// fileExists keeps root discovery tolerant of absent candidate markers.
 func fileExists(p string) bool {
 	_, err := os.Stat(p)
 	return err == nil
 }
 
+// skipTypeDoc prevents broad contracts and driver implementations from duplicating focused method entries.
 func skipTypeDoc(pkgName, typeName string) bool {
 	if pkgName == "events" && typeName == "API" {
 		return true
@@ -501,6 +523,7 @@ func skipTypeDoc(pkgName, typeName string) bool {
 	return strings.HasSuffix(pkgName, "events") && typeName == "Driver"
 }
 
+// discoverDriverModuleDirs keeps the documented driver inventory aligned with module directories.
 func discoverDriverModuleDirs(root string) ([]string, error) {
 	driverRoot := filepath.Join(root, "driver")
 	entries, err := os.ReadDir(driverRoot)
@@ -526,6 +549,7 @@ func discoverDriverModuleDirs(root string) ([]string, error) {
 	return dirs, nil
 }
 
+// normalizeIndent removes shared comment indentation without disturbing example-relative alignment.
 func normalizeIndent(lines []string) []string {
 	min := -1
 	for _, l := range lines {
@@ -551,6 +575,7 @@ func normalizeIndent(lines []string) []string {
 	return out
 }
 
+// trimDisplayExample drops generator-only trailing assignments from reader-facing snippets.
 func trimDisplayExample(code string) string {
 	lines := strings.Split(code, "\n")
 
@@ -573,6 +598,7 @@ func trimDisplayExample(code string) string {
 	return strings.Join(lines, "\n")
 }
 
+// discardAssignment recognizes the throwaway assignments used only to keep examples compilable.
 func discardAssignment(line string) bool {
 	if !strings.HasPrefix(line, "_ = ") {
 		return false

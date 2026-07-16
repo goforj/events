@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// TestNewFakeRecordsPublishes verifies the root fake records published topic events.
 func TestNewFakeRecordsPublishes(t *testing.T) {
 	fake := NewFake()
 	if err := fake.Bus().Publish(userCreated{}); err != nil {
@@ -15,6 +16,7 @@ func TestNewFakeRecordsPublishes(t *testing.T) {
 	}
 }
 
+// TestNewFakeSupportsReadyAndContextPublish verifies readiness and context-aware publishing on the root fake.
 func TestNewFakeSupportsReadyAndContextPublish(t *testing.T) {
 	fake := NewFake()
 	if err := fake.Bus().Ready(); err != nil {

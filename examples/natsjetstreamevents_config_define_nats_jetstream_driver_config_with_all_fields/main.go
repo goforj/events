@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Config configures NATS JetStream transport construction.
 

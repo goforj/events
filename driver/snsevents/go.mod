@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.18
 	github.com/aws/aws-sdk-go-v2/service/sns v1.39.13
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.42.11
-	github.com/goforj/events/eventscore v0.0.0
+	github.com/goforj/events/eventscore v0.2.0
 )
 
 require (
@@ -23,5 +23,3 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.38.8 // indirect
 	github.com/aws/smithy-go v1.24.2 // indirect
 )
-
-replace github.com/goforj/events/eventscore => ../../eventscore

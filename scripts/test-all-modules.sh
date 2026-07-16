@@ -2,21 +2,26 @@
 
 set -eu
 
-export GOCACHE="${PWD}/tmp/gocache"
+export GOCACHE="${GOCACHE:-/tmp/gocache}"
+export GOMODCACHE="${GOMODCACHE:-/tmp/gomodcache}"
 
 run_tests() {
   dir="$1"
-  pkgs="$(cd "${dir}" && go list ./... 2>/dev/null || true)"
+  pkgs="$(cd "${dir}" && go list ./...)"
   if [ -n "${pkgs}" ]; then
-    (cd "${dir}" && go test ./...)
+    # GO_TEST_FLAGS intentionally supports a space-delimited flag list for CI
+    # modes such as "-race -count=1".
+    # shellcheck disable=SC2086
+    (cd "${dir}" && go test ${GO_TEST_FLAGS:-} ./...)
   fi
 }
 
-go test ./...
+run_tests "."
 run_tests "eventscore"
 run_tests "eventstest"
 run_tests "eventsfake"
 run_tests "docs"
+run_tests "examples"
 run_tests "driver/gcppubsubevents"
 run_tests "driver/kafkaevents"
 run_tests "driver/natsjetstreamevents"

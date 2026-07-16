@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events/driver/snsevents"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Driver is an SNS-backed events transport using SQS queues for subscriptions.
 

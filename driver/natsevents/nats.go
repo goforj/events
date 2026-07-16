@@ -3,6 +3,7 @@ package natsevents
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/goforj/events/eventscore"
 	"github.com/nats-io/nats.go"
@@ -70,7 +71,8 @@ func (d *Driver) Driver() eventscore.Driver {
 // Ready checks that the NATS connection is healthy.
 // @group Drivers
 func (d *Driver) Ready(ctx context.Context) error {
-	if ctx != nil && ctx.Err() != nil {
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
 		return ctx.Err()
 	}
 	return d.conn.Flush()
@@ -79,7 +81,8 @@ func (d *Driver) Ready(ctx context.Context) error {
 // PublishContext publishes a topic payload to NATS.
 // @group Drivers
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
-	if ctx != nil && ctx.Err() != nil {
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
 		return ctx.Err()
 	}
 	if err := d.conn.Publish(msg.Topic, msg.Payload); err != nil {
@@ -91,8 +94,12 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 // SubscribeContext subscribes to a NATS subject and forwards messages.
 // @group Drivers
 func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
-	if ctx == nil {
-		ctx = context.Background()
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+	if handler == nil {
+		return nil, errors.New("natsevents: handler is required")
 	}
 	sub, err := d.conn.Subscribe(topic, func(msg *nats.Msg) {
 		_ = handler(ctx, eventscore.Message{
@@ -107,10 +114,18 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 		_ = sub.Unsubscribe()
 		return nil, err
 	}
-	return subscription{sub: sub}, nil
+	return &subscription{sub: sub}, nil
 }
 
-// Close drains the underlying NATS connection.
+// normalizeContext keeps direct driver calls consistent with the root bus facade.
+func normalizeContext(ctx context.Context) context.Context {
+	if ctx == nil {
+		return context.Background()
+	}
+	return ctx
+}
+
+// Close closes the underlying NATS connection.
 // @group Lifecycle
 func (d *Driver) Close() error {
 	d.conn.Close()
@@ -118,9 +133,15 @@ func (d *Driver) Close() error {
 }
 
 type subscription struct {
-	sub *nats.Subscription
+	sub  *nats.Subscription
+	once sync.Once
+	err  error
 }
 
-func (s subscription) Close() error {
-	return s.sub.Unsubscribe()
+// Close unsubscribes once and keeps the first teardown result for repeated calls.
+func (s *subscription) Close() error {
+	s.once.Do(func() {
+		s.err = s.sub.Unsubscribe()
+	})
+	return s.err
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Publish publishes an event using the background context.
 

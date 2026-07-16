@@ -5,8 +5,8 @@ use (
 	./docs
 	./driver/gcppubsubevents
 	./driver/kafkaevents
-	./driver/natsjetstreamevents
 	./driver/natsevents
+	./driver/natsjetstreamevents
 	./driver/redisevents
 	./driver/snsevents
 	./eventscore
@@ -15,3 +15,23 @@ use (
 	./examples
 	./integration
 )
+
+replace github.com/goforj/events v0.2.0 => .
+
+replace github.com/goforj/events/driver/gcppubsubevents v0.2.0 => ./driver/gcppubsubevents
+
+replace github.com/goforj/events/driver/kafkaevents v0.2.0 => ./driver/kafkaevents
+
+replace github.com/goforj/events/driver/natsevents v0.2.0 => ./driver/natsevents
+
+replace github.com/goforj/events/driver/natsjetstreamevents v0.2.0 => ./driver/natsjetstreamevents
+
+replace github.com/goforj/events/driver/redisevents v0.2.0 => ./driver/redisevents
+
+replace github.com/goforj/events/driver/snsevents v0.2.0 => ./driver/snsevents
+
+replace github.com/goforj/events/eventscore v0.2.0 => ./eventscore
+
+replace github.com/goforj/events/eventsfake v0.2.0 => ./eventsfake
+
+replace github.com/goforj/events/eventstest v0.2.0 => ./eventstest

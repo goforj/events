@@ -1,11 +1,13 @@
 //go:build benchrender
 // +build benchrender
 
+// Package bench renders reproducible benchmark snapshots for the events documentation.
 package bench
 
 import (
 	"bufio"
 	"bytes"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -16,7 +18,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
 const (
@@ -36,6 +37,7 @@ type benchRow struct {
 	AllocsOp int     `json:"allocs_op"`
 }
 
+// TestDataPath exposes the benchmark snapshot path to the build-tagged regression test.
 func TestDataPath(root string) string {
 	return filepath.Join(root, "docs", "bench", benchRowsFile)
 }
@@ -80,7 +82,10 @@ func RenderBenchmarks() {
 	fmt.Println("Benchmarks dashboard updated")
 }
 
+// runBenchmarks keeps generated benchmark artifacts reproducible without writing caches into the repository.
 func runBenchmarks(root string) []benchRow {
+	cacheDir := filepath.Join(os.TempDir(), "gocache")
+	moduleCacheDir := filepath.Join(os.TempDir(), "gomodcache")
 	rows := parseRows(runBenchCommand(root, commandSpec{
 		dir: root,
 		args: []string{
@@ -90,13 +95,15 @@ func runBenchmarks(root string) []benchRow {
 			"-benchmem",
 		},
 		env: map[string]string{
-			"GOCACHE": filepath.Join(root, "tmp", "gocache"),
+			"GOCACHE":    cacheDir,
+			"GOMODCACHE": moduleCacheDir,
 		},
 	}), "Core")
 
 	if os.Getenv("RUN_INTEGRATION") == "1" {
 		integrationEnv := map[string]string{
-			"GOCACHE": filepath.Join(root, "tmp", "gocache"),
+			"GOCACHE":    cacheDir,
+			"GOMODCACHE": moduleCacheDir,
 		}
 		integrationEnv["INTEGRATION_DRIVER"] = integrationDriverSelection()
 
@@ -122,6 +129,7 @@ type commandSpec struct {
 	env  map[string]string
 }
 
+// runBenchCommand fails with captured output so benchmark generator failures remain diagnosable.
 func runBenchCommand(root string, spec commandSpec) string {
 	cmd := exec.Command("go", spec.args...)
 	cmd.Dir = spec.dir
@@ -136,6 +144,7 @@ func runBenchCommand(root string, spec commandSpec) string {
 	return string(out)
 }
 
+// parseRows rejects empty benchmark sets so stale dashboards cannot be emitted silently.
 func parseRows(benchOutput, set string) []benchRow {
 	rows := make([]benchRow, 0)
 	scanner := bufio.NewScanner(strings.NewReader(benchOutput))
@@ -156,6 +165,7 @@ func parseRows(benchOutput, set string) []benchRow {
 	return rows
 }
 
+// parseBenchRow preserves the original line in conversion errors for actionable generator failures.
 func parseBenchRow(set, name, nStr, nsStr, bStr, allocStr, line string) benchRow {
 	n, err := strconv.Atoi(nStr)
 	if err != nil {
@@ -183,9 +193,10 @@ func parseBenchRow(set, name, nStr, nsStr, bStr, allocStr, line string) benchRow
 	}
 }
 
+// renderSection embeds stable chart links so generated-doc checks remain deterministic.
 func renderSection(rows []benchRow) string {
 	var buf bytes.Buffer
-	cacheBust := strconv.FormatInt(time.Now().Unix(), 10)
+	cacheBust := benchmarkCacheKey(rows)
 	buf.WriteString("These charts compare one publish-plus-delivery round trip for `sync` and each enabled distributed driver fixture.\n\n")
 	buf.WriteString("Note: `sns` and `gcppubsub` run through local emulators in this repo, so read those results as development approximations rather than direct managed-service latency comparisons.\n\n")
 	buf.WriteString("![Events backend latency chart](docs/bench/benchmarks_ns.svg?v=" + cacheBust + ")\n\n")
@@ -196,6 +207,17 @@ func renderSection(rows []benchRow) string {
 	return strings.TrimSpace(buf.String())
 }
 
+// benchmarkCacheKey changes chart URLs only when the rendered benchmark data changes.
+func benchmarkCacheKey(rows []benchRow) string {
+	encoded, err := json.Marshal(rows)
+	if err != nil {
+		panic(fmt.Errorf("encode benchmark cache key: %w", err))
+	}
+	sum := sha256.Sum256(encoded)
+	return fmt.Sprintf("%x", sum[:8])
+}
+
+// writeDashboard keeps the four documented metrics derived from the same ordered snapshot.
 func writeDashboard(root string, rows []benchRow) error {
 	if len(rows) == 0 {
 		return nil
@@ -221,6 +243,7 @@ func writeDashboard(root string, rows []benchRow) error {
 	}, false)
 }
 
+// writeMetricSVG renders a deterministic comparison chart with metric-aware ordering.
 func writeMetricSVG(root, filename, title, unit string, rows []benchRow, metric func(benchRow) float64, higherIsBetter bool) error {
 	sorted := append([]benchRow(nil), rows...)
 	sort.Slice(sorted, func(i, j int) bool {
@@ -286,6 +309,7 @@ func writeMetricSVG(root, filename, title, unit string, rows []benchRow, metric 
 	return os.WriteFile(filepath.Join(root, "docs", "bench", filename), svg.Bytes(), 0o644)
 }
 
+// metricPreference makes the chart's ranking direction explicit to readers.
 func metricPreference(unit string, higherIsBetter bool) string {
 	if higherIsBetter {
 		return "higher is better (" + unit + ")"
@@ -293,6 +317,7 @@ func metricPreference(unit string, higherIsBetter bool) string {
 	return "lower is better (" + unit + ")"
 }
 
+// coreRows isolates in-process benchmarks for the core results table.
 func coreRows(rows []benchRow) []benchRow {
 	filtered := make([]benchRow, 0, len(rows))
 	for _, row := range rows {
@@ -303,6 +328,7 @@ func coreRows(rows []benchRow) []benchRow {
 	return filtered
 }
 
+// integrationRows isolates transport-backed benchmarks for integration reporting.
 func integrationRows(rows []benchRow) []benchRow {
 	filtered := make([]benchRow, 0, len(rows))
 	for _, row := range rows {
@@ -313,6 +339,7 @@ func integrationRows(rows []benchRow) []benchRow {
 	return filtered
 }
 
+// driverRows combines the sync baseline with the explicitly selected distributed drivers.
 func driverRows(rows []benchRow) []benchRow {
 	filtered := make([]benchRow, 0, len(rows))
 	selected := selectedDriverNames()
@@ -331,6 +358,7 @@ func driverRows(rows []benchRow) []benchRow {
 	return filtered
 }
 
+// sortCoreRows preserves the documentation's conceptual progression instead of incidental benchmark order.
 func sortCoreRows(rows []benchRow) []benchRow {
 	order := map[string]int{
 		"ResolveTopic":               0,
@@ -353,6 +381,7 @@ func sortCoreRows(rows []benchRow) []benchRow {
 	return sorted
 }
 
+// coreLabel centralizes stable labels for the documented core benchmarks.
 func coreLabel(name string) string {
 	switch name {
 	case "ResolveTopic":
@@ -372,10 +401,12 @@ func coreLabel(name string) string {
 	}
 }
 
+// driverLabel converts benchmark names into reader-facing backend labels.
 func driverLabel(row benchRow) string {
 	return displayDriverName(driverName(row))
 }
 
+// driverName extracts the backend segment from sub-benchmark names.
 func driverName(row benchRow) string {
 	parts := strings.Split(row.Name, "/")
 	if len(parts) > 1 {
@@ -384,6 +415,7 @@ func driverName(row benchRow) string {
 	return row.Name
 }
 
+// displayDriverName preserves familiar product names in generated charts.
 func displayDriverName(name string) string {
 	switch name {
 	case "SyncPublishRoundTrip":
@@ -405,6 +437,7 @@ func displayDriverName(name string) string {
 	}
 }
 
+// driverColor keeps backend colors stable across regenerated benchmark charts.
 func driverColor(label string) string {
 	switch label {
 	case "Sync":
@@ -426,6 +459,7 @@ func driverColor(label string) string {
 	}
 }
 
+// formatMetric avoids fractional noise for the integer-like metrics shown in charts.
 func formatMetric(value float64, unit string) string {
 	switch unit {
 	case "ns/op":
@@ -441,6 +475,7 @@ func formatMetric(value float64, unit string) string {
 	}
 }
 
+// escapeXML keeps generated labels safe for direct SVG embedding.
 func escapeXML(value string) string {
 	replacer := strings.NewReplacer(
 		"&", "&amp;",
@@ -452,6 +487,7 @@ func escapeXML(value string) string {
 	return replacer.Replace(value)
 }
 
+// replaceBenchBlock requires both markers so generation cannot overwrite unrelated README content.
 func replaceBenchBlock(body, rendered string) (string, error) {
 	start := strings.Index(body, benchStartMarker)
 	end := strings.Index(body, benchEndMarker)
@@ -463,6 +499,7 @@ func replaceBenchBlock(body, rendered string) (string, error) {
 	return body[:start] + replacement + body[end:], nil
 }
 
+// saveBenchmarkRows writes a stable newline-terminated snapshot for reviewable diffs.
 func saveBenchmarkRows(path string, rows []benchRow) error {
 	data, err := json.MarshalIndent(rows, "", "  ")
 	if err != nil {
@@ -472,6 +509,7 @@ func saveBenchmarkRows(path string, rows []benchRow) error {
 	return os.WriteFile(path, data, 0o644)
 }
 
+// loadBenchmarkRows supports render-only regeneration from a reviewed benchmark snapshot.
 func loadBenchmarkRows(path string) ([]benchRow, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -484,6 +522,7 @@ func loadBenchmarkRows(path string) ([]benchRow, error) {
 	return rows, nil
 }
 
+// findRepoRoot resolves the repository from the generator's documented working directory.
 func findRepoRoot() string {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -492,6 +531,7 @@ func findRepoRoot() string {
 	return filepath.Clean(filepath.Join(wd, "..", ".."))
 }
 
+// integrationBenchTime permits deliberate integration-duration overrides while keeping a quick default.
 func integrationBenchTime() string {
 	if value := strings.TrimSpace(os.Getenv("BENCH_INTEGRATION_TIME")); value != "" {
 		return value
@@ -499,6 +539,7 @@ func integrationBenchTime() string {
 	return "1s"
 }
 
+// integrationDriverSelection defaults benchmark rendering to every bundled distributed driver.
 func integrationDriverSelection() string {
 	if value := strings.TrimSpace(os.Getenv("INTEGRATION_DRIVER")); value != "" {
 		return value
@@ -506,6 +547,7 @@ func integrationDriverSelection() string {
 	return "gcppubsub,kafka,nats,natsjetstream,redis,sns"
 }
 
+// selectedDriverNames normalizes the configured driver filter for stable matching.
 func selectedDriverNames() map[string]bool {
 	value := integrationDriverSelection()
 	if value == "" {

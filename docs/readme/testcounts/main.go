@@ -24,11 +24,13 @@ const (
 	testCountEnd   = "<!-- test-count:embed:end -->"
 )
 
+// Counts records executed unit and integration test totals for README badges.
 type Counts struct {
 	Unit        int
 	Integration int
 }
 
+// main reports badge generation failures through a non-zero process exit.
 func main() {
 	if err := run(); err != nil {
 		fmt.Println("Error:", err)
@@ -37,6 +39,7 @@ func main() {
 	fmt.Println("✔ Test badges updated from executed test runs")
 }
 
+// run derives README test badges from actual Go test execution events.
 func run() error {
 	root, err := findRoot()
 	if err != nil {
@@ -77,6 +80,7 @@ func run() error {
 	return os.WriteFile(readmePath, []byte(out), 0o644)
 }
 
+// countRunEvents counts executed unit tests instead of relying on source-name heuristics.
 func countRunEvents(root string, args []string) (int, error) {
 	cmd := exec.Command("go", args...)
 	cmd.Dir = root
@@ -92,6 +96,7 @@ func countRunEvents(root string, args []string) (int, error) {
 	return countRunEventsFromJSON(out.Bytes(), nil)
 }
 
+// countIntegrationRunEvents restricts counts to top-level integration scenarios and their subtests.
 func countIntegrationRunEvents(integrationDir string, integrationNames map[string]struct{}) (int, error) {
 	runPattern := buildTopLevelRunPattern(integrationNames)
 	if runPattern == "" {
@@ -112,6 +117,7 @@ func countIntegrationRunEvents(integrationDir string, integrationNames map[strin
 	return countRunEventsFromJSON(out.Bytes(), integrationNames)
 }
 
+// integrationTopLevelTests discovers the authoritative scenario names directly from integration sources.
 func integrationTopLevelTests(root string) (map[string]struct{}, error) {
 	names := map[string]struct{}{}
 
@@ -157,6 +163,7 @@ func integrationTopLevelTests(root string) (map[string]struct{}, error) {
 	return names, nil
 }
 
+// buildTopLevelRunPattern includes subtests while excluding unrelated helper-package tests.
 func buildTopLevelRunPattern(names map[string]struct{}) string {
 	if len(names) == 0 {
 		return ""
@@ -173,6 +180,7 @@ func buildTopLevelRunPattern(names map[string]struct{}) string {
 	return "^(" + strings.Join(parts, "|") + ")(/.*)?$"
 }
 
+// countRunEventsFromJSON tolerates non-JSON tool output while counting only test run events.
 func countRunEventsFromJSON(data []byte, topLevelNames map[string]struct{}) (int, error) {
 	var total int
 	scanner := bufio.NewScanner(bytes.NewReader(data))
@@ -209,6 +217,7 @@ func countRunEventsFromJSON(data []byte, topLevelNames map[string]struct{}) (int
 	return total, nil
 }
 
+// updateTestsSection requires explicit markers so badge updates cannot replace unrelated README content.
 func updateTestsSection(readme string, counts Counts) (string, error) {
 	start := strings.Index(readme, testCountStart)
 	end := strings.Index(readme, testCountEnd)
@@ -232,6 +241,7 @@ func updateTestsSection(readme string, counts Counts) (string, error) {
 	return before + leading + strings.Join(lines, "\n") + "\n" + after, nil
 }
 
+// findRoot locates the repository without assuming the generator's invocation directory.
 func findRoot() (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -249,6 +259,7 @@ func findRoot() (string, error) {
 	return "", fmt.Errorf("could not find project root")
 }
 
+// fileExists keeps root discovery tolerant of absent candidate markers.
 func fileExists(p string) bool {
 	_, err := os.Stat(p)
 	return err == nil

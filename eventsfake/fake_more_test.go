@@ -9,12 +9,14 @@ import (
 	"github.com/goforj/events/eventstest"
 )
 
+// TestFakeBusContract verifies the reusable fake satisfies the shared bus contract.
 func TestFakeBusContract(t *testing.T) {
 	eventstest.RunBusContract(t, func(testing.TB) events.API {
 		return New().Bus()
 	})
 }
 
+// TestFakeBusDriverAndSubscribeContext verifies fake driver identity and context subscription behavior.
 func TestFakeBusDriverAndSubscribeContext(t *testing.T) {
 	fake := New()
 	if got := fake.Bus().Driver(); got != eventscore.DriverSync {
@@ -29,6 +31,7 @@ func TestFakeBusDriverAndSubscribeContext(t *testing.T) {
 	}
 }
 
+// TestFakeBusReadyAndSubscribe verifies readiness and synchronous handler delivery.
 func TestFakeBusReadyAndSubscribe(t *testing.T) {
 	fake := New()
 	if err := fake.Bus().Ready(); err != nil {
@@ -46,6 +49,7 @@ func TestFakeBusReadyAndSubscribe(t *testing.T) {
 	}
 }
 
+// TestFakeBusPublishContextAndRecords verifies context publishes are both delivered and recorded.
 func TestFakeBusPublishContextAndRecords(t *testing.T) {
 	fake := New()
 	if err := fake.Bus().WithContext(context.Background()).Publish(fakeEvent{}); err != nil {

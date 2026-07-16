@@ -8,18 +8,21 @@ import (
 	"github.com/goforj/events/eventscore"
 )
 
+// TestNewRequiresProjectID verifies Pub/Sub construction rejects an empty project identity.
 func TestNewRequiresProjectID(t *testing.T) {
 	if _, err := New(context.Background(), Config{}); err == nil {
 		t.Fatal("expected error")
 	}
 }
 
+// TestNewRequiresURIWithoutClient verifies self-managed clients require an emulator or service URI.
 func TestNewRequiresURIWithoutClient(t *testing.T) {
 	if _, err := New(context.Background(), Config{ProjectID: "test-project"}); err == nil {
 		t.Fatal("expected error")
 	}
 }
 
+// TestDriverConstant verifies the Pub/Sub registry identifier remains stable.
 func TestDriverConstant(t *testing.T) {
 	driver := &Driver{}
 	if got := driver.Driver(); got != eventscore.DriverGCPPubSub {
@@ -27,6 +30,7 @@ func TestDriverConstant(t *testing.T) {
 	}
 }
 
+// TestNewWithClient verifies injected Pub/Sub clients bypass transport construction.
 func TestNewWithClient(t *testing.T) {
 	client := &gpubsub.Client{}
 	driver, err := New(context.Background(), Config{
@@ -41,6 +45,7 @@ func TestNewWithClient(t *testing.T) {
 	}
 }
 
+// TestReadyHonorsContext verifies canceled readiness probes stop before API access.
 func TestReadyHonorsContext(t *testing.T) {
 	driver := &Driver{}
 	ctx, cancel := context.WithCancel(context.Background())
@@ -51,6 +56,7 @@ func TestReadyHonorsContext(t *testing.T) {
 	}
 }
 
+// TestPublishContextHonorsContext verifies canceled publishes do not reach Pub/Sub.
 func TestPublishContextHonorsContext(t *testing.T) {
 	driver := &Driver{}
 	ctx, cancel := context.WithCancel(context.Background())
@@ -62,6 +68,7 @@ func TestPublishContextHonorsContext(t *testing.T) {
 	}
 }
 
+// TestSubscribeContextHonorsContext verifies canceled subscriptions allocate no receiver resources.
 func TestSubscribeContextHonorsContext(t *testing.T) {
 	driver := &Driver{}
 	ctx, cancel := context.WithCancel(context.Background())
@@ -74,6 +81,14 @@ func TestSubscribeContextHonorsContext(t *testing.T) {
 	}
 }
 
+// TestSubscribeContextRejectsNilHandler verifies required callbacks fail before backend access.
+func TestSubscribeContextRejectsNilHandler(t *testing.T) {
+	if _, err := (&Driver{}).SubscribeContext(context.Background(), "orders.created", nil); err == nil {
+		t.Fatal("expected nil handler error")
+	}
+}
+
+// TestCloseWithoutOwnedResources verifies injected clients are not closed by the driver.
 func TestCloseWithoutOwnedResources(t *testing.T) {
 	driver := &Driver{}
 	if err := driver.Close(); err != nil {
@@ -81,6 +96,7 @@ func TestCloseWithoutOwnedResources(t *testing.T) {
 	}
 }
 
+// TestEnsureTopicHonorsContext verifies topic creation stops when its context is canceled.
 func TestEnsureTopicHonorsContext(t *testing.T) {
 	driver := &Driver{}
 	ctx, cancel := context.WithCancel(context.Background())
@@ -91,6 +107,7 @@ func TestEnsureTopicHonorsContext(t *testing.T) {
 	}
 }
 
+// TestSubscriptionCloseWithCanceledReceive verifies receiver cancellation does not prevent deterministic cleanup.
 func TestSubscriptionCloseWithCanceledReceive(t *testing.T) {
 	done := make(chan error, 1)
 	done <- context.Canceled
@@ -101,6 +118,9 @@ func TestSubscriptionCloseWithCanceledReceive(t *testing.T) {
 	}
 	if err := sub.Close(); err != nil {
 		t.Fatalf("Close returned error: %v", err)
+	}
+	if err := sub.Close(); err != nil {
+		t.Fatalf("second Close returned error: %v", err)
 	}
 	if !canceled {
 		t.Fatal("expected cancel to be called")

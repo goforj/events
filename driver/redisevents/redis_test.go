@@ -11,12 +11,14 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// TestNewRequiresAddrOrClient verifies Redis construction requires an address or injected client.
 func TestNewRequiresAddrOrClient(t *testing.T) {
 	if _, err := New(Config{}); err == nil {
 		t.Fatal("expected error")
 	}
 }
 
+// TestDriverConstant verifies the Redis registry identifier remains stable.
 func TestDriverConstant(t *testing.T) {
 	driver := &Driver{}
 	if got := driver.Driver(); got != eventscore.DriverRedis {
@@ -24,6 +26,7 @@ func TestDriverConstant(t *testing.T) {
 	}
 }
 
+// TestNewWithAddr verifies address-based construction creates an owned Redis client.
 func TestNewWithAddr(t *testing.T) {
 	driver, err := New(Config{Addr: "127.0.0.1:6379"})
 	if err != nil {
@@ -35,6 +38,7 @@ func TestNewWithAddr(t *testing.T) {
 	_ = driver.Close()
 }
 
+// TestNewWithClient verifies injected Redis clients bypass address validation.
 func TestNewWithClient(t *testing.T) {
 	srv := startMiniRedis(t)
 
@@ -50,6 +54,7 @@ func TestNewWithClient(t *testing.T) {
 	}
 }
 
+// TestReady verifies Redis readiness delegates to Ping with caller context.
 func TestReady(t *testing.T) {
 	srv := startMiniRedis(t)
 
@@ -64,6 +69,7 @@ func TestReady(t *testing.T) {
 	}
 }
 
+// TestPublishAndSubscribeContext verifies Redis payloads round-trip through Pub/Sub.
 func TestPublishAndSubscribeContext(t *testing.T) {
 	srv := startMiniRedis(t)
 
@@ -103,6 +109,7 @@ func TestPublishAndSubscribeContext(t *testing.T) {
 	}
 }
 
+// TestSubscribeContextHonorsCanceledContext verifies canceled subscriptions do not start delivery.
 func TestSubscribeContextHonorsCanceledContext(t *testing.T) {
 	srv := startMiniRedis(t)
 
@@ -122,6 +129,7 @@ func TestSubscribeContextHonorsCanceledContext(t *testing.T) {
 	}
 }
 
+// TestSubscriptionCloseStopsDelivery verifies closing Redis subscriptions terminates future callbacks.
 func TestSubscriptionCloseStopsDelivery(t *testing.T) {
 	srv := startMiniRedis(t)
 
@@ -158,6 +166,7 @@ func TestSubscriptionCloseStopsDelivery(t *testing.T) {
 	}
 }
 
+// startMiniRedis starts an isolated in-process server and registers deterministic shutdown.
 func startMiniRedis(t *testing.T) *miniredis.Miniredis {
 	t.Helper()
 

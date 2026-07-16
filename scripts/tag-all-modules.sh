@@ -4,19 +4,19 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/tag-all-modules.sh <version> [--push] [--remote <name>] [--dry-run] [--allow-dirty] [--skip-existing] [--exclude <module-dir>]
+  scripts/tag-all-modules.sh <version> [--push] [--remote <name>] [--dry-run] [--allow-dirty] [--skip-existing]
 
 Examples:
-  scripts/tag-all-modules.sh v0.1.3 --dry-run
-  scripts/tag-all-modules.sh v0.1.3 --push
-  scripts/tag-all-modules.sh v0.1.3 --push --exclude docs --exclude examples
-  scripts/tag-all-modules.sh v0.1.3 --exclude driver
+  scripts/tag-all-modules.sh v0.2.0 --dry-run
+  scripts/tag-all-modules.sh v0.2.0 --push
 
 Behavior:
   - Tags root module as: vX.Y.Z
-  - Tags each submodule as: <relative/module/path>/vX.Y.Z
+  - Tags each published submodule as: <relative/module/path>/vX.Y.Z
+  - Reads the dependency-ordered release set from scripts/published-modules.txt
+  - Never tags the docs, examples, or integration support modules
   - Uses the current HEAD commit for all tags
-  - --exclude supports exact module dirs and prefixes (for example: driver excludes all driver/* modules)
+  - Pushes the coordinated tag set atomically when --push is used
 USAGE
 }
 
@@ -31,33 +31,25 @@ remote="origin"
 dry_run=0
 allow_dirty=0
 skip_existing=0
-excludes=()
-
-normalize_module_dir() {
-  local dir="$1"
-  dir="${dir#./}"
-  dir="${dir%/}"
-  if [[ -z "$dir" ]]; then
-    dir="."
-  fi
-  printf '%s\n' "$dir"
-}
-
-module_is_excluded() {
-  local dir="$1"
-  local ex
-  for ex in "${excludes[@]-}"; do
-    if [[ "$dir" == "$ex" ]] || [[ "$dir" == "$ex/"* ]]; then
-      return 0
-    fi
-  done
-  return 1
-}
 
 remote_tag_exists() {
   local remote_name="$1"
   local tag="$2"
   git ls-remote --exit-code --tags --refs "$remote_name" "refs/tags/$tag" >/dev/null 2>&1
+}
+
+remote_tag_commit() {
+  local remote_name="$1"
+  local tag="$2"
+  local refs peeled
+
+  refs="$(git ls-remote --tags "$remote_name" "refs/tags/$tag" "refs/tags/$tag^{}")"
+  peeled="$(awk '$2 ~ /\^\{\}$/ { print $1; exit }' <<< "$refs")"
+  if [[ -n "$peeled" ]]; then
+    printf '%s\n' "$peeled"
+    return 0
+  fi
+  awk '$2 !~ /\^\{\}$/ { print $1; exit }' <<< "$refs"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -90,15 +82,6 @@ while [[ $# -gt 0 ]]; do
       skip_existing=1
       shift
       ;;
-    --exclude)
-      mod="${2:-}"
-      if [[ -z "$mod" ]]; then
-        echo "error: --exclude requires a module directory value" >&2
-        exit 1
-      fi
-      excludes+=("$(normalize_module_dir "$mod")")
-      shift 2
-      ;;
     v*)
       if [[ -n "$version" ]]; then
         echo "error: multiple versions provided" >&2
@@ -127,6 +110,7 @@ fi
 
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
+head_commit="$(git rev-parse HEAD)"
 
 if [[ ! -f go.mod ]]; then
   echo "error: must run inside a Go module repository" >&2
@@ -138,30 +122,18 @@ if [[ "$allow_dirty" -eq 0 ]] && [[ -n "$(git status --porcelain)" ]]; then
   exit 1
 fi
 
-module_dirs=()
-while IFS= read -r dir; do
-  dir="$(normalize_module_dir "$dir")"
-  module_dirs+=("$dir")
-done <<EOF_MODULES
-$(find . -name go.mod -type f \
-  -not -path './.git/*' \
-  -not -path './*/.git/*' \
-  -not -path './*/vendor/*' \
-  -exec dirname {} \; | sed 's#^\./##' | sort)
-EOF_MODULES
+bash scripts/check-published-modules.sh "$version"
+
+mapfile -t module_dirs < scripts/published-modules.txt
 
 if [[ ${#module_dirs[@]} -eq 0 ]]; then
-  echo "error: no modules discovered" >&2
+  echo "error: no published modules declared" >&2
   exit 1
 fi
 
 tags_to_create=()
 tags_to_push=()
 for dir in "${module_dirs[@]}"; do
-  if module_is_excluded "$dir"; then
-    continue
-  fi
-
   if [[ "$dir" == "." ]]; then
     tag="$version"
   else
@@ -186,6 +158,20 @@ for dir in "${module_dirs[@]}"; do
 
   if [[ "$local_exists" -eq 1 ]] || [[ "$remote_exists" -eq 1 ]]; then
     if [[ "$skip_existing" -eq 1 ]]; then
+      if [[ "$local_exists" -eq 1 ]]; then
+        local_commit="$(git rev-list -n 1 "refs/tags/$tag")"
+        if [[ "$local_commit" != "$head_commit" ]]; then
+          echo "error: existing local tag $tag points to $local_commit, expected $head_commit" >&2
+          exit 1
+        fi
+      fi
+      if [[ "$remote_exists" -eq 1 ]]; then
+        remote_commit="$(remote_tag_commit "$remote" "$tag")"
+        if [[ "$remote_commit" != "$head_commit" ]]; then
+          echo "error: existing remote tag $tag points to $remote_commit, expected $head_commit" >&2
+          exit 1
+        fi
+      fi
       if [[ "$local_exists" -eq 1 ]] && [[ "$remote_exists" -eq 0 ]] && [[ "$push" -eq 1 ]]; then
         echo "reuse local tag for push: $tag"
         tags_to_push+=("$tag")
@@ -217,9 +203,6 @@ fi
 echo "repo: $root"
 echo "head: $(git rev-parse --short HEAD)"
 echo "version: $version"
-if [[ ${#excludes[@]} -gt 0 ]]; then
-  echo "excluded modules: ${excludes[*]}"
-fi
 if [[ ${#tags_to_create[@]} -gt 0 ]]; then
   echo "create tags (${#tags_to_create[@]}):"
   for t in "${tags_to_create[@]}"; do
@@ -249,8 +232,8 @@ if [[ ${#tags_to_create[@]} -gt 0 ]]; then
 fi
 
 if [[ "$push" -eq 1 ]]; then
-  git push "$remote" "${tags_to_push[@]}"
-  echo "pushed ${#tags_to_push[@]} tags to $remote"
+  git push --atomic "$remote" "${tags_to_push[@]}"
+  echo "atomically pushed ${#tags_to_push[@]} tags to $remote"
 else
   echo "not pushed (use --push)"
 fi

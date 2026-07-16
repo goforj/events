@@ -14,6 +14,7 @@ type options struct {
 	codec Codec
 }
 
+// apply evaluates constructor options in order so the last explicit codec wins.
 func (o *options) apply(opts []Option) {
 	for _, opt := range opts {
 		if opt != nil {

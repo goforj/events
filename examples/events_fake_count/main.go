@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Count returns the total number of recorded publishes.
 

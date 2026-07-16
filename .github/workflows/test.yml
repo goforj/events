@@ -5,7 +5,59 @@ on:
   pull_request:
 
 jobs:
+  minimum-go:
+    name: minimum Go 1.24
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+          cache: true
+          cache-dependency-path: |
+            driver/gcppubsubevents/go.sum
+            driver/kafkaevents/go.sum
+            driver/natsjetstreamevents/go.sum
+            driver/natsevents/go.sum
+            driver/redisevents/go.sum
+            driver/snsevents/go.sum
+            examples/go.sum
+      - name: Test minimum-version modules
+        run: |
+          workspace="$(mktemp -d)"
+          trap 'rm -rf "$workspace"' EXIT
+          (
+            cd "$workspace"
+            GOWORK=off go work init \
+              "$GITHUB_WORKSPACE" \
+              "$GITHUB_WORKSPACE/eventscore" \
+              "$GITHUB_WORKSPACE/eventstest" \
+              "$GITHUB_WORKSPACE/eventsfake" \
+              "$GITHUB_WORKSPACE/docs" \
+              "$GITHUB_WORKSPACE/examples" \
+              "$GITHUB_WORKSPACE/driver/gcppubsubevents" \
+              "$GITHUB_WORKSPACE/driver/kafkaevents" \
+              "$GITHUB_WORKSPACE/driver/natsjetstreamevents" \
+              "$GITHUB_WORKSPACE/driver/natsevents" \
+              "$GITHUB_WORKSPACE/driver/redisevents" \
+              "$GITHUB_WORKSPACE/driver/snsevents"
+            GOWORK=off go work edit -go=1.24.0 go.work
+            GOWORK=off go work edit \
+              -replace="github.com/goforj/events@v0.2.0=$GITHUB_WORKSPACE" \
+              -replace="github.com/goforj/events/eventscore@v0.2.0=$GITHUB_WORKSPACE/eventscore" \
+              -replace="github.com/goforj/events/eventstest@v0.2.0=$GITHUB_WORKSPACE/eventstest" \
+              go.work
+          )
+          export GOWORK="$workspace/go.work"
+          for dir in . eventscore eventstest eventsfake docs examples driver/gcppubsubevents driver/kafkaevents driver/natsjetstreamevents driver/natsevents driver/redisevents driver/snsevents; do
+            packages="$(cd "$dir" && go list ./...)"
+            if [ -n "$packages" ]; then
+              (cd "$dir" && go test -race -count=1 ./...)
+            fi
+          done
+
   modules:
+    name: stable Go quality gates
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,10 +79,26 @@ jobs:
             driver/redisevents/go.sum
             driver/snsevents/go.sum
             integration/go.sum
+      - name: Check Published Module Boundaries
+        run: bash scripts/check-published-modules.sh
       - name: Test All Modules
+        env:
+          GO_TEST_FLAGS: '-race -count=1'
         run: sh scripts/test-all-modules.sh
+      - name: Vet All Modules
+        run: |
+          for dir in . eventscore eventstest eventsfake docs examples driver/gcppubsubevents driver/kafkaevents driver/natsjetstreamevents driver/natsevents driver/redisevents driver/snsevents integration; do
+            packages="$(cd "$dir" && go list ./...)"
+            if [ -n "$packages" ]; then
+              (cd "$dir" && go vet ./...)
+            fi
+          done
+      - name: Verify Tidy Modules
+        run: bash scripts/check-tidy-modules.sh
       - name: Check Docs
-        run: sh scripts/check-docs.sh
+        run: |
+          sh scripts/check-docs.sh
+          git diff --exit-code
       - name: Aggregate Coverage
         run: RUN_INTEGRATION=1 sh scripts/coverage-codecov.sh
       - name: Upload results to Codecov
@@ -90,4 +158,6 @@ jobs:
             driver/snsevents/go.sum
             integration/go.sum
       - name: Test Integration
+        env:
+          GO_TEST_FLAGS: '-race -count=1'
         run: sh scripts/test-integration.sh

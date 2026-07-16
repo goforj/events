@@ -1,10 +1,10 @@
 module github.com/goforj/events/driver/redisevents
 
-go 1.25.0
+go 1.24.0
 
 require (
 	github.com/alicebob/miniredis/v2 v2.35.0
-	github.com/goforj/events/eventscore v0.0.0
+	github.com/goforj/events/eventscore v0.2.0
 	github.com/redis/go-redis/v9 v9.12.1
 )
 
@@ -13,7 +13,3 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
 )
-
-replace github.com/goforj/events => ../..
-
-replace github.com/goforj/events/eventscore => ../../eventscore

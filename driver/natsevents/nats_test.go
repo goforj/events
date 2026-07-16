@@ -10,12 +10,14 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+// TestNewRequiresURLOrConn verifies NATS construction requires a URL or injected connection.
 func TestNewRequiresURLOrConn(t *testing.T) {
 	if _, err := New(Config{}); err == nil {
 		t.Fatal("expected error")
 	}
 }
 
+// TestDriverConstant verifies the NATS registry identifier remains stable.
 func TestDriverConstant(t *testing.T) {
 	driver := &Driver{}
 	if got := driver.Driver(); got != eventscore.DriverNATS {
@@ -23,12 +25,14 @@ func TestDriverConstant(t *testing.T) {
 	}
 }
 
+// TestNewWithInvalidURL verifies connection failures propagate from URL-based construction.
 func TestNewWithInvalidURL(t *testing.T) {
 	if _, err := New(Config{URL: "nats://127.0.0.1:1"}); err == nil {
 		t.Fatal("expected connection error")
 	}
 }
 
+// TestNewWithConn verifies injected NATS connections bypass dialing.
 func TestNewWithConn(t *testing.T) {
 	url, shutdown := startTestServer(t)
 	defer shutdown()
@@ -48,6 +52,7 @@ func TestNewWithConn(t *testing.T) {
 	}
 }
 
+// TestReadyHonorsContext verifies canceled readiness probes return before flushing NATS.
 func TestReadyHonorsContext(t *testing.T) {
 	url, shutdown := startTestServer(t)
 	defer shutdown()
@@ -66,6 +71,7 @@ func TestReadyHonorsContext(t *testing.T) {
 	}
 }
 
+// TestPublishAndSubscribeContext verifies NATS payloads round-trip through a subscription.
 func TestPublishAndSubscribeContext(t *testing.T) {
 	url, shutdown := startTestServer(t)
 	defer shutdown()
@@ -106,6 +112,7 @@ func TestPublishAndSubscribeContext(t *testing.T) {
 	}
 }
 
+// TestPublishContextHonorsCanceledContext verifies canceled publishes do not reach NATS.
 func TestPublishContextHonorsCanceledContext(t *testing.T) {
 	url, shutdown := startTestServer(t)
 	defer shutdown()
@@ -125,6 +132,7 @@ func TestPublishContextHonorsCanceledContext(t *testing.T) {
 	}
 }
 
+// TestSubscriptionCloseStopsDelivery verifies unsubscribing prevents future NATS callbacks.
 func TestSubscriptionCloseStopsDelivery(t *testing.T) {
 	url, shutdown := startTestServer(t)
 	defer shutdown()
@@ -162,6 +170,7 @@ func TestSubscriptionCloseStopsDelivery(t *testing.T) {
 	}
 }
 
+// startTestServer starts an ephemeral in-process NATS server and returns complete shutdown logic.
 func startTestServer(t *testing.T) (string, func()) {
 	t.Helper()
 

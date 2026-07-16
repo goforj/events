@@ -10,6 +10,7 @@ import (
 
 	gpubsub "cloud.google.com/go/pubsub"
 	"github.com/goforj/events/eventscore"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -76,6 +77,7 @@ const (
 //	})
 //	_ = driver
 func New(ctx context.Context, cfg Config) (*Driver, error) {
+	ctx = normalizeContext(ctx)
 	if cfg.Client != nil {
 		if cfg.ProjectID == "" {
 			return nil, errors.New("gcppubsubevents: ProjectID is required")
@@ -120,25 +122,23 @@ func (d *Driver) Driver() eventscore.Driver {
 // Ready checks Google Pub/Sub connectivity.
 // @group Drivers
 func (d *Driver) Ready(ctx context.Context) error {
-	if ctx != nil && ctx.Err() != nil {
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
 		return ctx.Err()
 	}
 	it := d.client.Topics(ctx)
 	_, err := it.Next()
-	if err == nil {
+	if err == nil || errors.Is(err, iterator.Done) {
 		return nil
 	}
-	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
-		return err
-	}
-	// Iterator completion is still a successful connectivity check.
-	return nil
+	return err
 }
 
 // PublishContext publishes a topic payload to Google Pub/Sub.
 // @group Drivers
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
-	if ctx != nil && ctx.Err() != nil {
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
 		return ctx.Err()
 	}
 	topic, err := d.ensureTopic(ctx, msg.Topic)
@@ -153,8 +153,12 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 // SubscribeContext subscribes to a Google Pub/Sub topic and forwards messages.
 // @group Drivers
 func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
-	if ctx != nil && ctx.Err() != nil {
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
 		return nil, ctx.Err()
+	}
+	if handler == nil {
+		return nil, errors.New("gcppubsubevents: handler is required")
 	}
 	pubTopic, err := d.ensureTopic(ctx, topic)
 	if err != nil {
@@ -180,7 +184,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 		done <- err
 	}()
 
-	return subscription{
+	return &subscription{
 		cancel: cancel,
 		done:   done,
 		sub:    sub,
@@ -202,8 +206,10 @@ func (d *Driver) Close() error {
 	return nil
 }
 
+// ensureTopic serializes lazy topic creation so concurrent publishers share one configured handle.
 func (d *Driver) ensureTopic(ctx context.Context, topic string) (*gpubsub.Topic, error) {
-	if ctx != nil && ctx.Err() != nil {
+	ctx = normalizeContext(ctx)
+	if ctx.Err() != nil {
 		return nil, ctx.Err()
 	}
 	if pubTopic, ok := d.cachedTopic(topic); ok {
@@ -234,6 +240,15 @@ func (d *Driver) ensureTopic(ctx context.Context, topic string) (*gpubsub.Topic,
 	return created, nil
 }
 
+// normalizeContext keeps direct driver calls consistent with the root bus facade.
+func normalizeContext(ctx context.Context) context.Context {
+	if ctx == nil {
+		return context.Background()
+	}
+	return ctx
+}
+
+// cachedTopic reads the local topic handle cache without blocking unrelated publishes.
 func (d *Driver) cachedTopic(topic string) (*gpubsub.Topic, bool) {
 	d.topicsMu.RLock()
 	defer d.topicsMu.RUnlock()
@@ -241,17 +256,20 @@ func (d *Driver) cachedTopic(topic string) (*gpubsub.Topic, bool) {
 	return pubTopic, ok
 }
 
+// newTopic applies publish settings to handles for topics that already exist remotely.
 func (d *Driver) newTopic(topic string) *gpubsub.Topic {
 	pubTopic := d.client.Topic(topic)
 	d.configureTopic(pubTopic)
 	return pubTopic
 }
 
+// configureTopic keeps single-message publishes responsive across managed and emulator backends.
 func (d *Driver) configureTopic(topic *gpubsub.Topic) {
 	topic.PublishSettings.DelayThreshold = defaultPublishDelayThreshold
 	topic.PublishSettings.CountThreshold = defaultPublishCountThreshold
 }
 
+// stopTopics flushes publisher workers before the owned client is closed.
 func (d *Driver) stopTopics() {
 	d.topicsMu.Lock()
 	defer d.topicsMu.Unlock()
@@ -265,19 +283,26 @@ type subscription struct {
 	cancel context.CancelFunc
 	done   <-chan error
 	sub    *gpubsub.Subscription
+	once   sync.Once
+	err    error
 }
 
-func (s subscription) Close() error {
-	s.cancel()
-	err := <-s.done
-	var deleteErr error
-	if s.sub != nil {
-		deleteCtx, cancel := context.WithCancel(context.Background())
-		defer cancel()
-		deleteErr = s.sub.Delete(deleteCtx)
-	}
-	if err != nil && !errors.Is(err, context.Canceled) {
-		return err
-	}
-	return deleteErr
+// Close cancels delivery once and keeps the first teardown result for repeated calls.
+func (s *subscription) Close() error {
+	s.once.Do(func() {
+		s.cancel()
+		receiveErr := <-s.done
+		var deleteErr error
+		if s.sub != nil {
+			deleteCtx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			deleteErr = s.sub.Delete(deleteCtx)
+		}
+		if receiveErr != nil && !errors.Is(receiveErr, context.Canceled) {
+			s.err = receiveErr
+			return
+		}
+		s.err = deleteErr
+	})
+	return s.err
 }

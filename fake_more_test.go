@@ -5,6 +5,7 @@ import (
 	"testing"
 )
 
+// TestNewFakeReadySubscribeReset verifies fake delivery, readiness, and state reset.
 func TestNewFakeReadySubscribeReset(t *testing.T) {
 	fake := NewFake()
 	if err := fake.Bus().Ready(); err != nil {
@@ -26,6 +27,7 @@ func TestNewFakeReadySubscribeReset(t *testing.T) {
 	}
 }
 
+// TestNewFakeSubscribeContextAndDriver verifies context subscriptions and driver identity delegation.
 func TestNewFakeSubscribeContextAndDriver(t *testing.T) {
 	fake := NewFake()
 	if got := fake.Bus().Driver(); got != fake.bus.Driver() {

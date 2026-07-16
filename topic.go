@@ -10,9 +10,11 @@ import (
 // TopicEvent overrides the derived topic for an event.
 // @group Publish
 type TopicEvent interface {
+	// Topic returns the stable routing key shared by publishers and subscribers.
 	Topic() string
 }
 
+// resolveTopic applies an explicit stable topic before falling back to the concrete type name.
 func resolveTopic(event any) (string, reflect.Type, error) {
 	if event == nil {
 		return "", nil, ErrNilEvent
@@ -42,6 +44,7 @@ func resolveTopic(event any) (string, reflect.Type, error) {
 	return topic, typ, nil
 }
 
+// deriveTopic converts a Go type name into the library's dotted lowercase topic convention.
 func deriveTopic(name string) string {
 	parts := splitTypeWords(name)
 	for i := range parts {
@@ -50,6 +53,7 @@ func deriveTopic(name string) string {
 	return strings.Join(parts, ".")
 }
 
+// splitTypeWords preserves common initialisms while locating Go identifier word boundaries.
 func splitTypeWords(name string) []string {
 	if name == "" {
 		return nil
@@ -70,6 +74,7 @@ func splitTypeWords(name string) []string {
 	return parts
 }
 
+// indirectType finds the named event type beneath any supported pointer depth.
 func indirectType(typ reflect.Type) reflect.Type {
 	for typ.Kind() == reflect.Pointer {
 		typ = typ.Elem()
@@ -77,6 +82,7 @@ func indirectType(typ reflect.Type) reflect.Type {
 	return typ
 }
 
+// isNilValue keeps reflection-based validation safe across every nilable kind.
 func isNilValue(v reflect.Value) bool {
 	switch v.Kind() {
 	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Pointer, reflect.Slice:
@@ -84,4 +90,9 @@ func isNilValue(v reflect.Value) bool {
 	default:
 		return false
 	}
+}
+
+// isNilInterface detects typed-nil collaborators held by a non-nil interface.
+func isNilInterface(value any) bool {
+	return value == nil || isNilValue(reflect.ValueOf(value))
 }

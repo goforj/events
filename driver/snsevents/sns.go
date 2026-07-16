@@ -145,6 +145,7 @@ func New(cfg Config) (*Driver, error) {
 	}, nil
 }
 
+// loadAWSConfig uses static credentials only for explicit custom endpoints such as local emulators.
 func loadAWSConfig(cfg Config) (aws.Config, error) {
 	region := strings.TrimSpace(cfg.Region)
 	if region == "" {
@@ -220,6 +221,9 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 	if err != nil {
 		return nil, err
 	}
+	if handler == nil {
+		return nil, errors.New("snsevents: handler is required")
+	}
 	topicARN, err := d.ensureTopic(ctx, topic)
 	if err != nil {
 		return nil, err
@@ -280,7 +284,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 		d.pollQueue(workerCtx, queueURL, topic, handler)
 	}()
 
-	return subscription{
+	return &subscription{
 		cancel:          cancel,
 		done:            done,
 		driver:          d,
@@ -295,6 +299,7 @@ func (d *Driver) Close() error {
 	return nil
 }
 
+// ensureTopic serializes lazy SNS topic creation and caches its ARN.
 func (d *Driver) ensureTopic(ctx context.Context, topic string) (string, error) {
 	var err error
 	ctx, err = normalizeContext(ctx)
@@ -324,6 +329,7 @@ func (d *Driver) ensureTopic(ctx context.Context, topic string) (string, error) 
 	return arn, nil
 }
 
+// cachedTopic keeps established publishing on a read-only fast path.
 func (d *Driver) cachedTopic(topic string) (string, bool) {
 	d.topicsMu.RLock()
 	defer d.topicsMu.RUnlock()
@@ -331,15 +337,18 @@ func (d *Driver) cachedTopic(topic string) (string, bool) {
 	return arn, ok
 }
 
+// topicName maps an event topic into SNS resource-name constraints.
 func (d *Driver) topicName(topic string) string {
 	return sanitizeName(d.topicNamePrefix+topic, maxQueueNameLen)
 }
 
+// queueName gives each bus subscription a distinct SQS fan-out target.
 func (d *Driver) queueName(topic string) string {
 	name := fmt.Sprintf("%s%s-%d", d.queueNamePrefix, topic, nextSubscriptionID.Add(1))
 	return sanitizeName(name, maxQueueNameLen)
 }
 
+// sanitizeName applies the shared SNS and SQS resource-name constraints and length limit.
 func sanitizeName(value string, maxLen int) string {
 	value = queueNameSanitizer.ReplaceAllString(value, "-")
 	value = strings.Trim(value, "-")
@@ -352,6 +361,7 @@ func sanitizeName(value string, maxLen int) string {
 	return value
 }
 
+// allowTopicToSend limits the queue policy to the one SNS topic used by this subscription.
 func (d *Driver) allowTopicToSend(ctx context.Context, queueURL, queueARN, topicARN string) error {
 	policyBytes, err := json.Marshal(queuePolicy{
 		Version: "2012-10-17",
@@ -380,6 +390,7 @@ func (d *Driver) allowTopicToSend(ctx context.Context, queueURL, queueARN, topic
 	return err
 }
 
+// pollQueue deletes each message after delivery because portable retry semantics are intentionally undefined.
 func (d *Driver) pollQueue(ctx context.Context, queueURL, topic string, handler eventscore.MessageHandler) {
 	for {
 		if ctx.Err() != nil {
@@ -415,6 +426,7 @@ func (d *Driver) pollQueue(ctx context.Context, queueURL, topic string, handler 
 	}
 }
 
+// deleteQueue centralizes teardown for both failed setup and normal subscription closure.
 func (d *Driver) deleteQueue(ctx context.Context, queueURL string) error {
 	var err error
 	ctx, err = normalizeContext(ctx)
@@ -427,6 +439,7 @@ func (d *Driver) deleteQueue(ctx context.Context, queueURL string) error {
 	return err
 }
 
+// normalizeContext keeps direct driver calls consistent with the root bus facade.
 func normalizeContext(ctx context.Context) (context.Context, error) {
 	if ctx == nil {
 		return context.Background(), nil
@@ -443,21 +456,25 @@ type subscription struct {
 	driver          *Driver
 	queueURL        string
 	subscriptionARN string
+	once            sync.Once
+	err             error
 }
 
-func (s subscription) Close() error {
-	s.cancel()
-	<-s.done
+// Close cancels delivery once and keeps the first teardown result for repeated calls.
+func (s *subscription) Close() error {
+	s.once.Do(func() {
+		s.cancel()
+		<-s.done
 
-	var result error
-	if s.subscriptionARN != "" && s.subscriptionARN != "pending confirmation" {
-		_, err := s.driver.snsClient.Unsubscribe(context.Background(), &sns.UnsubscribeInput{
-			SubscriptionArn: aws.String(s.subscriptionARN),
-		})
-		result = errors.Join(result, err)
-	}
-	result = errors.Join(result, s.driver.deleteQueue(context.Background(), s.queueURL))
-	return result
+		if s.subscriptionARN != "" && s.subscriptionARN != "pending confirmation" {
+			_, err := s.driver.snsClient.Unsubscribe(context.Background(), &sns.UnsubscribeInput{
+				SubscriptionArn: aws.String(s.subscriptionARN),
+			})
+			s.err = errors.Join(s.err, err)
+		}
+		s.err = errors.Join(s.err, s.driver.deleteQueue(context.Background(), s.queueURL))
+	})
+	return s.err
 }
 
 type queuePolicy struct {

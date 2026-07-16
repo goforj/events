@@ -1,10 +1,10 @@
 module github.com/goforj/events/driver/gcppubsubevents
 
-go 1.25.0
+go 1.24.0
 
 require (
 	cloud.google.com/go/pubsub v1.50.1
-	github.com/goforj/events/eventscore v0.0.0
+	github.com/goforj/events/eventscore v0.2.0
 	google.golang.org/api v0.249.0
 	google.golang.org/grpc v1.75.1
 )
@@ -42,7 +42,3 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250818200422-3122310a409c // indirect
 	google.golang.org/protobuf v1.36.8 // indirect
 )
-
-replace github.com/goforj/events => ../..
-
-replace github.com/goforj/events/eventscore => ../../eventscore

@@ -3,6 +3,7 @@
 set -eu
 
 export GOCACHE="${GOCACHE:-/tmp/events-gocache}"
+export GOMODCACHE="${GOMODCACHE:-/tmp/gomodcache}"
 
 (cd docs && go run ./readme/testcounts/main.go)
 (cd docs && go run ./readme/main.go)

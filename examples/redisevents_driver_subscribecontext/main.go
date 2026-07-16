@@ -9,6 +9,7 @@ import (
 	"github.com/goforj/events/eventscore"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// SubscribeContext subscribes to a Redis pub/sub channel.
 

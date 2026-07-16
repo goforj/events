@@ -4,6 +4,7 @@ package main
 
 import "github.com/goforj/events/driver/snsevents"
 
+// main keeps this generated example compile-checked.
 func main() {
 	// New constructs an SNS-backed driver.
 

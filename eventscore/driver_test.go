@@ -2,6 +2,7 @@ package eventscore
 
 import "testing"
 
+// TestDriverConstants verifies every public driver identifier remains stable.
 func TestDriverConstants(t *testing.T) {
 	tests := map[string]Driver{
 		"sync":      DriverSync,

@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// TestStartNATS verifies the NATS test environment starts and reports a usable URL.
 func TestStartNATS(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

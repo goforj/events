@@ -4,6 +4,7 @@ package main
 
 import "github.com/goforj/events/driver/redisevents"
 
+// main keeps this generated example compile-checked.
 func main() {
 	// New constructs a Redis pub/sub-backed driver.
 

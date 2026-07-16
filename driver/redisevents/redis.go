@@ -3,6 +3,7 @@ package redisevents
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/goforj/events/eventscore"
 	"github.com/redis/go-redis/v9"
@@ -79,6 +80,7 @@ func (d *Driver) Driver() eventscore.Driver {
 //	fmt.Println(driver.Ready(context.Background()) == nil)
 //	// Output: true
 func (d *Driver) Ready(ctx context.Context) error {
+	ctx = normalizeContext(ctx)
 	return d.client.Ping(ctx).Err()
 }
 
@@ -93,6 +95,7 @@ func (d *Driver) Ready(ctx context.Context) error {
 //		Payload: []byte(`{"id":"123"}`),
 //	})
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
+	ctx = normalizeContext(ctx)
 	return d.client.Publish(ctx, msg.Topic, msg.Payload).Err()
 }
 
@@ -110,6 +113,13 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 //	fmt.Println(sub != nil)
 //	// Output: true
 func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eventscore.MessageHandler) (eventscore.Subscription, error) {
+	ctx = normalizeContext(ctx)
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if handler == nil {
+		return nil, errors.New("redisevents: handler is required")
+	}
 	pubsub := d.client.Subscribe(ctx, topic)
 	if _, err := pubsub.Receive(ctx); err != nil {
 		_ = pubsub.Close()
@@ -134,7 +144,15 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 			}
 		}
 	}()
-	return subscription{pubsub: pubsub, cancel: cancel}, nil
+	return &subscription{pubsub: pubsub, cancel: cancel}, nil
+}
+
+// normalizeContext keeps direct driver calls consistent with the root bus facade.
+func normalizeContext(ctx context.Context) context.Context {
+	if ctx == nil {
+		return context.Background()
+	}
+	return ctx
 }
 
 // Close closes the underlying Redis client.
@@ -151,9 +169,15 @@ func (d *Driver) Close() error {
 type subscription struct {
 	pubsub *redis.PubSub
 	cancel context.CancelFunc
+	once   sync.Once
+	err    error
 }
 
-func (s subscription) Close() error {
-	s.cancel()
-	return s.pubsub.Close()
+// Close cancels delivery once and keeps the first teardown result for repeated calls.
+func (s *subscription) Close() error {
+	s.once.Do(func() {
+		s.cancel()
+		s.err = s.pubsub.Close()
+	})
+	return s.err
 }

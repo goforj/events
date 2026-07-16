@@ -1,3 +1,4 @@
+// Package sns applies the shared integration contract to Amazon SNS.
 package sns
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/goforj/events/integration/testenv"
 )
 
+// TestSNSDriverIntegration runs the shared driver contract against the SNS/SQS emulator.
 func TestSNSDriverIntegration(t *testing.T) {
 	scenario.RunDriverContract(t, func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
 		t.Helper()

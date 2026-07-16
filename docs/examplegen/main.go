@@ -23,6 +23,7 @@ type moduleInfo struct {
 	PackageName string
 }
 
+// main reports generator failures through a non-zero process exit.
 func main() {
 	if err := run(); err != nil {
 		fmt.Println("Error:", err)
@@ -31,6 +32,7 @@ func main() {
 	fmt.Println("✔ Examples generated in ./examples/")
 }
 
+// run regenerates every documented example from the library and driver source comments.
 func run() error {
 	root, err := findRoot()
 	if err != nil {
@@ -79,6 +81,7 @@ func run() error {
 	return nil
 }
 
+// findRoot locates the repository without depending on a caller-specific absolute path.
 func findRoot() (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -96,8 +99,10 @@ func findRoot() (string, error) {
 	return "", fmt.Errorf("could not find project root")
 }
 
+// fileExists keeps repository discovery tolerant of absent candidate markers.
 func fileExists(p string) bool { _, err := os.Stat(p); return err == nil }
 
+// modulePath reads the canonical import path rather than deriving it from the checkout directory.
 func modulePath(root string) (string, error) {
 	data, err := os.ReadFile(filepath.Join(root, "go.mod"))
 	if err != nil {
@@ -112,6 +117,7 @@ func modulePath(root string) (string, error) {
 	return "", fmt.Errorf("module path not found in go.mod")
 }
 
+// discoverDriverModules keeps heavy driver modules discoverable without hard-coding their inventory.
 func discoverDriverModules(root string) ([]moduleInfo, error) {
 	driverRoot := filepath.Join(root, "driver")
 	entries, err := os.ReadDir(driverRoot)
@@ -145,6 +151,7 @@ func discoverDriverModules(root string) ([]moduleInfo, error) {
 	return modules, nil
 }
 
+// FuncDoc carries one API declaration and the examples rendered from its documentation.
 type FuncDoc struct {
 	Name        string
 	Slug        string
@@ -154,6 +161,7 @@ type FuncDoc struct {
 	Examples    []Example
 }
 
+// Example records source position so multiple examples retain their documented order.
 type Example struct {
 	FuncName string
 	File     string
@@ -175,6 +183,7 @@ type docLine struct {
 	pos  token.Pos
 }
 
+// collectExamplesFromDir merges examples from one module into the shared generated-example index.
 func collectExamplesFromDir(funcs map[string]*FuncDoc, dir, importPath, slugPrefix string) error {
 	fset := token.NewFileSet()
 	pkgs, err := parser.ParseDir(fset, dir, nil, parser.ParseComments)
@@ -217,6 +226,7 @@ func collectExamplesFromDir(funcs map[string]*FuncDoc, dir, importPath, slugPref
 	return nil
 }
 
+// extractFuncDocs turns exported source declarations into generator metadata without compiling packages.
 func extractFuncDocs(fset *token.FileSet, filename string, file *ast.File) map[string]*FuncDoc {
 	out := map[string]*FuncDoc{}
 
@@ -290,6 +300,7 @@ func extractFuncDocs(fset *token.FileSet, filename string, file *ast.File) map[s
 	return out
 }
 
+// funcSlug gives methods and functions collision-resistant generated directory names.
 func funcSlug(fn *ast.FuncDecl) string {
 	name := fn.Name.Name
 	if fn.Recv == nil || len(fn.Recv.List) == 0 {
@@ -302,6 +313,7 @@ func funcSlug(fn *ast.FuncDecl) string {
 	return recv + "_" + name
 }
 
+// recvTypeName unwraps supported receiver syntax to its declared type name.
 func recvTypeName(expr ast.Expr) string {
 	switch t := expr.(type) {
 	case *ast.Ident:
@@ -319,10 +331,12 @@ func recvTypeName(expr ast.Expr) string {
 	}
 }
 
+// skipTypeDoc prevents broad contract types from producing redundant standalone examples.
 func skipTypeDoc(pkgName, typeName string) bool {
 	return pkgName == "events" && typeName == "API"
 }
 
+// extractGroup assigns undocumented declarations to a stable fallback section.
 func extractGroup(group *ast.CommentGroup) string {
 	lines := docLines(group)
 	for _, dl := range lines {
@@ -333,6 +347,7 @@ func extractGroup(group *ast.CommentGroup) string {
 	return "Other"
 }
 
+// extractGroupWithDefault lets interface methods inherit their enclosing API group.
 func extractGroupWithDefault(group *ast.CommentGroup, fallback string) string {
 	if group == nil {
 		return fallback
@@ -345,6 +360,7 @@ func extractGroupWithDefault(group *ast.CommentGroup, fallback string) string {
 	return fallback
 }
 
+// extractFuncDescription excludes generator directives and examples from rendered prose.
 func extractFuncDescription(group *ast.CommentGroup) string {
 	lines := docLines(group)
 	var desc []string
@@ -367,6 +383,7 @@ func extractFuncDescription(group *ast.CommentGroup) string {
 	return strings.Join(desc, "\n")
 }
 
+// docLines preserves comment source positions for deterministic example ordering.
 func docLines(group *ast.CommentGroup) []docLine {
 	var lines []docLine
 	for _, c := range group.List {
@@ -385,6 +402,7 @@ func docLines(group *ast.CommentGroup) []docLine {
 	return lines
 }
 
+// extractExamplesFromGroup parses every labeled example block from one declaration comment.
 func extractExamplesFromGroup(fset *token.FileSet, filename, funcName string, group *ast.CommentGroup) []Example {
 	var out []Example
 	lines := docLines(group)
@@ -431,6 +449,7 @@ func extractExamplesFromGroup(fset *token.FileSet, filename, funcName string, gr
 	return out
 }
 
+// selectPackage prefers the library package when generated or ignored main files share a directory.
 func selectPackage(pkgs map[string]*ast.Package) (string, error) {
 	if len(pkgs) == 0 {
 		return "", fmt.Errorf("no packages found")
@@ -463,6 +482,7 @@ func selectPackage(pkgs map[string]*ast.Package) (string, error) {
 	return candidates[0].name, nil
 }
 
+// writeMain reconciles generated directories for one declaration before writing current examples.
 func writeMain(base string, fd *FuncDoc, importPath string, modules []moduleInfo) error {
 	if len(fd.Examples) == 0 {
 		return nil
@@ -490,6 +510,7 @@ func writeMain(base string, fd *FuncDoc, importPath string, modules []moduleInfo
 	return nil
 }
 
+// writeExampleMain emits a standalone compile-checked program with only the imports its example needs.
 func writeExampleMain(base, slug string, fd *FuncDoc, ex Example, importPath string, modules []moduleInfo) error {
 	dir := filepath.Join(base, slug)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -546,6 +567,7 @@ func writeExampleMain(base, slug string, fd *FuncDoc, ex Example, importPath str
 		buf.WriteString(")\n\n")
 	}
 
+	buf.WriteString("// main keeps this generated example compile-checked.\n")
 	buf.WriteString("func main() {\n")
 	if fd.Description != "" {
 		for _, line := range strings.Split(fd.Description, "\n") {
@@ -572,6 +594,7 @@ func writeExampleMain(base, slug string, fd *FuncDoc, ex Example, importPath str
 	return writeFileIfChanged(filepath.Join(dir, "main.go"), formatted, 0o644)
 }
 
+// exampleSlug keeps multiple examples for one declaration in distinct deterministic directories.
 func exampleSlug(fd *FuncDoc, ex Example, index int) string {
 	slug := strings.ToLower(fd.Slug)
 	if len(fd.Examples) > 1 {
@@ -583,6 +606,7 @@ func exampleSlug(fd *FuncDoc, ex Example, index int) string {
 	return slug
 }
 
+// pruneGeneratedExampleDirs removes stale generated variants without touching hand-written examples.
 func pruneGeneratedExampleDirs(base, slug string, expected map[string]struct{}) error {
 	targets := make([]string, 0, len(expected))
 	for dir := range expected {
@@ -601,6 +625,7 @@ func pruneGeneratedExampleDirs(base, slug string, expected map[string]struct{}) 
 	return nil
 }
 
+// pruneIfGeneratedAndUnexpected deletes only generator-owned directories absent from the expected set.
 func pruneIfGeneratedAndUnexpected(dir string, expected map[string]struct{}) error {
 	if _, ok := expected[filepath.Base(dir)]; ok {
 		return nil
@@ -620,6 +645,7 @@ func pruneIfGeneratedAndUnexpected(dir string, expected map[string]struct{}) err
 	return os.RemoveAll(dir)
 }
 
+// writeFileIfChanged avoids needless timestamp churn when generated content is already current.
 func writeFileIfChanged(path string, data []byte, perm os.FileMode) error {
 	existing, err := os.ReadFile(path)
 	if err == nil && bytes.Equal(existing, data) {
@@ -631,6 +657,7 @@ func writeFileIfChanged(path string, data []byte, perm os.FileMode) error {
 	return os.WriteFile(path, data, perm)
 }
 
+// slugify maps human example labels to portable directory-name fragments.
 func slugify(label string) string {
 	label = strings.TrimSpace(strings.ToLower(label))
 	if label == "" {

@@ -16,6 +16,7 @@ type overrideEvent struct {
 	ID string `json:"id"`
 }
 
+// Topic keeps the contract suite's explicit routing case independent of Go type-name derivation.
 func (overrideEvent) Topic() string { return "contracts.override" }
 
 // RunBusContract runs a small backend-agnostic contract suite.

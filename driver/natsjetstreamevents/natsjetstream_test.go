@@ -11,12 +11,14 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 )
 
+// TestNewRequiresURLOrConn verifies JetStream construction requires a URL or injected connection.
 func TestNewRequiresURLOrConn(t *testing.T) {
 	if _, err := New(Config{}); err == nil {
 		t.Fatal("expected error")
 	}
 }
 
+// TestDriverConstant verifies the JetStream registry identifier remains stable.
 func TestDriverConstant(t *testing.T) {
 	driver := &Driver{}
 	if got := driver.Driver(); got != eventscore.DriverNATSJetStream {
@@ -24,6 +26,7 @@ func TestDriverConstant(t *testing.T) {
 	}
 }
 
+// TestNewWithConn verifies injected NATS connections initialize JetStream without dialing.
 func TestNewWithConn(t *testing.T) {
 	url, shutdown := startJetStreamServer(t)
 	defer shutdown()
@@ -43,6 +46,7 @@ func TestNewWithConn(t *testing.T) {
 	}
 }
 
+// TestReadyHonorsContext verifies canceled readiness probes stop before JetStream access.
 func TestReadyHonorsContext(t *testing.T) {
 	url, shutdown := startJetStreamServer(t)
 	defer shutdown()
@@ -61,6 +65,7 @@ func TestReadyHonorsContext(t *testing.T) {
 	}
 }
 
+// TestPublishAndSubscribeContext verifies durable JetStream delivery round-trips payloads.
 func TestPublishAndSubscribeContext(t *testing.T) {
 	url, shutdown := startJetStreamServer(t)
 	defer shutdown()
@@ -101,6 +106,7 @@ func TestPublishAndSubscribeContext(t *testing.T) {
 	}
 }
 
+// TestSubscriptionCloseStopsDelivery verifies closing a JetStream consumer prevents later callbacks.
 func TestSubscriptionCloseStopsDelivery(t *testing.T) {
 	url, shutdown := startJetStreamServer(t)
 	defer shutdown()
@@ -137,6 +143,7 @@ func TestSubscriptionCloseStopsDelivery(t *testing.T) {
 	}
 }
 
+// TestEnsureStreamCachesStream verifies repeated topic setup reuses cached stream metadata.
 func TestEnsureStreamCachesStream(t *testing.T) {
 	url, shutdown := startJetStreamServer(t)
 	defer shutdown()
@@ -162,6 +169,7 @@ func TestEnsureStreamCachesStream(t *testing.T) {
 	}
 }
 
+// TestClose verifies owned JetStream resources close once and reject later work.
 func TestClose(t *testing.T) {
 	url, shutdown := startJetStreamServer(t)
 	defer shutdown()
@@ -175,6 +183,7 @@ func TestClose(t *testing.T) {
 	}
 }
 
+// startJetStreamServer starts an ephemeral JetStream server and verifies the account is ready.
 func startJetStreamServer(t *testing.T) (string, func()) {
 	t.Helper()
 

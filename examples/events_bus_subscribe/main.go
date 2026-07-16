@@ -8,6 +8,7 @@ import (
 	"github.com/goforj/events"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Subscribe registers a handler using the background context.
 

@@ -7,6 +7,7 @@ import (
 	"github.com/goforj/events/driver/natsjetstreamevents"
 )
 
+// main keeps this generated example compile-checked.
 func main() {
 	// Driver is a NATS JetStream-backed events transport.
 

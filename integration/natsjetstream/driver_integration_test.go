@@ -1,3 +1,4 @@
+// Package natsjetstream applies the shared integration contract to NATS JetStream.
 package natsjetstream
 
 import (
@@ -10,6 +11,7 @@ import (
 	"github.com/goforj/events/integration/testenv"
 )
 
+// TestNATSJetStreamDriverIntegration runs the shared driver contract against JetStream.
 func TestNATSJetStreamDriverIntegration(t *testing.T) {
 	scenario.RunDriverContract(t, func(t testing.TB, ctx context.Context) eventscore.DriverAPI {
 		t.Helper()
