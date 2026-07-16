@@ -32,9 +32,7 @@ It lets applications publish and subscribe to events using normal Go types, with
 go get github.com/goforj/events
 ```
 
-The root bus supports Go 1.24 and newer. The Google Pub/Sub, Kafka, NATS,
-JetStream, and Redis driver modules currently require Go 1.25; the SNS driver
-retains the Go 1.24 floor.
+All published modules support Go 1.24 and newer.
 
 ## Quick Start
 
