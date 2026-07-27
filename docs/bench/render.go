@@ -283,9 +283,9 @@ func writeMetricSVG(root, filename, title, unit string, rows []benchRow, metric 
 	var svg bytes.Buffer
 	svg.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
 	svg.WriteString(`<svg xmlns="http://www.w3.org/2000/svg" width="` + strconv.Itoa(width) + `" height="` + strconv.Itoa(height) + `" viewBox="0 0 ` + strconv.Itoa(width) + ` ` + strconv.Itoa(height) + `">` + "\n")
-	svg.WriteString(`<rect width="100%" height="100%" fill="#0f172a"/>` + "\n")
-	svg.WriteString(`<text x="800" y="44" text-anchor="middle" fill="#f8fafc" font-size="34" font-family="Arial, sans-serif">` + escapeXML(title) + `</text>` + "\n")
-	svg.WriteString(`<text x="800" y="80" text-anchor="middle" fill="#94a3b8" font-size="22" font-family="Arial, sans-serif">Snapshot from sync plus enabled distributed driver fixtures; ` + escapeXML(metricPreference(unit, higherIsBetter)) + `</text>` + "\n")
+	svg.WriteString(`<rect width="100%" height="100%" rx="8" fill="#1A1620"/>` + "\n")
+	svg.WriteString(`<text x="800" y="44" text-anchor="middle" fill="#FFFFFF" font-size="34" font-weight="700" letter-spacing="-1.2" font-family="Space Grotesk, Inter, system-ui, sans-serif">` + escapeXML(title) + `</text>` + "\n")
+	svg.WriteString(`<text x="800" y="80" text-anchor="middle" fill="#A9A1B3" font-size="22" font-family="Inter, system-ui, sans-serif">Snapshot from sync plus enabled distributed driver fixtures; ` + escapeXML(metricPreference(unit, higherIsBetter)) + `</text>` + "\n")
 
 	for i, row := range sorted {
 		y := topPad + i*rowGap
@@ -298,11 +298,19 @@ func writeMetricSVG(root, filename, title, unit string, rows []benchRow, metric 
 		label := driverLabel(row)
 		valueLabel := formatMetric(value, unit)
 		color := driverColor(label)
+		valueX := leftPad + barWidth + 16
+		valueAnchor := "start"
+		valueColor := "#FFFFFF"
+		if barWidth > chartWidth-280 {
+			valueX = leftPad + barWidth - 16
+			valueAnchor = "end"
+			valueColor = "#08070A"
+		}
 
-		svg.WriteString(`<text x="` + strconv.Itoa(leftPad-20) + `" y="` + strconv.Itoa(y+30) + `" text-anchor="end" fill="#e2e8f0" font-size="28" font-family="Arial, sans-serif">` + escapeXML(label) + `</text>` + "\n")
-		svg.WriteString(`<rect x="` + strconv.Itoa(leftPad) + `" y="` + strconv.Itoa(y) + `" width="` + strconv.Itoa(chartWidth) + `" height="` + strconv.Itoa(barHeight) + `" rx="8" fill="#1e293b"/>` + "\n")
+		svg.WriteString(`<text x="` + strconv.Itoa(leftPad-20) + `" y="` + strconv.Itoa(y+30) + `" text-anchor="end" fill="#A9A1B3" font-size="28" font-family="Inter, system-ui, sans-serif">` + escapeXML(label) + `</text>` + "\n")
+		svg.WriteString(`<rect x="` + strconv.Itoa(leftPad) + `" y="` + strconv.Itoa(y) + `" width="` + strconv.Itoa(chartWidth) + `" height="` + strconv.Itoa(barHeight) + `" rx="8" fill="#2C2734" stroke="#3D3349"/>` + "\n")
 		svg.WriteString(`<rect x="` + strconv.Itoa(leftPad) + `" y="` + strconv.Itoa(y) + `" width="` + strconv.Itoa(barWidth) + `" height="` + strconv.Itoa(barHeight) + `" rx="8" fill="` + color + `"/>` + "\n")
-		svg.WriteString(`<text x="` + strconv.Itoa(leftPad+barWidth+16) + `" y="` + strconv.Itoa(y+30) + `" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">` + escapeXML(valueLabel) + `</text>` + "\n")
+		svg.WriteString(`<text x="` + strconv.Itoa(valueX) + `" y="` + strconv.Itoa(y+30) + `" text-anchor="` + valueAnchor + `" fill="` + valueColor + `" font-size="24" font-family="JetBrains Mono, ui-monospace, monospace">` + escapeXML(valueLabel) + `</text>` + "\n")
 	}
 
 	svg.WriteString(`</svg>` + "\n")
@@ -441,21 +449,21 @@ func displayDriverName(name string) string {
 func driverColor(label string) string {
 	switch label {
 	case "Sync":
-		return "#546E7A"
+		return "#FF5E3A"
 	case "Google Pub/Sub":
-		return "#4285F4"
+		return "#7D6EE7"
 	case "Kafka":
-		return "#231F20"
+		return "#A9A1B3"
 	case "NATS JetStream":
-		return "#1E88E5"
+		return "#B58AE8"
 	case "NATS":
-		return "#27AAE1"
+		return "#FFC24D"
 	case "Redis":
-		return "#DC382D"
+		return "#FF6B85"
 	case "SNS":
-		return "#FF9900"
+		return "#FFB454"
 	default:
-		return "#38BDF8"
+		return "#FF8257"
 	}
 }
 
