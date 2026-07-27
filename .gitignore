@@ -33,3 +33,4 @@ tmp/
 # Root-only markdown scratch/docs files except the main README
 /*.md
 !/README.md
+.DS_Store
