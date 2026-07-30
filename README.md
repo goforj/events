@@ -84,6 +84,8 @@ go get github.com/goforj/events/driver/snsevents
 
 ## Drivers
 
+Each driver is thoroughly tested against the shared test suite using [testcontainers](https://testcontainers.com/) or emulators where appropriate.
+
 |                                                                                                Driver / Backend | Mode | Fan-out | Durable | Queue Semantics | Notes |
 |----------------------------------------------------------------------------------------------------------------:| :--- | :---: | :---: | :---: | :--- |
 |      <img src="https://img.shields.io/badge/sync-546E7A?logo=go&logoColor=white" alt="Sync"> | In-process | ✓ | x | x | Root-backed synchronous dispatch in the caller path. |
