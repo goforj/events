@@ -643,4 +643,4 @@ fmt.Printf("%T\n", record.Event)
 
 Use `make test` for root-module tests, `make vet` for static checks, `make generate` to refresh generated documentation, and `make test-integration` for the separate integration module. Pass a driver such as `make test-integration nats` to narrow the matrix. Integration tests may require local services. Driver, docs, examples, and integration directories are independent Go modules; test each changed module from its directory.
 
-The docs watcher remains available as `sh docs/watcher.sh`.
+Run `make docs-watch` to regenerate documentation as source files change.
