@@ -4,66 +4,63 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   minimum-go:
-    name: minimum Go 1.24
+    name: minimum Go (${{ matrix.module }}, Go ${{ matrix.go-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { module: '.', go-version: '1.24.0' }
+          - { module: docs, go-version: '1.24.0' }
+          - { module: eventscore, go-version: '1.24.0' }
+          - { module: eventsfake, go-version: '1.24.0' }
+          - { module: eventstest, go-version: '1.24.0' }
+          - { module: driver/kafkaevents, go-version: '1.24.0' }
+          - { module: driver/natsevents, go-version: '1.24.0' }
+          - { module: driver/natsjetstreamevents, go-version: '1.24.0' }
+          - { module: driver/redisevents, go-version: '1.24.0' }
+          - { module: driver/snsevents, go-version: '1.24.0' }
+          - { module: driver/gcppubsubevents, go-version: '1.25.0' }
+          - { module: examples, go-version: '1.25.0' }
+          - { module: integration, go-version: '1.26.0' }
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
-          go-version: '1.24.x'
+          go-version: ${{ matrix.go-version }}
           cache: true
           cache-dependency-path: |
+            go.sum
+            eventscore/go.sum
+            eventstest/go.sum
+            eventsfake/go.sum
+            docs/go.sum
+            examples/go.sum
             driver/gcppubsubevents/go.sum
             driver/kafkaevents/go.sum
             driver/natsjetstreamevents/go.sum
             driver/natsevents/go.sum
             driver/redisevents/go.sum
             driver/snsevents/go.sum
-            examples/go.sum
-      - name: Test minimum-version modules
-        run: |
-          workspace="$(mktemp -d)"
-          trap 'rm -rf "$workspace"' EXIT
-          (
-            cd "$workspace"
-            GOWORK=off go work init \
-              "$GITHUB_WORKSPACE" \
-              "$GITHUB_WORKSPACE/eventscore" \
-              "$GITHUB_WORKSPACE/eventstest" \
-              "$GITHUB_WORKSPACE/eventsfake" \
-              "$GITHUB_WORKSPACE/docs" \
-              "$GITHUB_WORKSPACE/examples" \
-              "$GITHUB_WORKSPACE/driver/gcppubsubevents" \
-              "$GITHUB_WORKSPACE/driver/kafkaevents" \
-              "$GITHUB_WORKSPACE/driver/natsjetstreamevents" \
-              "$GITHUB_WORKSPACE/driver/natsevents" \
-              "$GITHUB_WORKSPACE/driver/redisevents" \
-              "$GITHUB_WORKSPACE/driver/snsevents"
-            GOWORK=off go work edit -go=1.24.0 go.work
-            GOWORK=off go work edit \
-              -replace="github.com/goforj/events@v0.2.0=$GITHUB_WORKSPACE" \
-              -replace="github.com/goforj/events/eventscore@v0.2.0=$GITHUB_WORKSPACE/eventscore" \
-              -replace="github.com/goforj/events/eventstest@v0.2.0=$GITHUB_WORKSPACE/eventstest" \
-              go.work
-          )
-          export GOWORK="$workspace/go.work"
-          for dir in . eventscore eventstest eventsfake docs examples driver/gcppubsubevents driver/kafkaevents driver/natsjetstreamevents driver/natsevents driver/redisevents driver/snsevents; do
-            packages="$(cd "$dir" && go list ./...)"
-            if [ -n "$packages" ]; then
-              (cd "$dir" && go test -race -count=1 ./...)
-            fi
-          done
+            integration/go.sum
+      - name: Test exact minimum Go version
+        env:
+          GOTOOLCHAIN: local
+        run: scripts/with-local-modfile.sh "${{ matrix.module }}" go test -race -count=1 ./...
 
   modules:
-    name: stable Go quality gates
+    name: Go 1.26 quality gates
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
-          go-version: '1.25.0'
+          go-version: '1.26.0'
           cache: true
           cache-dependency-path: |
             go.sum
@@ -79,13 +76,16 @@ jobs:
             driver/redisevents/go.sum
             driver/snsevents/go.sum
             integration/go.sum
-      - name: Check Published Module Boundaries
+      - name: Check published module boundaries
         run: bash scripts/check-published-modules.sh
-      - name: Test All Modules
+      - name: Test all modules
         env:
           GO_TEST_FLAGS: '-race -count=1'
+          GOTOOLCHAIN: local
         run: sh scripts/test-all-modules.sh
-      - name: Vet All Modules
+      - name: Vet all modules
+        env:
+          GOTOOLCHAIN: local
         run: |
           for dir in . eventscore eventstest eventsfake docs examples driver/gcppubsubevents driver/kafkaevents driver/natsjetstreamevents driver/natsevents driver/redisevents driver/snsevents integration; do
             packages="$(cd "$dir" && go list ./...)"
@@ -93,16 +93,20 @@ jobs:
               (cd "$dir" && go vet ./...)
             fi
           done
-      - name: Verify Tidy Modules
+      - name: Verify tidy modules
         run: bash scripts/check-tidy-modules.sh
-      - name: Check Docs
+      - name: Scan all modules
+        run: |
+          GOBIN="$RUNNER_TEMP/bin" go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
+          PATH="$RUNNER_TEMP/bin:$PATH" bash scripts/govulncheck-all-modules.sh
+      - name: Check docs
         run: |
           sh scripts/check-docs.sh
           git diff --exit-code
-      - name: Aggregate Coverage
+      - name: Aggregate coverage
         run: RUN_INTEGRATION=1 sh scripts/coverage-codecov.sh
       - name: Upload results to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@04b047e8bb82a0c002c8312c1c880fbc6a999d45
         with:
           files: coverage.txt
         env:
@@ -111,53 +115,26 @@ jobs:
   examples:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
-          go-version: '1.25.0'
+          go-version: '1.26.0'
           cache: true
-          cache-dependency-path: |
-            go.sum
-            eventscore/go.sum
-            eventstest/go.sum
-            eventsfake/go.sum
-            examples/go.sum
-            docs/go.sum
-            driver/gcppubsubevents/go.sum
-            driver/kafkaevents/go.sum
-            driver/natsjetstreamevents/go.sum
-            driver/natsevents/go.sum
-            driver/redisevents/go.sum
-            driver/snsevents/go.sum
-            integration/go.sum
-      - name: Test Examples
-        run: |
-          cd examples
-          go test ./...
+          cache-dependency-path: examples/go.sum
+      - name: Test examples
+        run: cd examples && go test ./...
 
   integration:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
-          go-version: '1.25.0'
+          go-version: '1.26.0'
           cache: true
-          cache-dependency-path: |
-            go.sum
-            eventscore/go.sum
-            eventstest/go.sum
-            eventsfake/go.sum
-            examples/go.sum
-            docs/go.sum
-            driver/gcppubsubevents/go.sum
-            driver/kafkaevents/go.sum
-            driver/natsjetstreamevents/go.sum
-            driver/natsevents/go.sum
-            driver/redisevents/go.sum
-            driver/snsevents/go.sum
-            integration/go.sum
-      - name: Test Integration
+          cache-dependency-path: integration/go.sum
+      - name: Test integration
         env:
           GO_TEST_FLAGS: '-race -count=1'
+          GOTOOLCHAIN: local
         run: sh scripts/test-integration.sh
