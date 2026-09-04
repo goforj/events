@@ -74,7 +74,7 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 )
 
-replace github.com/goforj/events => ..
+replace github.com/goforj/events => ./..
 
 replace github.com/goforj/events/driver/gcppubsubevents => ../driver/gcppubsubevents
 

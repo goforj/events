@@ -120,7 +120,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/goforj/events => ..
+replace github.com/goforj/events => ./..
 
 replace github.com/goforj/events/eventscore => ../eventscore
 
