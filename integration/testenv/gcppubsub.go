@@ -6,7 +6,7 @@ import (
 	tcpubsub "github.com/testcontainers/testcontainers-go/modules/gcloud/pubsub"
 )
 
-const gcppubsubImage = "gcr.io/google.com/cloudsdktool/cloud-sdk:367.0.0-emulators"
+const gcppubsubImage = "gcr.io/google.com/cloudsdktool/google-cloud-cli:489.0.0-emulators"
 
 // GCPPubSubContainer holds the started Pub/Sub emulator and connection details.
 type GCPPubSubContainer struct {
