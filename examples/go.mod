@@ -51,7 +51,7 @@ require (
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/redis/go-redis/v9 v9.12.1 // indirect
-	github.com/segmentio/kafka-go v0.4.50 // indirect
+	github.com/segmentio/kafka-go v0.4.51 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.61.0 // indirect
