@@ -11,7 +11,7 @@ require (
 	github.com/goforj/events/driver/redisevents v0.2.0
 	github.com/goforj/events/driver/snsevents v0.2.0
 	github.com/goforj/events/eventscore v0.2.0
-	github.com/nats-io/nats.go v1.49.0
+	github.com/nats-io/nats.go v1.51.0
 )
 
 require (
@@ -46,10 +46,10 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.11 // indirect
 	github.com/googleapis/gax-go/v2 v2.17.0 // indirect
-	github.com/klauspost/compress v1.18.7 // indirect
-	github.com/nats-io/nkeys v0.4.15 // indirect
+	github.com/klauspost/compress v1.19.2 // indirect
+	github.com/nats-io/nkeys v0.4.16 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
-	github.com/pierrec/lz4/v4 v4.1.15 // indirect
+	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/redis/go-redis/v9 v9.12.1 // indirect
 	github.com/segmentio/kafka-go v0.4.50 // indirect
 	go.opencensus.io v0.24.0 // indirect
