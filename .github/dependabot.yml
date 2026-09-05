@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - { package-ecosystem: github-actions, directory: /, schedule: { interval: weekly } }
+  - package-ecosystem: gomod
+    directories:
+      - /
+      - /docs
+      - /eventscore
+      - /eventsfake
+      - /eventstest
+      - /examples
+      - /integration
+      - /driver/gcppubsubevents
+      - /driver/kafkaevents
+      - /driver/natsevents
+      - /driver/natsjetstreamevents
+      - /driver/redisevents
+      - /driver/snsevents
+    schedule: { interval: weekly }
+    groups:
+      shared-dependencies:
+        group-by: dependency-name

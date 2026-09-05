@@ -10,7 +10,7 @@
     <a href="https://pkg.go.dev/github.com/goforj/events"><img src="https://pkg.go.dev/badge/github.com/goforj/events.svg" alt="Go Reference"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
     <a href="https://github.com/goforj/events/actions"><img src="https://github.com/goforj/events/actions/workflows/test.yml/badge.svg" alt="Go Test"></a>
-    <a href="https://golang.org"><img src="https://img.shields.io/badge/go-1.24+-blue?logo=go" alt="Go version"></a>
+    <a href="https://golang.org"><img src="https://img.shields.io/badge/go-1.24%2F1.25%2F1.26+-blue?logo=go" alt="Go version"></a>
     <img src="https://img.shields.io/github/v/tag/goforj/events?label=version&sort=semver" alt="Latest tag">
     <a href="https://codecov.io/gh/goforj/events"><img src="https://codecov.io/gh/goforj/events/graph/badge.svg?token=07N6F71OXM" alt="Codecov"></a>
 <!-- test-count:embed:start -->
@@ -31,7 +31,15 @@ It lets applications publish and subscribe to events using normal Go types, with
 go get github.com/goforj/events
 ```
 
-All published modules support Go 1.24 and newer.
+## Go compatibility
+
+| Modules | Minimum Go version |
+| --- | --- |
+| Root, docs, eventscore, eventsfake, eventstest, Kafka, NATS, JetStream, Redis, and SNS | 1.24 |
+| Google Pub/Sub driver and examples | 1.25 |
+| Integration module | 1.26 |
+
+The security fixes raise only the modules whose fixed dependencies require a newer toolchain. Upgrade the Go toolchain used by an application that imports the Google Pub/Sub driver or examples to Go 1.25. Upgrade integration and repository automation to Go 1.26. Other published modules remain compatible with Go 1.24.
 
 ## Quick Start
 
