@@ -38,6 +38,26 @@ func TestNewWithAddr(t *testing.T) {
 	_ = driver.Close()
 }
 
+// TestRedisClientOptionsPreserveConnectionDefaults verifies dependency upgrades do not change event transport behavior.
+func TestRedisClientOptionsPreserveConnectionDefaults(t *testing.T) {
+	options := redisClientOptions("127.0.0.1:6379")
+	if options.ReadTimeout != redisReadTimeout || options.WriteTimeout != redisWriteTimeout {
+		t.Fatalf("timeouts = %v/%v, want %v/%v", options.ReadTimeout, options.WriteTimeout, redisReadTimeout, redisWriteTimeout)
+	}
+	if options.MinRetryBackoff != redisMinRetryBackoff || options.MaxRetryBackoff != redisMaxRetryBackoff {
+		t.Fatalf("retry backoff = %v/%v, want %v/%v", options.MinRetryBackoff, options.MaxRetryBackoff, redisMinRetryBackoff, redisMaxRetryBackoff)
+	}
+	if options.Dialer == nil {
+		t.Fatal("expected the compatibility dialer")
+	}
+	if dialer := redisNetworkDialer(options); dialer.KeepAlive != redisKeepAlive {
+		t.Fatalf("keepalive = %v, want %v", dialer.KeepAlive, redisKeepAlive)
+	}
+	if options.Addr != "127.0.0.1:6379" {
+		t.Fatalf("address = %q, want %q", options.Addr, "127.0.0.1:6379")
+	}
+}
+
 // TestNewWithClient verifies injected Redis clients bypass address validation.
 func TestNewWithClient(t *testing.T) {
 	srv := startMiniRedis(t)
