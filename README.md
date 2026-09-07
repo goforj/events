@@ -14,8 +14,8 @@
     <img src="https://img.shields.io/github/v/tag/goforj/events?label=version&sort=semver" alt="Latest tag">
     <a href="https://codecov.io/gh/goforj/events"><img src="https://codecov.io/gh/goforj/events/graph/badge.svg?token=07N6F71OXM" alt="Codecov"></a>
 <!-- test-count:embed:start -->
-  <img src="https://img.shields.io/badge/unit_tests-25-brightgreen" alt="Unit tests (executed count)">
-  <img src="https://img.shields.io/badge/integration_tests-86-blue" alt="Integration tests (executed count)">
+  <img src="https://img.shields.io/badge/unit_tests-37-brightgreen" alt="Unit tests (executed count)">
+  <img src="https://img.shields.io/badge/integration_tests-98-blue" alt="Integration tests (executed count)">
 <!-- test-count:embed:end -->
 </p>
 

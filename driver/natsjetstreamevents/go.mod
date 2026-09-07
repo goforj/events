@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/goforj/events/eventscore v0.2.0
 	github.com/nats-io/nats-server/v2 v2.14.6
-	github.com/nats-io/nats.go v1.51.0
+	github.com/nats-io/nats.go v1.53.1
 )
 
 require (
