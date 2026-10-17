@@ -35,11 +35,11 @@ go get github.com/goforj/events
 
 | Modules | Minimum Go version |
 | --- | --- |
-| Root, docs, eventscore, eventsfake, eventstest, Kafka, NATS, JetStream, Redis, and SNS | 1.24 |
-| Google Pub/Sub driver and examples | 1.25 |
-| Integration module | 1.26 |
+| Root, docs, eventscore, eventsfake, eventstest, Redis, and SNS | 1.24 |
+| Kafka driver | 1.25 |
+| Google Pub/Sub, NATS, JetStream, examples, and integration | 1.26 |
 
-The security fixes raise only the modules whose fixed dependencies require a newer toolchain. Upgrade the Go toolchain used by an application that imports the Google Pub/Sub driver or examples to Go 1.25. Upgrade integration and repository automation to Go 1.26. Other published modules remain compatible with Go 1.24.
+Kafka applications upgrading from Go 1.24 must use Go 1.25 or newer for the fixed compression dependency. The other module minimums are unchanged; use a toolchain that satisfies every module your application imports.
 
 ## Quick Start
 

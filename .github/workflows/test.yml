@@ -20,7 +20,7 @@ jobs:
           - { module: eventscore, go-version: '1.24.0' }
           - { module: eventsfake, go-version: '1.24.0' }
           - { module: eventstest, go-version: '1.24.0' }
-          - { module: driver/kafkaevents, go-version: '1.24.0' }
+          - { module: driver/kafkaevents, go-version: '1.25.0' }
           - { module: driver/natsevents, go-version: '1.26.0' }
           - { module: driver/natsjetstreamevents, go-version: '1.26.0' }
           - { module: driver/redisevents, go-version: '1.24.0' }
