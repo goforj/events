@@ -4,7 +4,7 @@ go 1.26.0
 
 require (
 	cloud.google.com/go/pubsub v1.51.1
-	github.com/goforj/events/eventscore v0.2.0
+	github.com/goforj/events/eventscore v0.2.1
 	google.golang.org/api v0.297.0
 	google.golang.org/grpc v1.83.2
 )
