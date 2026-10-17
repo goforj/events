@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/alicebob/miniredis/v2 v2.39.0
-	github.com/goforj/events/eventscore v0.2.0
+	github.com/goforj/events/eventscore v0.2.1
 	github.com/redis/go-redis/v9 v9.22.0
 )
 
