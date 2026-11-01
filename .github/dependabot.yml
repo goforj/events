@@ -16,6 +16,7 @@ updates:
       actions-compatible:
         patterns: ["*"]
         update-types: [minor, patch]
+  # Keep updates within one minimum-Go baseline so unrelated modules do not inherit toolchain increases.
   - package-ecosystem: gomod
     directories:
       - /
@@ -23,12 +24,6 @@ updates:
       - /eventscore
       - /eventsfake
       - /eventstest
-      - /examples
-      - /integration
-      - /driver/gcppubsubevents
-      - /driver/kafkaevents
-      - /driver/natsevents
-      - /driver/natsjetstreamevents
       - /driver/redisevents
       - /driver/snsevents
     schedule:
@@ -40,6 +35,52 @@ updates:
       security-fixes:
         applies-to: security-updates
         patterns: ["*"]
-      compatible-go-dependencies:
+      go124-compatible:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    # Remove these limits when the module minimum is deliberately migrated.
+    ignore:
+      - dependency-name: github.com/redis/go-redis/v9
+        versions: [">=9.23.0"] # Requires Go 1.26.
+      - dependency-name: golang.org/x/sys
+        versions: [">=0.42.0"] # Requires Go 1.25 or newer.
+  - package-ecosystem: gomod
+    directories:
+      - /driver/kafkaevents
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 2
+    groups:
+      security-fixes:
+        applies-to: security-updates
+        patterns: ["*"]
+      go125-compatible:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    # Remove these limits when the module minimum is deliberately migrated.
+    ignore:
+      - dependency-name: golang.org/x/net
+        versions: [">=0.59.0"] # Requires Go 1.26.
+      - dependency-name: golang.org/x/sys
+        versions: [">=0.48.0"] # Requires Go 1.26.
+  - package-ecosystem: gomod
+    directories:
+      - /driver/gcppubsubevents
+      - /driver/natsevents
+      - /driver/natsjetstreamevents
+      - /examples
+      - /integration
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 2
+    groups:
+      security-fixes:
+        applies-to: security-updates
+        patterns: ["*"]
+      go126-compatible:
         patterns: ["*"]
         update-types: [minor, patch]
