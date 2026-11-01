@@ -1,6 +1,6 @@
 module github.com/goforj/events/driver/kafkaevents
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/goforj/events/eventscore v0.2.1
@@ -9,5 +9,7 @@ require (
 
 require (
 	github.com/klauspost/compress v1.20.2 // indirect
-	github.com/pierrec/lz4/v4 v4.1.15 // indirect
+	github.com/pierrec/lz4/v4 v4.1.18 // indirect
+	github.com/stretchr/testify v1.12.1 // indirect
+	golang.org/x/net v0.61.0 // indirect
 )
