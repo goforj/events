@@ -1,4 +1,4 @@
-github.com/goforj/events v0.2.1 h1:ZzgSJtJvF52UZKR+AFpV0NoF8RMk1mg/yzBzPQ62WBg=
-github.com/goforj/events v0.2.1/go.mod h1:hzOGcNkPnzskxT8QqpbloTz5DiiWdYwTcnz7nSC5fWk=
-github.com/goforj/events/eventscore v0.2.1 h1:zwXoySXYLOXLyFR17q/FTp91zs0R6OS94gpjEGzIom4=
-github.com/goforj/events/eventscore v0.2.1/go.mod h1:1yO6x8Ior7p4UCIckJmKZ9/TcFUEKVOwBP6MT9oEbcM=
+github.com/goforj/events v0.2.2-0.20261110210650-5fadfd4d51cd h1:x/e48jMY3SuB1BC9ycB6TvfZnxzTnsniJ+z/rXfwgwM=
+github.com/goforj/events v0.2.2-0.20261110210650-5fadfd4d51cd/go.mod h1:hzOGcNkPnzskxT8QqpbloTz5DiiWdYwTcnz7nSC5fWk=
+github.com/goforj/events/eventscore v0.2.2-0.20261110210650-5fadfd4d51cd h1:4rszAjc7ZyB9q0JbWe/I0pj/K7qo8j95sGzqbW9mD/E=
+github.com/goforj/events/eventscore v0.2.2-0.20261110210650-5fadfd4d51cd/go.mod h1:1yO6x8Ior7p4UCIckJmKZ9/TcFUEKVOwBP6MT9oEbcM=
