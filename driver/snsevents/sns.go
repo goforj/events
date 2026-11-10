@@ -203,6 +203,10 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 	if err != nil {
 		return err
 	}
+	// Raw SQS subscriptions discard publications with more than ten attributes.
+	if len(msg.Headers) > 10 {
+		return errors.New("snsevents: at most 10 message attributes are supported")
+	}
 	topicARN, err := d.ensureTopic(ctx, msg.Topic)
 	if err != nil {
 		return err

@@ -9,9 +9,13 @@ export GOMODCACHE="${GOMODCACHE:-/tmp/gomodcache}"
 
 bash scripts/check-published-modules.sh
 
-mapfile -t workspace_modules < <(
+# Read arrays without Bash 4 builtins so release checks also run on macOS.
+workspace_modules=()
+while IFS= read -r module; do
+  workspace_modules+=("$module")
+done < <(
   GOWORK=off go work edit -json go.work |
-    awk -F'"' '/"DiskPath":/ { path=$4; sub(/^\.[/]/, "", path); if (path == "") path="."; print path }'
+    awk -F'"' '/"DiskPath":/ { path=$4; sub(/^[.]\//, "", path); if (path == "") path="."; print path }'
 )
 
 tmpdir="$(mktemp -d)"

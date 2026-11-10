@@ -10,8 +10,9 @@ func main() {
 
 	// Example: define Redis driver config with all fields
 	cfg := redisevents.Config{
-		Addr:   "127.0.0.1:6379",
-		Client: nil, // default: nil constructs a client from Addr
+		Addr:          "127.0.0.1:6379",
+		Client:        nil,   // default: nil constructs a client from Addr
+		EnableHeaders: false, // opt in after subscribers support metadata envelopes
 	}
 	_ = cfg
 }

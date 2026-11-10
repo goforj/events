@@ -19,3 +19,16 @@ func TestCarrierHeaders(t *testing.T) {
 		t.Fatal("ambiguous parents were hidden")
 	}
 }
+
+// TestCarrierExcludesExpectedStream keeps driver-owned routing headers from consuming the application carrier budget.
+func TestCarrierExcludesExpectedStream(t *testing.T) {
+	headers := publishHeaders(map[string]string{"traceparent": "producer"})
+	headers.Set(nats.ExpectedStreamHdr, "events-stream")
+	actual := receivedHeaders(headers)
+	if len(actual) != 1 || actual["traceparent"] != "producer" {
+		t.Fatalf("application headers=%v", actual)
+	}
+	if actual := receivedHeaders(nats.Header{nats.ExpectedStreamHdr: []string{"events-stream"}}); len(actual) != 0 {
+		t.Fatal("routing assertion became application metadata")
+	}
+}

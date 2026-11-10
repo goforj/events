@@ -341,6 +341,7 @@ _Example: define Redis driver config with all fields_
 cfg := redisevents.Config{
 	Addr:   "127.0.0.1:6379",
 	Client: nil, // default: nil constructs a client from Addr
+	EnableHeaders: false, // opt in after subscribers support metadata envelopes
 }
 ```
 
@@ -476,6 +477,8 @@ driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
 
 ContextPropagator transfers explicitly selected context values through message headers.
 Implementations must be safe for concurrent use and preserve receiver cancellation and deadlines.
+Carriers are limited to 10 fields and 8 KiB of both raw key/value bytes and JSON-encoded bytes.
+Oversized carriers and invalid UTF-8 are ignored without rejecting the event payload.
 
 ### <a id="contextpropagator-extract"></a>ContextPropagator.Extract
 

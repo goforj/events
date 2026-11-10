@@ -46,6 +46,9 @@ type contractPropagator struct{}
 
 // Inject selects only the publisher's correlation field.
 func (contractPropagator) Inject(ctx context.Context) map[string]string {
+	if headers, ok := ctx.Value(propagationContextKey("headers")).(map[string]string); ok {
+		return headers
+	}
 	value, _ := ctx.Value(propagationContextKey("trace")).(string)
 	return map[string]string{"traceparent": value}
 }
@@ -153,7 +156,9 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		done := make(chan error, 1)
 		sub, err := bus.WithContext(receiver).Subscribe(func(delivery context.Context, event propagatedDriverEvent) error {
 			var result error
-			if event.ID != "exact" || delivery.Value(propagationContextKey("trace")) != "producer" || delivery.Value(propagationContextKey("receiver")) != "retained" || delivery.Value(propagationContextKey("private")) != nil {
+			if (event.ID != "exact" && event.ID != "omitted") ||
+				(event.ID == "exact" && delivery.Value(propagationContextKey("trace")) != "producer") ||
+				(event.ID == "omitted" && delivery.Value(propagationContextKey("trace")) != nil) || delivery.Value(propagationContextKey("receiver")) != "retained" || delivery.Value(propagationContextKey("private")) != nil {
 				result = fmt.Errorf("correlation, receiver values, or payload changed")
 			}
 			if expected, ok := receiver.Deadline(); ok {
@@ -169,17 +174,29 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		}
 		defer sub.Close()
 		producer := context.WithValue(context.WithValue(context.Background(), propagationContextKey("trace"), "producer"), propagationContextKey("private"), "must-not-propagate")
-		if err := bus.WithContext(producer).Publish(propagatedDriverEvent{ID: "exact"}); err != nil {
-			t.Fatal(err)
-		}
-		select {
-		case err := <-done:
-			if err != nil {
+		for _, fields := range []int{1, 10, 11} {
+			headers := map[string]string{"traceparent": "producer"}
+			for index := 1; index < fields; index++ {
+				headers[fmt.Sprintf("field%d", index)] = "value"
+			}
+			id := "exact"
+			if fields > 10 {
+				id = "omitted"
+			}
+			publication := context.WithValue(producer, propagationContextKey("headers"), headers)
+			if err := bus.WithContext(publication).Publish(propagatedDriverEvent{ID: id}); err != nil {
 				t.Fatal(err)
 			}
-		case <-ctx.Done():
-			t.Fatal("timed out waiting for propagated event")
+			select {
+			case err := <-done:
+				if err != nil {
+					t.Fatalf("fields=%d: %v", fields, err)
+				}
+			case <-ctx.Done():
+				t.Fatalf("fields=%d: timed out waiting for propagated event", fields)
+			}
 		}
+
 	})
 
 	t.Run("unsubscribe", func(t *testing.T) {

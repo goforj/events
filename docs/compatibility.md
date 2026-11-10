@@ -58,4 +58,12 @@ but transport behavior is not perfectly identical across all implementations.
 
 Message headers and `WithContextPropagator` are optional. Without a propagator, publication remains unchanged. Native-header transports retain their exact application body, and old consumers can ignore the additional native metadata.
 
-Redis pub/sub needs a versioned metadata envelope because the protocol has no message headers. Deploy updated consumers before enabling propagating publishers. Updated consumers accept both old raw messages and new framed messages. External Redis subscribers need the same envelope decoding when consuming header-bearing publications.
+Propagator carriers are limited to 10 fields and 8 KiB of both raw key/value bytes and JSON-encoded bytes on publication and receipt. Oversized carriers and invalid UTF-8 are ignored while the event payload is delivered normally. The field limit accommodates SNS raw SQS delivery. Direct SNS driver publications with more than 10 `Message.Headers` entries return an error before contacting SNS.
+
+Redis pub/sub uses an explicitly enabled metadata envelope because the protocol has no message headers. Deploy consumers configured with `redisevents.Config.EnableHeaders=true` before enabling propagating publishers. Opted-in consumers accept ordinary legacy JSON publications and new framed messages. External Redis subscribers need the same envelope decoding when consuming header-bearing publications.
+
+### Redis header framing
+
+`redisevents.Config.EnableHeaders` defaults to false. This preserves arbitrary raw payloads, including bytes beginning with the metadata prefix. Publishing headers without enabling framing returns an error before Redis I/O.
+
+Enable framing on every subscriber before publishing headers on those channels. Enabled transports preserve ordinary JSON publications and escape prefix-bearing binary payloads from updated publishers. In this mode, the byte prefix `\x00goforj-event\x01` is reserved. Legacy binary publishers whose payloads begin with that prefix must be upgraded or moved to separate channels before consumers opt in.

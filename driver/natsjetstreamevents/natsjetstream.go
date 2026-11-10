@@ -370,8 +370,15 @@ func receivedHeaders(headers nats.Header) map[string]string {
 	if len(headers) == 0 {
 		return nil
 	}
-	carrier := make(map[string]string, len(headers))
+	var carrier map[string]string
 	for key, values := range headers {
+		// PublishMsg adds this routing assertion; it is not application correlation metadata.
+		if strings.EqualFold(key, nats.ExpectedStreamHdr) {
+			continue
+		}
+		if carrier == nil {
+			carrier = make(map[string]string, len(headers))
+		}
 		carrier[key] = strings.Join(values, ",")
 	}
 	return carrier

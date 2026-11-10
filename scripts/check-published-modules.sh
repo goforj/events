@@ -28,7 +28,11 @@ if [[ ! -f "$manifest" ]]; then
   exit 1
 fi
 
-mapfile -t published_modules < "$manifest"
+# Read arrays without Bash 4 builtins so release checks also run on macOS.
+published_modules=()
+while IFS= read -r module || [[ -n "$module" ]]; do
+  published_modules+=("$module")
+done < "$manifest"
 status=0
 
 if [[ ${#published_modules[@]} -ne ${#expected_published[@]} ]]; then
@@ -136,7 +140,7 @@ if ! diff -u "$tmpdir/classified" "$tmpdir/discovered"; then
 fi
 
 GOWORK=off go work edit -json go.work |
-  awk -F'"' '/"DiskPath":/ { path=$4; sub(/^\.[/]/, "", path); if (path == "") path="."; print path }' |
+  awk -F'"' '/"DiskPath":/ { path=$4; sub(/^[.]\//, "", path); if (path == "") path="."; print path }' |
   sort > "$tmpdir/workspace"
 
 if ! diff -u "$tmpdir/classified" "$tmpdir/workspace"; then

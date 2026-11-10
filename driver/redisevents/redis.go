@@ -28,7 +28,8 @@ const (
 //	fmt.Println(driver == nil)
 //	// Output: true
 type Driver struct {
-	client *redis.Client
+	client        *redis.Client
+	enableHeaders bool
 }
 
 // Config configures Redis transport construction.
@@ -44,11 +45,15 @@ type Driver struct {
 //	cfg := redisevents.Config{
 //		Addr:   "127.0.0.1:6379",
 //		Client: nil, // default: nil constructs a client from Addr
+//		EnableHeaders: false, // opt in after subscribers support metadata envelopes
 //	}
 //	_ = cfg
 type Config struct {
 	Addr   string
 	Client *redis.Client
+	// EnableHeaders opts into versioned header framing and decoding, reserving the metadata prefix on these channels.
+	// Enable it on subscribers before publishing headers. The default preserves every raw payload byte.
+	EnableHeaders bool
 }
 
 // New constructs a Redis pub/sub-backed driver.
@@ -60,13 +65,14 @@ type Config struct {
 //	_ = driver
 func New(cfg Config) (*Driver, error) {
 	if cfg.Client != nil {
-		return &Driver{client: cfg.Client}, nil
+		return &Driver{client: cfg.Client, enableHeaders: cfg.EnableHeaders}, nil
 	}
 	if cfg.Addr == "" {
 		return nil, errors.New("redisevents: Addr is required")
 	}
 	return &Driver{
-		client: redis.NewClient(redisClientOptions(cfg.Addr)),
+		client:        redis.NewClient(redisClientOptions(cfg.Addr)),
+		enableHeaders: cfg.EnableHeaders,
 	}, nil
 }
 
@@ -134,7 +140,10 @@ func (d *Driver) Ready(ctx context.Context) error {
 //	})
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
 	ctx = normalizeContext(ctx)
-	payload := encodeMessage(msg)
+	payload, err := encodeMessage(msg, d.enableHeaders)
+	if err != nil {
+		return err
+	}
 	return d.client.Publish(ctx, msg.Topic, payload).Err()
 }
 
@@ -176,7 +185,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 				if !ok {
 					return
 				}
-				message, err := decodeMessage([]byte(msg.Payload))
+				message, err := decodeMessage([]byte(msg.Payload), d.enableHeaders)
 				if err != nil {
 					continue
 				}

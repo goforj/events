@@ -192,7 +192,7 @@ func (b *Bus) publish(ctx context.Context, event any) error {
 		ctx = context.Background()
 	}
 	if b.propagator != nil {
-		msg.Headers = maps.Clone(b.propagator.Inject(ctx))
+		msg.Headers = boundedContextCarrier(b.propagator.Inject(ctx))
 	}
 	if b.transport != nil {
 		return b.transport.PublishContext(ctx, msg)
@@ -228,14 +228,18 @@ func (b *Bus) dispatchTransportMessage(ctx context.Context, msg eventscore.Messa
 
 // dispatchHandlers decodes separately for each handler so pointer and value signatures stay independent.
 func (b *Bus) dispatchHandlers(ctx context.Context, msg eventscore.Message, handlers []registeredHandler) error {
+	var carrier map[string]string
+	if b.propagator != nil && len(handlers) > 0 && validContextCarrier(msg.Headers) {
+		carrier = msg.Headers
+	}
 	for _, handler := range handlers {
 		value, err := handler.decodePayload(b.codec, msg.Payload)
 		if err != nil {
 			return err
 		}
 		handlerCtx := ctx
-		if b.propagator != nil && len(msg.Headers) > 0 {
-			handlerCtx = b.propagator.Extract(ctx, maps.Clone(msg.Headers))
+		if len(carrier) > 0 {
+			handlerCtx = b.propagator.Extract(ctx, maps.Clone(carrier))
 		}
 		if err := handler.invoke(handlerCtx, value); err != nil {
 			return err

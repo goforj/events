@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -287,12 +288,26 @@ func receivedHeaders(headers []kafka.Header) map[string]string {
 		return nil
 	}
 	carrier := make(map[string]string, len(headers))
+	var repeated map[string]*strings.Builder
 	for _, header := range headers {
-		value := string(header.Value)
 		if previous, exists := carrier[header.Key]; exists {
-			value = previous + "," + value
+			if repeated == nil {
+				repeated = make(map[string]*strings.Builder)
+			}
+			joined := repeated[header.Key]
+			if joined == nil {
+				joined = &strings.Builder{}
+				joined.WriteString(previous)
+				repeated[header.Key] = joined
+			}
+			joined.WriteByte(',')
+			joined.Write(header.Value)
+			continue
 		}
-		carrier[header.Key] = value
+		carrier[header.Key] = string(header.Value)
+	}
+	for key, joined := range repeated {
+		carrier[key] = joined.String()
 	}
 	return carrier
 }
