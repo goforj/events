@@ -52,3 +52,10 @@ but transport behavior is not perfectly identical across all implementations.
 - Kafka consumer-group semantics, partitioning strategy beyond one partition,
   dedicated SQS queue semantics as a normalized API, and richer Google Pub/Sub
   acknowledgement/retry semantics remain explicit future work.
+
+
+## Optional message context
+
+Message headers and `WithContextPropagator` are optional. Without a propagator, publication remains unchanged. Native-header transports retain their exact application body, and old consumers can ignore the additional native metadata.
+
+Redis pub/sub needs a versioned metadata envelope because the protocol has no message headers. Deploy updated consumers before enabling propagating publishers. Updated consumers accept both old raw messages and new framed messages. External Redis subscribers need the same envelope decoding when consuming header-bearing publications.

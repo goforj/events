@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"sync"
 
 	"github.com/goforj/events/eventscore"
@@ -18,10 +19,11 @@ type Bus struct {
 
 // busState holds the synchronization and resources shared by every context-bound bus handle.
 type busState struct {
-	driver    eventscore.Driver
-	codec     Codec
-	transport eventscore.DriverAPI
-	mu        sync.RWMutex
+	propagator ContextPropagator
+	driver     eventscore.Driver
+	codec      Codec
+	transport  eventscore.DriverAPI
+	mu         sync.RWMutex
 
 	handlers      map[string][]registeredHandler
 	transportSubs map[string]*transportTopic
@@ -76,6 +78,7 @@ func New(cfg Config, opts ...Option) (*Bus, error) {
 	}
 	return &Bus{
 		busState: &busState{
+			propagator:    options.propagator,
 			driver:        cfg.Driver,
 			codec:         options.codec,
 			transport:     cfg.Transport,
@@ -188,6 +191,9 @@ func (b *Bus) publish(ctx context.Context, event any) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
+	if b.propagator != nil {
+		msg.Headers = maps.Clone(b.propagator.Inject(ctx))
+	}
 	if b.transport != nil {
 		return b.transport.PublishContext(ctx, msg)
 	}
@@ -227,7 +233,11 @@ func (b *Bus) dispatchHandlers(ctx context.Context, msg eventscore.Message, hand
 		if err != nil {
 			return err
 		}
-		if err := handler.invoke(ctx, value); err != nil {
+		handlerCtx := ctx
+		if b.propagator != nil && len(msg.Headers) > 0 {
+			handlerCtx = b.propagator.Extract(ctx, maps.Clone(msg.Headers))
+		}
+		if err := handler.invoke(handlerCtx, value); err != nil {
 			return err
 		}
 	}

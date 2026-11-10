@@ -15,6 +15,7 @@ import (
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
+	snstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	sqstypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/goforj/events/eventscore"
@@ -207,8 +208,9 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 		return err
 	}
 	_, err = d.snsClient.Publish(ctx, &sns.PublishInput{
-		TopicArn: aws.String(topicARN),
-		Message:  aws.String(string(msg.Payload)),
+		TopicArn:          aws.String(topicARN),
+		Message:           aws.String(string(msg.Payload)),
+		MessageAttributes: publishHeaders(msg.Headers),
 	})
 	return err
 }
@@ -415,6 +417,7 @@ func (d *Driver) pollQueue(ctx context.Context, queueURL, topic string, handler 
 			_ = handler(ctx, eventscore.Message{
 				Topic:   topic,
 				Payload: []byte(aws.ToString(message.Body)),
+				Headers: receivedHeaders(message.MessageAttributes),
 			})
 			if message.ReceiptHandle != nil {
 				_, _ = d.sqsClient.DeleteMessage(context.Background(), &sqs.DeleteMessageInput{
@@ -493,4 +496,30 @@ type queuePolicyStatement struct {
 
 type queuePolicyCondition struct {
 	ArnEquals map[string]string `json:"ArnEquals"`
+}
+
+// publishHeaders uses native SNS string attributes so existing consumers retain the exact application body.
+func publishHeaders(headers map[string]string) map[string]snstypes.MessageAttributeValue {
+	if len(headers) == 0 {
+		return nil
+	}
+	attributes := make(map[string]snstypes.MessageAttributeValue, len(headers))
+	for key, value := range headers {
+		attributes[key] = snstypes.MessageAttributeValue{DataType: aws.String("String"), StringValue: aws.String(value)}
+	}
+	return attributes
+}
+
+// receivedHeaders restores only string attributes from the dedicated raw-delivery SQS subscription.
+func receivedHeaders(attributes map[string]sqstypes.MessageAttributeValue) map[string]string {
+	if len(attributes) == 0 {
+		return nil
+	}
+	headers := make(map[string]string, len(attributes))
+	for key, attribute := range attributes {
+		if attribute.StringValue != nil {
+			headers[key] = *attribute.StringValue
+		}
+	}
+	return headers
 }

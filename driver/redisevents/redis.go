@@ -134,7 +134,8 @@ func (d *Driver) Ready(ctx context.Context) error {
 //	})
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
 	ctx = normalizeContext(ctx)
-	return d.client.Publish(ctx, msg.Topic, msg.Payload).Err()
+	payload := encodeMessage(msg)
+	return d.client.Publish(ctx, msg.Topic, payload).Err()
 }
 
 // SubscribeContext subscribes to a Redis pub/sub channel.
@@ -175,10 +176,12 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 				if !ok {
 					return
 				}
-				_ = handler(workerCtx, eventscore.Message{
-					Topic:   msg.Channel,
-					Payload: []byte(msg.Payload),
-				})
+				message, err := decodeMessage([]byte(msg.Payload))
+				if err != nil {
+					continue
+				}
+				message.Topic = msg.Channel
+				_ = handler(workerCtx, message)
 			}
 		}
 	}()

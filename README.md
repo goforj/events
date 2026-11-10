@@ -184,7 +184,7 @@ or hard CI performance gates.
 | **Construction** | [New](#events-new) · [NewNull](#events-newnull) · [NewSync](#events-newsync) |
 | **Driver Constructors** | [gcppubsubevents.New](#gcppubsubevents-new) · [kafkaevents.New](#kafkaevents-new) · [natsevents.New](#natsevents-new) · [natsjetstreamevents.New](#natsjetstreamevents-new) · [redisevents.New](#redisevents-new) · [snsevents.New](#snsevents-new) |
 | **Lifecycle** | [Close](#driver-close) |
-| **Options** | [Option](#events-option) · [WithCodec](#events-withcodec) |
+| **Options** | [ContextPropagator](#events-contextpropagator) · [ContextPropagator.Extract](#contextpropagator-extract) · [ContextPropagator.Inject](#contextpropagator-inject) · [Option](#events-option) · [WithCodec](#events-withcodec) · [WithContextPropagator](#events-withcontextpropagator) |
 | **Publish** | [Publish](#bus-publish) · [TopicEvent](#events-topicevent) · [TopicEvent.Topic](#topicevent-topic) |
 | **Subscribe** | [Subscribe](#bus-subscribe) · [Subscription](#events-subscription) |
 | **Testing** | [Fake](#events-fake) · [Fake.Bus](#fake-bus) · [Fake.Count](#fake-count) · [Fake.Records](#fake-records) · [Fake.Reset](#fake-reset) · [NewFake](#events-newfake) · [Record](#events-record) |
@@ -472,6 +472,19 @@ driver, _ := redisevents.New(redisevents.Config{Addr: "127.0.0.1:6379"})
 
 ## Options
 
+### <a id="events-contextpropagator"></a>ContextPropagator
+
+ContextPropagator transfers explicitly selected context values through message headers.
+Implementations must be safe for concurrent use and preserve receiver cancellation and deadlines.
+
+### <a id="contextpropagator-extract"></a>ContextPropagator.Extract
+
+Extract restores message metadata onto the receiver's context for one handler invocation.
+
+### <a id="contextpropagator-inject"></a>ContextPropagator.Inject
+
+Inject returns metadata to snapshot before publishing. An empty map leaves the wire payload unchanged.
+
 ### <a id="events-option"></a>Option
 
 Option configures root bus behavior.
@@ -485,6 +498,10 @@ bus, _ := events.NewSync(events.WithCodec(nil))
 fmt.Println(bus.Driver())
 // Output: sync
 ```
+
+### <a id="events-withcontextpropagator"></a>WithContextPropagator
+
+WithContextPropagator enables optional message context propagation without adding a tracing dependency.
 
 ## Publish
 

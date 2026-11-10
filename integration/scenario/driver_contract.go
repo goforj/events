@@ -98,6 +98,30 @@ func RunDriverContract(t *testing.T, factory Factory) {
 		}
 	})
 
+	t.Run("message_headers", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), driverScenarioTimeout)
+		defer cancel()
+		topic := "integration.metadata"
+		received := make(chan eventscore.Message, 1)
+		sub, err := driver.SubscribeContext(ctx, topic, func(_ context.Context, message eventscore.Message) error { received <- message; return nil })
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer sub.Close()
+		payload := []byte(`{"id":"exact"}`)
+		if err := driver.PublishContext(ctx, eventscore.Message{Topic: topic, Payload: payload, Headers: map[string]string{"traceparent": "producer", "tracestate": "vendor=value"}}); err != nil {
+			t.Fatal(err)
+		}
+		select {
+		case message := <-received:
+			if string(message.Payload) != string(payload) || message.Headers["traceparent"] != "producer" || message.Headers["tracestate"] != "vendor=value" {
+				t.Fatalf("message metadata or payload changed: %+v", message)
+			}
+		case <-ctx.Done():
+			t.Fatal("timed out waiting for metadata delivery")
+		}
+	})
+
 	t.Run("unsubscribe", func(t *testing.T) {
 		progressf("running unsubscribe scenario")
 		ctx, cancel := context.WithTimeout(context.Background(), driverScenarioTimeout)

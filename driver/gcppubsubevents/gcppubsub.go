@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -145,7 +146,7 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 	if err != nil {
 		return err
 	}
-	result := topic.Publish(ctx, &gpubsub.Message{Data: msg.Payload})
+	result := topic.Publish(ctx, &gpubsub.Message{Data: msg.Payload, Attributes: maps.Clone(msg.Headers)})
 	_, err = result.Get(ctx)
 	return err
 }
@@ -178,6 +179,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 			_ = handler(workerCtx, eventscore.Message{
 				Topic:   topic,
 				Payload: msg.Data,
+				Headers: maps.Clone(msg.Attributes),
 			})
 			msg.Ack()
 		})
