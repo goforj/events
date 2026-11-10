@@ -30,5 +30,5 @@ github.com/aws/aws-sdk-go-v2/service/sts v1.51.5 h1:OuyNaMncYP4ftrvcnOHJ9j3AxO3z
 github.com/aws/aws-sdk-go-v2/service/sts v1.51.5/go.mod h1:Bhu66tgvf94uunUSiAc0Ew0avhnpSm0J8Hl1MYocRbo=
 github.com/aws/smithy-go v1.28.6 h1:Pj+/sUviNYjow8ELRtNwKHZ9ECeF+7pATX3+shjLIrw=
 github.com/aws/smithy-go v1.28.6/go.mod h1:YE2RhdIuDbA5E5bTdciG9KrW3+TiEONeUWCqxX9i1Fc=
-github.com/goforj/events/eventscore v0.2.2-0.20261110210650-5fadfd4d51cd h1:4rszAjc7ZyB9q0JbWe/I0pj/K7qo8j95sGzqbW9mD/E=
-github.com/goforj/events/eventscore v0.2.2-0.20261110210650-5fadfd4d51cd/go.mod h1:1yO6x8Ior7p4UCIckJmKZ9/TcFUEKVOwBP6MT9oEbcM=
+github.com/goforj/events/eventscore v0.2.2-0.20261110230949-517d720cdbb8 h1:h9iSeLSNCnDBWbvN99U15VpHHotJ3uXacDAc+YsR5/Q=
+github.com/goforj/events/eventscore v0.2.2-0.20261110230949-517d720cdbb8/go.mod h1:1yO6x8Ior7p4UCIckJmKZ9/TcFUEKVOwBP6MT9oEbcM=
