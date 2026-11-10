@@ -35,6 +35,26 @@ type deliveryContextDriverEvent struct {
 	ID string `json:"id"`
 }
 
+// propagatedDriverEvent isolates the context propagation contract from other subscriptions.
+type propagatedDriverEvent struct{ ID string }
+
+// propagationContextKey distinguishes correlation from receiver-owned application values.
+type propagationContextKey string
+
+// contractPropagator transports selected correlation without requiring an observability SDK.
+type contractPropagator struct{}
+
+// Inject selects only the publisher's correlation field.
+func (contractPropagator) Inject(ctx context.Context) map[string]string {
+	value, _ := ctx.Value(propagationContextKey("trace")).(string)
+	return map[string]string{"traceparent": value}
+}
+
+// Extract applies correlation while preserving the broker's receiver context.
+func (contractPropagator) Extract(ctx context.Context, headers map[string]string) context.Context {
+	return context.WithValue(ctx, propagationContextKey("trace"), headers["traceparent"])
+}
+
 const (
 	driverSetupTimeout    = 60 * time.Second
 	driverScenarioTimeout = 10 * time.Second
@@ -119,6 +139,46 @@ func RunDriverContract(t *testing.T, factory Factory) {
 			}
 		case <-ctx.Done():
 			t.Fatal("timed out waiting for metadata delivery")
+		}
+	})
+
+	t.Run("context_propagator", func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), driverScenarioTimeout)
+		defer cancel()
+		bus, err := events.New(events.Config{Transport: driver}, events.WithContextPropagator(contractPropagator{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		receiver := context.WithValue(ctx, propagationContextKey("receiver"), "retained")
+		done := make(chan error, 1)
+		sub, err := bus.WithContext(receiver).Subscribe(func(delivery context.Context, event propagatedDriverEvent) error {
+			var result error
+			if event.ID != "exact" || delivery.Value(propagationContextKey("trace")) != "producer" || delivery.Value(propagationContextKey("receiver")) != "retained" || delivery.Value(propagationContextKey("private")) != nil {
+				result = fmt.Errorf("correlation, receiver values, or payload changed")
+			}
+			if expected, ok := receiver.Deadline(); ok {
+				if actual, present := delivery.Deadline(); !present || !actual.Equal(expected) {
+					result = fmt.Errorf("receiver deadline changed")
+				}
+			}
+			done <- result
+			return nil
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer sub.Close()
+		producer := context.WithValue(context.WithValue(context.Background(), propagationContextKey("trace"), "producer"), propagationContextKey("private"), "must-not-propagate")
+		if err := bus.WithContext(producer).Publish(propagatedDriverEvent{ID: "exact"}); err != nil {
+			t.Fatal(err)
+		}
+		select {
+		case err := <-done:
+			if err != nil {
+				t.Fatal(err)
+			}
+		case <-ctx.Done():
+			t.Fatal("timed out waiting for propagated event")
 		}
 	})
 
