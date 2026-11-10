@@ -67,3 +67,7 @@ Redis pub/sub uses an explicitly enabled metadata envelope because the protocol 
 `redisevents.Config.EnableHeaders` defaults to false. This preserves arbitrary raw payloads, including bytes beginning with the metadata prefix. Publishing headers without enabling framing returns an error before Redis I/O.
 
 Enable framing on every subscriber before publishing headers on those channels. Enabled transports preserve ordinary JSON publications and escape prefix-bearing binary payloads from updated publishers. In this mode, the byte prefix `\x00goforj-event\x01` is reserved. Legacy binary publishers whose payloads begin with that prefix must be upgraded or moved to separate channels before consumers opt in.
+
+### Struct literals
+
+Message metadata adds `Headers` to `eventscore.Message`, and Redis configuration adds `EnableHeaders` to `redisevents.Config`. Keyed literals continue to compile. Positional literals must name their fields when upgrading, for example `eventscore.Message{Topic: topic, Payload: payload}` and `redisevents.Config{Addr: addr, Client: client}`. Headers belong to the shared transport message so every driver can preserve them independently from the payload; the Redis flag keeps framing an explicit channel-level choice.
