@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.20.10
 	github.com/aws/aws-sdk-go-v2/service/sns v1.47.6
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.52.6
-	github.com/goforj/events/eventscore v0.2.2-0.20261111041024-daa56aea99a7
+	github.com/goforj/events/eventscore v0.2.2
 )
 
 require (

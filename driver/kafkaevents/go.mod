@@ -3,7 +3,7 @@ module github.com/goforj/events/driver/kafkaevents
 go 1.25.0
 
 require (
-	github.com/goforj/events/eventscore v0.2.2-0.20261111041024-daa56aea99a7
+	github.com/goforj/events/eventscore v0.2.2
 	github.com/segmentio/kafka-go v0.4.51
 )
 
