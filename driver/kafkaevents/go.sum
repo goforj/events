@@ -1,7 +1,7 @@
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/goforj/events/eventscore v0.2.2-0.20261111004015-fe08581c7bd4 h1:NbowD+mI5nRULJTzIeDjhM/EKnWyB4TNN2EZGSf/iIU=
-github.com/goforj/events/eventscore v0.2.2-0.20261111004015-fe08581c7bd4/go.mod h1:1yO6x8Ior7p4UCIckJmKZ9/TcFUEKVOwBP6MT9oEbcM=
+github.com/goforj/events/eventscore v0.2.2-0.20261111024208-cf10973a9aaf h1:wUWmE39HgBnbhrVZvU2t8g7UvNbK2kJ+dOlJSZYjmb0=
+github.com/goforj/events/eventscore v0.2.2-0.20261111024208-cf10973a9aaf/go.mod h1:1yO6x8Ior7p4UCIckJmKZ9/TcFUEKVOwBP6MT9oEbcM=
 github.com/klauspost/compress v1.20.2 h1:v5tiZvm1KGLyg5d5oXdXe3lsSPrbEUiKoXGia//I7Qo=
 github.com/klauspost/compress v1.20.2/go.mod h1:LUdAzn7YLVvxLpc7y3V1m40wESHTgc1422pwwBSKYuI=
 github.com/pierrec/lz4/v4 v4.1.18 h1:xaKrnTkyoqfh1YItXl56+6KJNVYWlEEPuAQW9xsplYQ=
