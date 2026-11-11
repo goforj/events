@@ -39,8 +39,9 @@ but transport behavior is not perfectly identical across all implementations.
   like fan-out delivery instead of shared-consumer queue semantics.
 - Redis uses pub/sub in the current driver. Redis Streams are intentionally
   deferred until async delivery semantics become a first-class API surface.
-- Event payload bytes remain codec-owned and drivers transport them without a
-  library envelope; the default codec continues to use JSON.
+- Event payload bytes remain codec-owned, and the default codec uses JSON.
+  Distributed transports use native metadata where available; Redis framing
+  requires an explicit opt-in as described below.
 - Local construction accepts only `sync` and `null` without a transport.
   Distributed driver names require a matching `Config.Transport`, preventing
   a configured distributed backend from silently behaving like the sync bus.
@@ -59,6 +60,8 @@ but transport behavior is not perfectly identical across all implementations.
 Message headers and `WithContextPropagator` are optional. Without a propagator, publication remains unchanged. Native-header transports retain their exact application body, and old consumers can ignore the additional native metadata.
 
 Propagator carriers are limited to 10 fields and 8 KiB of both raw key/value bytes and JSON-encoded bytes on publication and receipt. Oversized carriers and invalid UTF-8 are ignored while the event payload is delivered normally. The field limit accommodates SNS raw SQS delivery. Direct SNS driver publications with more than 10 `Message.Headers` entries return an error before contacting SNS.
+
+Google Pub/Sub applies [native attribute limits](https://docs.cloud.google.com/pubsub/docs/publisher#use_attributes_to_publish_a_message): at most 100 attributes, keys up to 256 bytes, values up to 1024 bytes, and no keys starting with lowercase `goog`. Its adapter omits the entire optional carrier if any field violates these rules, preserving the payload bytes. The shared carrier budget remains unchanged for other transports.
 
 Redis pub/sub uses an explicitly enabled metadata envelope because the protocol has no message headers. Deploy consumers configured with `redisevents.Config.EnableHeaders=true` before enabling propagating publishers. Opted-in consumers accept ordinary legacy JSON publications and new framed messages. External Redis subscribers need the same envelope decoding when consuming header-bearing publications.
 

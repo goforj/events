@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -136,6 +137,9 @@ func (d *Driver) Ready(ctx context.Context) error {
 }
 
 // PublishContext publishes a topic payload to Google Pub/Sub.
+// Headers are optional: if any attribute exceeds Pub/Sub's 100-attribute,
+// 256-byte key, or 1024-byte value limits, or its key starts with "goog",
+// the entire carrier is omitted while the payload bytes remain unchanged.
 // @group Drivers
 func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) error {
 	ctx = normalizeContext(ctx)
@@ -146,9 +150,22 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 	if err != nil {
 		return err
 	}
-	result := topic.Publish(ctx, &gpubsub.Message{Data: msg.Payload, Attributes: maps.Clone(msg.Headers)})
+	result := topic.Publish(ctx, &gpubsub.Message{Data: msg.Payload, Attributes: publishHeaders(msg.Headers)})
 	_, err = result.Get(ctx)
 	return err
+}
+
+// publishHeaders preserves optional metadata only when the entire carrier fits Pub/Sub's attribute rules.
+func publishHeaders(headers map[string]string) map[string]string {
+	if len(headers) > 100 {
+		return nil
+	}
+	for key, value := range headers {
+		if len(key) > 256 || len(value) > 1024 || strings.HasPrefix(key, "goog") {
+			return nil
+		}
+	}
+	return maps.Clone(headers)
 }
 
 // SubscribeContext subscribes to a Google Pub/Sub topic and forwards messages.
