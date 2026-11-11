@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -123,8 +124,9 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 		return err
 	}
 	return d.writer.WriteMessages(ctx, kafka.Message{
-		Topic: msg.Topic,
-		Value: msg.Payload,
+		Topic:   msg.Topic,
+		Value:   msg.Payload,
+		Headers: publishHeaders(msg.Headers),
 	})
 }
 
@@ -163,6 +165,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 				_ = handler(workerCtx, eventscore.Message{
 					Topic:   message.Topic,
 					Payload: message.Value,
+					Headers: receivedHeaders(message.Headers),
 				})
 			case errors.Is(err, context.Canceled), errors.Is(err, io.EOF), errors.Is(err, io.ErrClosedPipe):
 				return
@@ -265,4 +268,46 @@ func (s *subscription) Close() error {
 		<-s.done
 	})
 	return s.err
+}
+
+// publishHeaders snapshots carrier values into Kafka's native byte headers.
+func publishHeaders(headers map[string]string) []kafka.Header {
+	if len(headers) == 0 {
+		return nil
+	}
+	native := make([]kafka.Header, 0, len(headers))
+	for key, value := range headers {
+		native = append(native, kafka.Header{Key: key, Value: []byte(value)})
+	}
+	return native
+}
+
+// receivedHeaders preserves repeated fields so tracing parsers can reject ambiguous parents.
+func receivedHeaders(headers []kafka.Header) map[string]string {
+	if len(headers) == 0 {
+		return nil
+	}
+	carrier := make(map[string]string, len(headers))
+	var repeated map[string]*strings.Builder
+	for _, header := range headers {
+		if previous, exists := carrier[header.Key]; exists {
+			if repeated == nil {
+				repeated = make(map[string]*strings.Builder)
+			}
+			joined := repeated[header.Key]
+			if joined == nil {
+				joined = &strings.Builder{}
+				joined.WriteString(previous)
+				repeated[header.Key] = joined
+			}
+			joined.WriteByte(',')
+			joined.Write(header.Value)
+			continue
+		}
+		carrier[header.Key] = string(header.Value)
+	}
+	for key, joined := range repeated {
+		carrier[key] = joined.String()
+	}
+	return carrier
 }

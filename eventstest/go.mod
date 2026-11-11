@@ -2,6 +2,6 @@ module github.com/goforj/events/eventstest
 
 go 1.24.0
 
-require github.com/goforj/events v0.2.1
+require github.com/goforj/events v0.2.2-0.20261111041024-daa56aea99a7
 
-require github.com/goforj/events/eventscore v0.2.1 // indirect
+require github.com/goforj/events/eventscore v0.2.2-0.20261111041024-daa56aea99a7 // indirect

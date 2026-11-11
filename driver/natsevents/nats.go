@@ -3,6 +3,7 @@ package natsevents
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 
 	"github.com/goforj/events/eventscore"
@@ -85,7 +86,7 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-	if err := d.conn.Publish(msg.Topic, msg.Payload); err != nil {
+	if err := d.conn.PublishMsg(&nats.Msg{Subject: msg.Topic, Data: msg.Payload, Header: publishHeaders(msg.Headers)}); err != nil {
 		return err
 	}
 	return d.conn.Flush()
@@ -105,6 +106,7 @@ func (d *Driver) SubscribeContext(ctx context.Context, topic string, handler eve
 		_ = handler(ctx, eventscore.Message{
 			Topic:   msg.Subject,
 			Payload: msg.Data,
+			Headers: receivedHeaders(msg.Header),
 		})
 	})
 	if err != nil {
@@ -144,4 +146,48 @@ func (s *subscription) Close() error {
 		s.err = s.sub.Unsubscribe()
 	})
 	return s.err
+}
+
+// publishHeaders adapts carrier fields onto native NATS headers without changing the message body.
+func publishHeaders(headers map[string]string) nats.Header {
+	if len(headers) == 0 {
+		return nil
+	}
+	native := make(nats.Header, len(headers))
+	for key, value := range headers {
+		if !validHeaderKey(key) {
+			return nil
+		}
+		native[key] = []string{value}
+	}
+	return native
+}
+
+// validHeaderKey mirrors the NATS client restrictions so optional metadata cannot block payload delivery.
+func validHeaderKey(key string) bool {
+	if key == "" {
+		return false
+	}
+	for i := 0; i < len(key); i++ {
+		if key[i] < 33 || key[i] > 126 {
+			return false
+		}
+		switch key[i] {
+		case '"', '(', ')', '/', ',', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '{', '}':
+			return false
+		}
+	}
+	return true
+}
+
+// receivedHeaders preserves repeated native fields using their comma-separated header representation.
+func receivedHeaders(headers nats.Header) map[string]string {
+	if len(headers) == 0 {
+		return nil
+	}
+	carrier := make(map[string]string, len(headers))
+	for key, values := range headers {
+		carrier[key] = strings.Join(values, ",")
+	}
+	return carrier
 }

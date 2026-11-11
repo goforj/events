@@ -140,7 +140,7 @@ func integrationFixtures(t *testing.T) []driverFixture {
 				}
 				t.Cleanup(func() { _ = env.Container.Terminate(context.Background()) })
 
-				driver, err := redisevents.New(redisevents.Config{Addr: env.Addr})
+				driver, err := redisevents.New(redisevents.Config{Addr: env.Addr, EnableHeaders: true})
 				if err != nil {
 					t.Fatalf("redisevents.New returned error: %v", err)
 				}

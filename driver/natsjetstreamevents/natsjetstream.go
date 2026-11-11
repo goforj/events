@@ -173,7 +173,7 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 	if err != nil {
 		return err
 	}
-	_, err = d.js.Publish(ctx, subject, msg.Payload, jetstream.WithExpectStream(streamName))
+	_, err = d.js.PublishMsg(ctx, &nats.Msg{Subject: subject, Data: msg.Payload, Header: publishHeaders(msg.Headers)}, jetstream.WithExpectStream(streamName))
 	return err
 }
 
@@ -247,6 +247,7 @@ func (d *Driver) consume(ctx context.Context, topic string, consumer jetstream.C
 			_ = handler(ctx, eventscore.Message{
 				Topic:   topic,
 				Payload: msg.Data(),
+				Headers: receivedHeaders(msg.Headers()),
 			})
 			_ = msg.Ack()
 		case errors.Is(err, context.Canceled), errors.Is(err, nats.ErrConnectionClosed):
@@ -350,4 +351,55 @@ func (s *subscription) Close() error {
 		s.err = s.driver.js.DeleteConsumer(context.Background(), s.streamName, s.consumerName)
 	})
 	return s.err
+}
+
+// publishHeaders adapts carrier fields onto native NATS headers without changing the message body.
+func publishHeaders(headers map[string]string) nats.Header {
+	if len(headers) == 0 {
+		return nil
+	}
+	native := make(nats.Header, len(headers))
+	for key, value := range headers {
+		if !validHeaderKey(key) {
+			return nil
+		}
+		native[key] = []string{value}
+	}
+	return native
+}
+
+// validHeaderKey mirrors the NATS client restrictions so optional metadata cannot block payload delivery.
+func validHeaderKey(key string) bool {
+	if key == "" {
+		return false
+	}
+	for i := 0; i < len(key); i++ {
+		if key[i] < 33 || key[i] > 126 {
+			return false
+		}
+		switch key[i] {
+		case '"', '(', ')', '/', ',', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '{', '}':
+			return false
+		}
+	}
+	return true
+}
+
+// receivedHeaders preserves repeated native fields using their comma-separated header representation.
+func receivedHeaders(headers nats.Header) map[string]string {
+	if len(headers) == 0 {
+		return nil
+	}
+	var carrier map[string]string
+	for key, values := range headers {
+		// PublishMsg adds this routing assertion; it is not application correlation metadata.
+		if strings.EqualFold(key, nats.ExpectedStreamHdr) {
+			continue
+		}
+		if carrier == nil {
+			carrier = make(map[string]string, len(headers))
+		}
+		carrier[key] = strings.Join(values, ",")
+	}
+	return carrier
 }

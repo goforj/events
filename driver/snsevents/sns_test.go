@@ -3,10 +3,13 @@ package snsevents
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
+	"github.com/aws/aws-sdk-go-v2/service/sns/types"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/goforj/events/eventscore"
 )
@@ -207,10 +210,12 @@ func (stubSQSClient) SetQueueAttributes(context.Context, *sqs.SetQueueAttributes
 }
 
 type recordingSNSClient struct {
-	createTopicCalls int
-	publishTopicARN  string
-	publishMessage   string
-	unsubscribeARN   string
+	createTopicCalls      int
+	publishTopicARN       string
+	publishMessage        string
+	publishAttributeCount int
+	publishAttributes     map[string]types.MessageAttributeValue
+	unsubscribeARN        string
 }
 
 // CreateTopic records creation count and returns the ARN derived from the requested name.
@@ -230,6 +235,8 @@ func (c *recordingSNSClient) ListTopics(context.Context, *sns.ListTopicsInput, .
 func (c *recordingSNSClient) Publish(_ context.Context, input *sns.PublishInput, _ ...func(*sns.Options)) (*sns.PublishOutput, error) {
 	c.publishTopicARN = aws.ToString(input.TopicArn)
 	c.publishMessage = aws.ToString(input.Message)
+	c.publishAttributeCount = len(input.MessageAttributes)
+	c.publishAttributes = input.MessageAttributes
 	return &sns.PublishOutput{}, nil
 }
 
@@ -279,4 +286,34 @@ func (c *recordingSQSClient) ReceiveMessage(context.Context, *sqs.ReceiveMessage
 // SetQueueAttributes accepts policy setup without adding assertions unrelated to cleanup.
 func (c *recordingSQSClient) SetQueueAttributes(context.Context, *sqs.SetQueueAttributesInput, ...func(*sqs.Options)) (*sqs.SetQueueAttributesOutput, error) {
 	return &sqs.SetQueueAttributesOutput{}, nil
+}
+
+// TestPublishContextAttributeLimit prevents accepted SNS publications from disappearing at raw SQS subscriptions.
+func TestPublishContextAttributeLimit(t *testing.T) {
+	for _, count := range []int{10, 11} {
+		t.Run(fmt.Sprint(count), func(t *testing.T) {
+			client := &recordingSNSClient{}
+			driver := &Driver{snsClient: client, topics: make(map[string]string)}
+			headers := make(map[string]string, count)
+			for index := range count {
+				headers[fmt.Sprintf("field%d", index)] = "value"
+			}
+			err := driver.PublishContext(context.Background(), eventscore.Message{Topic: "orders.created", Payload: []byte("exact"), Headers: headers})
+			if count > 10 {
+				if err == nil || !strings.Contains(err.Error(), "at most 10") {
+					t.Fatalf("attribute overflow error = %v", err)
+				}
+				if client.createTopicCalls != 0 || client.publishTopicARN != "" {
+					t.Fatal("invalid publication reached SNS")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if client.publishAttributeCount != count || client.publishMessage != "exact" {
+				t.Fatal("maximum valid publication changed")
+			}
+		})
+	}
 }

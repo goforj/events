@@ -11,7 +11,8 @@ package events
 type Option func(*options)
 
 type options struct {
-	codec Codec
+	propagator ContextPropagator
+	codec      Codec
 }
 
 // apply evaluates constructor options in order so the last explicit codec wins.

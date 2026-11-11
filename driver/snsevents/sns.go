@@ -10,11 +10,13 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode/utf8"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
+	snstypes "github.com/aws/aws-sdk-go-v2/service/sns/types"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	sqstypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/goforj/events/eventscore"
@@ -202,13 +204,18 @@ func (d *Driver) PublishContext(ctx context.Context, msg eventscore.Message) err
 	if err != nil {
 		return err
 	}
+	// Raw SQS subscriptions discard publications with more than ten attributes.
+	if len(msg.Headers) > 10 {
+		return errors.New("snsevents: at most 10 message attributes are supported")
+	}
 	topicARN, err := d.ensureTopic(ctx, msg.Topic)
 	if err != nil {
 		return err
 	}
 	_, err = d.snsClient.Publish(ctx, &sns.PublishInput{
-		TopicArn: aws.String(topicARN),
-		Message:  aws.String(string(msg.Payload)),
+		TopicArn:          aws.String(topicARN),
+		Message:           aws.String(string(msg.Payload)),
+		MessageAttributes: publishHeaders(msg.Headers),
 	})
 	return err
 }
@@ -415,6 +422,7 @@ func (d *Driver) pollQueue(ctx context.Context, queueURL, topic string, handler 
 			_ = handler(ctx, eventscore.Message{
 				Topic:   topic,
 				Payload: []byte(aws.ToString(message.Body)),
+				Headers: receivedHeaders(message.MessageAttributes),
 			})
 			if message.ReceiptHandle != nil {
 				_, _ = d.sqsClient.DeleteMessage(context.Background(), &sqs.DeleteMessageInput{
@@ -493,4 +501,52 @@ type queuePolicyStatement struct {
 
 type queuePolicyCondition struct {
 	ArnEquals map[string]string `json:"ArnEquals"`
+}
+
+// publishHeaders uses native SNS string attributes so existing consumers retain the exact application body.
+func publishHeaders(headers map[string]string) map[string]snstypes.MessageAttributeValue {
+	if len(headers) == 0 {
+		return nil
+	}
+	attributes := make(map[string]snstypes.MessageAttributeValue, len(headers))
+	for key, value := range headers {
+		// Optional metadata must not make an otherwise valid business publication fail.
+		if !validAttributeName(key) || value == "" || !utf8.ValidString(value) {
+			return nil
+		}
+		attributes[key] = snstypes.MessageAttributeValue{DataType: aws.String("String"), StringValue: aws.String(value)}
+	}
+	return attributes
+}
+
+// validAttributeName enforces SNS naming restrictions before optional attributes reach the API.
+func validAttributeName(name string) bool {
+	if len(name) == 0 || len(name) > 256 || name[0] == '.' || name[len(name)-1] == '.' || strings.Contains(name, "..") {
+		return false
+	}
+	lowerName := strings.ToLower(name)
+	if strings.HasPrefix(lowerName, "aws.") || strings.HasPrefix(lowerName, "amazon.") {
+		return false
+	}
+	for _, character := range name {
+		if character >= 'A' && character <= 'Z' || character >= 'a' && character <= 'z' || character >= '0' && character <= '9' || character == '_' || character == '-' || character == '.' {
+			continue
+		}
+		return false
+	}
+	return true
+}
+
+// receivedHeaders restores only string attributes from the dedicated raw-delivery SQS subscription.
+func receivedHeaders(attributes map[string]sqstypes.MessageAttributeValue) map[string]string {
+	if len(attributes) == 0 {
+		return nil
+	}
+	headers := make(map[string]string, len(attributes))
+	for key, attribute := range attributes {
+		if attribute.StringValue != nil {
+			headers[key] = *attribute.StringValue
+		}
+	}
+	return headers
 }

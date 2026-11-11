@@ -3,7 +3,7 @@ module github.com/goforj/events/driver/natsjetstreamevents
 go 1.26.0
 
 require (
-	github.com/goforj/events/eventscore v0.2.1
+	github.com/goforj/events/eventscore v0.2.2-0.20261111041024-daa56aea99a7
 	github.com/nats-io/nats-server/v2 v2.15.1
 	github.com/nats-io/nats.go v1.55.0
 )
