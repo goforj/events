@@ -2,10 +2,12 @@ package events
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 // propagationKey distinguishes selected correlation from receiver-owned values.
@@ -204,5 +206,24 @@ func TestContextCarrierIsolatesExtractors(t *testing.T) {
 	}
 	if calls != 2 || transport.published[0].Headers["traceparent"] != "producer" {
 		t.Fatal("handler isolation or original transport metadata changed")
+	}
+}
+
+// TestContextCarrierSizeFastPathMatchesJSON checks worst-case escaping and the exact-size fallback against the encoder.
+func TestContextCarrierSizeFastPathMatchesJSON(t *testing.T) {
+	for _, unit := range []string{"a", "\x00", "\n", "\"", "\\", "<", ">", "&", "é", "\u2028", "\u2029", "\xff"} {
+		for _, length := range []int{0, 1, 225, 226, 1350, 1360, 1361, 1362, 1363, 1364, 4090, 8170, 8192} {
+			for _, key := range []string{"traceparent", unit} {
+				headers := map[string]string{key: strings.Repeat(unit, length)}
+				encoded, err := json.Marshal(headers)
+				if err != nil {
+					t.Fatal(err)
+				}
+				want := utf8.ValidString(key) && utf8.ValidString(headers[key]) && len(key)+len(headers[key]) <= 8192 && len(encoded) <= 8192
+				if got := validContextCarrier(headers); got != want {
+					t.Fatalf("unit=%q length=%d key=%q: valid=%v want=%v encoded=%d", unit, length, key, got, want, len(encoded))
+				}
+			}
+		}
 	}
 }

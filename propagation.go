@@ -45,7 +45,12 @@ func validContextCarrier(headers map[string]string) bool {
 			return false
 		}
 	}
-	// JSON escaping can exceed the byte budget even when the raw carrier fits.
+	// Each byte needs at most six JSON bytes. Small carriers fit even with worst-case escaping,
+	// avoiding serialization solely to validate the common tracing-header path.
+	if size*6+len(headers)*6+1 <= 8192 {
+		return true
+	}
+	// Larger carriers need an exact measurement to preserve the inclusive byte limit.
 	encoded, _ := json.Marshal(headers)
 	return len(encoded) <= 8192
 }
