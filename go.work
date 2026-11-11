@@ -16,22 +16,22 @@ use (
 	./integration
 )
 
-replace github.com/goforj/events v0.2.2-0.20261110230949-517d720cdbb8 => .
+replace github.com/goforj/events v0.2.2-0.20261111001844-f1cd6413af09 => .
 
-replace github.com/goforj/events/driver/gcppubsubevents v0.2.2-0.20261110230949-517d720cdbb8 => ./driver/gcppubsubevents
+replace github.com/goforj/events/driver/gcppubsubevents v0.2.2-0.20261111001844-f1cd6413af09 => ./driver/gcppubsubevents
 
-replace github.com/goforj/events/driver/kafkaevents v0.2.2-0.20261110230949-517d720cdbb8 => ./driver/kafkaevents
+replace github.com/goforj/events/driver/kafkaevents v0.2.2-0.20261111001844-f1cd6413af09 => ./driver/kafkaevents
 
-replace github.com/goforj/events/driver/natsevents v0.2.2-0.20261110230949-517d720cdbb8 => ./driver/natsevents
+replace github.com/goforj/events/driver/natsevents v0.2.2-0.20261111001844-f1cd6413af09 => ./driver/natsevents
 
-replace github.com/goforj/events/driver/natsjetstreamevents v0.2.2-0.20261110230949-517d720cdbb8 => ./driver/natsjetstreamevents
+replace github.com/goforj/events/driver/natsjetstreamevents v0.2.2-0.20261111001844-f1cd6413af09 => ./driver/natsjetstreamevents
 
-replace github.com/goforj/events/driver/redisevents v0.2.2-0.20261110230949-517d720cdbb8 => ./driver/redisevents
+replace github.com/goforj/events/driver/redisevents v0.2.2-0.20261111001844-f1cd6413af09 => ./driver/redisevents
 
-replace github.com/goforj/events/driver/snsevents v0.2.2-0.20261110230949-517d720cdbb8 => ./driver/snsevents
+replace github.com/goforj/events/driver/snsevents v0.2.2-0.20261111001844-f1cd6413af09 => ./driver/snsevents
 
-replace github.com/goforj/events/eventscore v0.2.2-0.20261110230949-517d720cdbb8 => ./eventscore
+replace github.com/goforj/events/eventscore v0.2.2-0.20261111001844-f1cd6413af09 => ./eventscore
 
-replace github.com/goforj/events/eventsfake v0.2.2-0.20261110230949-517d720cdbb8 => ./eventsfake
+replace github.com/goforj/events/eventsfake v0.2.2-0.20261111001844-f1cd6413af09 => ./eventsfake
 
-replace github.com/goforj/events/eventstest v0.2.2-0.20261110230949-517d720cdbb8 => ./eventstest
+replace github.com/goforj/events/eventstest v0.2.2-0.20261111001844-f1cd6413af09 => ./eventstest

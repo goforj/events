@@ -1,6 +1,6 @@
-github.com/goforj/events v0.2.2-0.20261110230949-517d720cdbb8 h1:AdglybusconI2HFDrLoYW7Kss34Y6X9MaPJvqydsYdY=
-github.com/goforj/events v0.2.2-0.20261110230949-517d720cdbb8/go.mod h1:lCY3ZQyK04VzCEQIWi8NtCDucskRU1WAXsNOLhWUz64=
-github.com/goforj/events/eventscore v0.2.2-0.20261110230949-517d720cdbb8 h1:h9iSeLSNCnDBWbvN99U15VpHHotJ3uXacDAc+YsR5/Q=
-github.com/goforj/events/eventscore v0.2.2-0.20261110230949-517d720cdbb8/go.mod h1:1yO6x8Ior7p4UCIckJmKZ9/TcFUEKVOwBP6MT9oEbcM=
-github.com/goforj/events/eventstest v0.2.2-0.20261110230949-517d720cdbb8 h1:n6lNRuluA6zQNhD1IiPDel25D5xiXZmO8KpX0Y6ZLmY=
-github.com/goforj/events/eventstest v0.2.2-0.20261110230949-517d720cdbb8/go.mod h1:yJi8kAMb0uIDZnRIBh9u2oW4DcrtxfRyaPepXCF5wGA=
+github.com/goforj/events v0.2.2-0.20261111001844-f1cd6413af09 h1:exRkkG69CPT+jT1eCLsnqQtBfHiedoxteei/0blsVOY=
+github.com/goforj/events v0.2.2-0.20261111001844-f1cd6413af09/go.mod h1:IFOidym7s/4xZFQiEgGavm2siEGpw/1hwnbR5JPMikQ=
+github.com/goforj/events/eventscore v0.2.2-0.20261111001844-f1cd6413af09 h1:NbchHVSQOfj2axi9yXVinjrNawaHlj+DtiJWZZzwuoI=
+github.com/goforj/events/eventscore v0.2.2-0.20261111001844-f1cd6413af09/go.mod h1:1yO6x8Ior7p4UCIckJmKZ9/TcFUEKVOwBP6MT9oEbcM=
+github.com/goforj/events/eventstest v0.2.2-0.20261111001844-f1cd6413af09 h1:ihcMyLTuey0879HOr5je0hb215gk3/zuKwO9GKCZAY4=
+github.com/goforj/events/eventstest v0.2.2-0.20261111001844-f1cd6413af09/go.mod h1:kneBQbbhIMbrjTq5K8yGAhuXCBHm0hdT86tCyeVevY0=
