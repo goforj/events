@@ -1,7 +1,7 @@
 github.com/antithesishq/antithesis-sdk-go v0.8.0-default-no-op h1:1BOWQJweNyvZMlpAHXGLiZQn9S+QXGcz3xh94lC0w6E=
 github.com/antithesishq/antithesis-sdk-go v0.8.0-default-no-op/go.mod h1:FQyySiasQQM8735Ddel3MRojmy4dA1IqCeyJ5jmPMbI=
-github.com/goforj/events/eventscore v0.2.2-0.20261111024208-cf10973a9aaf h1:wUWmE39HgBnbhrVZvU2t8g7UvNbK2kJ+dOlJSZYjmb0=
-github.com/goforj/events/eventscore v0.2.2-0.20261111024208-cf10973a9aaf/go.mod h1:1yO6x8Ior7p4UCIckJmKZ9/TcFUEKVOwBP6MT9oEbcM=
+github.com/goforj/events/eventscore v0.2.2-0.20261111041024-daa56aea99a7 h1:qQMnrvI1tXO2ABWENz4yzPzPzRgVtaXUCF6PATJgEh4=
+github.com/goforj/events/eventscore v0.2.2-0.20261111041024-daa56aea99a7/go.mod h1:1yO6x8Ior7p4UCIckJmKZ9/TcFUEKVOwBP6MT9oEbcM=
 github.com/google/go-tpm v0.9.8 h1:slArAR9Ft+1ybZu0lBwpSmpwhRXaa85hWtMinMyRAWo=
 github.com/google/go-tpm v0.9.8/go.mod h1:h9jEsEECg7gtLis0upRBQU+GhYVH6jMjrFxI8u6bVUY=
 github.com/klauspost/compress v1.20.2 h1:v5tiZvm1KGLyg5d5oXdXe3lsSPrbEUiKoXGia//I7Qo=
