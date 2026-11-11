@@ -92,3 +92,29 @@ func TestMalformedHeadersPreservePayload(t *testing.T) {
 		}
 	}
 }
+
+// TestInvalidHeaderUTF8PreservesPayload discards malformed metadata before JSON can repair its bytes.
+func TestInvalidHeaderUTF8PreservesPayload(t *testing.T) {
+	for _, headers := range []string{
+		`{"traceparent":"producer","extra":"` + string([]byte{255}) + `"}`,
+		`{"traceparent":"producer","` + string([]byte{255}) + `":"extra"}`,
+	} {
+		frame := append(append([]byte(nil), messagePrefix...), []byte(`{"headers":`+headers+`,"payload":"ZXhhY3Q="}`)...)
+		message, err := decodeMessage(frame, true)
+		if err != nil || string(message.Payload) != "exact" || len(message.Headers) != 0 {
+			t.Fatalf("headers=%q message=%+v err=%v", headers, message, err)
+		}
+	}
+}
+
+// TestValidUnicodeHeadersPreservePayload distinguishes real replacement characters from invalid encoded bytes.
+func TestValidUnicodeHeadersPreservePayload(t *testing.T) {
+	encoded, err := encodeMessage(eventscore.Message{Payload: []byte("exact"), Headers: map[string]string{"traceparent": "producer", "extra": "é\uFFFD"}}, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	message, err := decodeMessage(encoded, true)
+	if err != nil || string(message.Payload) != "exact" || message.Headers["traceparent"] != "producer" || message.Headers["extra"] != "é\uFFFD" {
+		t.Fatalf("message=%+v err=%v", message, err)
+	}
+}

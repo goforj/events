@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/goforj/events/eventscore"
 )
@@ -52,7 +53,7 @@ func decodeMessage(payload []byte, enabled bool) (eventscore.Message, error) {
 	}
 	var headers map[string]string
 	// Correlation is optional; malformed headers must not discard an otherwise valid business payload.
-	if json.Unmarshal(frame.Headers, &headers) != nil {
+	if !utf8.Valid(frame.Headers) || json.Unmarshal(frame.Headers, &headers) != nil {
 		headers = nil
 	}
 	return eventscore.Message{Headers: headers, Payload: body}, nil
