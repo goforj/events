@@ -10,6 +10,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode/utf8"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
@@ -509,9 +510,31 @@ func publishHeaders(headers map[string]string) map[string]snstypes.MessageAttrib
 	}
 	attributes := make(map[string]snstypes.MessageAttributeValue, len(headers))
 	for key, value := range headers {
+		// Optional metadata must not make an otherwise valid business publication fail.
+		if !validAttributeName(key) || value == "" || !utf8.ValidString(value) {
+			return nil
+		}
 		attributes[key] = snstypes.MessageAttributeValue{DataType: aws.String("String"), StringValue: aws.String(value)}
 	}
 	return attributes
+}
+
+// validAttributeName enforces SNS naming restrictions before optional attributes reach the API.
+func validAttributeName(name string) bool {
+	if len(name) == 0 || len(name) > 256 || name[0] == '.' || name[len(name)-1] == '.' || strings.Contains(name, "..") {
+		return false
+	}
+	lowerName := strings.ToLower(name)
+	if strings.HasPrefix(lowerName, "aws.") || strings.HasPrefix(lowerName, "amazon.") {
+		return false
+	}
+	for _, character := range name {
+		if character >= 'A' && character <= 'Z' || character >= 'a' && character <= 'z' || character >= '0' && character <= '9' || character == '_' || character == '-' || character == '.' {
+			continue
+		}
+		return false
+	}
+	return true
 }
 
 // receivedHeaders restores only string attributes from the dedicated raw-delivery SQS subscription.

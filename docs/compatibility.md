@@ -61,11 +61,15 @@ Message headers and `WithContextPropagator` are optional. Without a propagator, 
 
 Propagator carriers are limited to 10 fields and 8 KiB of both raw key/value bytes and JSON-encoded bytes on publication and receipt. Oversized carriers and invalid UTF-8 are ignored while the event payload is delivered normally. The field limit accommodates SNS raw SQS delivery. Direct SNS driver publications with more than 10 `Message.Headers` entries return an error before contacting SNS.
 
+NATS and JetStream omit the entire optional carrier when a key cannot be encoded by the NATS client. SNS likewise omits invalid native attribute names or string values; the explicit direct-driver error for more than 10 attributes remains in place. These checks preserve business publication when only optional metadata is unusable.
+
 Google Pub/Sub applies [native attribute limits](https://docs.cloud.google.com/pubsub/docs/publisher#use_attributes_to_publish_a_message): at most 100 attributes, keys up to 256 bytes, values up to 1024 bytes, and no keys starting with lowercase `goog`. Its adapter omits the entire optional carrier if any field violates these rules, preserving the payload bytes. The shared carrier budget remains unchanged for other transports.
 
 Redis pub/sub uses an explicitly enabled metadata envelope because the protocol has no message headers. Deploy consumers configured with `redisevents.Config.EnableHeaders=true` before enabling propagating publishers. Opted-in consumers accept ordinary legacy JSON publications and new framed messages. External Redis subscribers need the same envelope decoding when consuming header-bearing publications.
 
 ### Redis header framing
+
+On receipt, framed header JSON above 8 KiB is discarded before constructing its map. The business payload is still decoded and delivered.
 
 `redisevents.Config.EnableHeaders` defaults to false. This preserves arbitrary raw payloads, including bytes beginning with the metadata prefix. Publishing headers without enabling framing returns an error before Redis I/O.
 

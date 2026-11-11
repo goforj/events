@@ -9,6 +9,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/sns"
+	"github.com/aws/aws-sdk-go-v2/service/sns/types"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/goforj/events/eventscore"
 )
@@ -213,6 +214,7 @@ type recordingSNSClient struct {
 	publishTopicARN       string
 	publishMessage        string
 	publishAttributeCount int
+	publishAttributes     map[string]types.MessageAttributeValue
 	unsubscribeARN        string
 }
 
@@ -234,6 +236,7 @@ func (c *recordingSNSClient) Publish(_ context.Context, input *sns.PublishInput,
 	c.publishTopicARN = aws.ToString(input.TopicArn)
 	c.publishMessage = aws.ToString(input.Message)
 	c.publishAttributeCount = len(input.MessageAttributes)
+	c.publishAttributes = input.MessageAttributes
 	return &sns.PublishOutput{}, nil
 }
 

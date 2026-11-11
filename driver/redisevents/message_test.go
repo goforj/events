@@ -3,6 +3,8 @@ package redisevents
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/goforj/events/eventscore"
@@ -116,5 +118,43 @@ func TestValidUnicodeHeadersPreservePayload(t *testing.T) {
 	message, err := decodeMessage(encoded, true)
 	if err != nil || string(message.Payload) != "exact" || message.Headers["traceparent"] != "producer" || message.Headers["extra"] != "é\uFFFD" {
 		t.Fatalf("message=%+v err=%v", message, err)
+	}
+}
+
+// TestReceivedHeaderByteBudget bounds optional map construction before preserving the business payload.
+func TestReceivedHeaderByteBudget(t *testing.T) {
+	for _, size := range []int{8192, 8193} {
+		t.Run(fmt.Sprint(size), func(t *testing.T) {
+			headers := `{"key":"` + strings.Repeat("x", size-len(`{"key":""}`)) + `"}`
+			frame := append(append([]byte(nil), messagePrefix...), []byte(`{"headers":`+headers+`,"payload":"ZXhhY3Q="}`)...)
+			message, err := decodeMessage(frame, true)
+			if err != nil || string(message.Payload) != "exact" {
+				t.Fatalf("payload=%q err=%v", message.Payload, err)
+			}
+			if size == 8192 && len(message.Headers["key"]) != size-len(`{"key":""}`) {
+				t.Fatal("inclusive header boundary was discarded")
+			}
+			if size > 8192 && len(message.Headers) != 0 {
+				t.Fatal("oversized optional headers retained")
+			}
+		})
+	}
+}
+
+// TestReceivedManyHeadersPreservePayload discards large maps before allocating their individual entries.
+func TestReceivedManyHeadersPreservePayload(t *testing.T) {
+	var headers strings.Builder
+	headers.WriteByte('{')
+	for i := 0; i < 50000; i++ {
+		if i > 0 {
+			headers.WriteByte(',')
+		}
+		fmt.Fprintf(&headers, `"k%d":"x"`, i)
+	}
+	headers.WriteByte('}')
+	frame := append(append([]byte(nil), messagePrefix...), []byte(`{"headers":`+headers.String()+`,"payload":"ZXhhY3Q="}`)...)
+	message, err := decodeMessage(frame, true)
+	if err != nil || string(message.Payload) != "exact" || len(message.Headers) != 0 {
+		t.Fatalf("payload=%q headers=%d err=%v", message.Payload, len(message.Headers), err)
 	}
 }

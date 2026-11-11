@@ -360,9 +360,29 @@ func publishHeaders(headers map[string]string) nats.Header {
 	}
 	native := make(nats.Header, len(headers))
 	for key, value := range headers {
+		if !validHeaderKey(key) {
+			return nil
+		}
 		native[key] = []string{value}
 	}
 	return native
+}
+
+// validHeaderKey mirrors the NATS client restrictions so optional metadata cannot block payload delivery.
+func validHeaderKey(key string) bool {
+	if key == "" {
+		return false
+	}
+	for i := 0; i < len(key); i++ {
+		if key[i] < 33 || key[i] > 126 {
+			return false
+		}
+		switch key[i] {
+		case '"', '(', ')', '/', ',', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']', '{', '}':
+			return false
+		}
+	}
+	return true
 }
 
 // receivedHeaders preserves repeated native fields using their comma-separated header representation.

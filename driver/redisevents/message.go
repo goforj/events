@@ -52,8 +52,8 @@ func decodeMessage(payload []byte, enabled bool) (eventscore.Message, error) {
 		return eventscore.Message{}, fmt.Errorf("redisevents: invalid metadata envelope")
 	}
 	var headers map[string]string
-	// Correlation is optional; malformed headers must not discard an otherwise valid business payload.
-	if !utf8.Valid(frame.Headers) || json.Unmarshal(frame.Headers, &headers) != nil {
+	// Bound metadata before allocating its map; unusable correlation must not discard a valid business payload.
+	if len(frame.Headers) > 8192 || !utf8.Valid(frame.Headers) || json.Unmarshal(frame.Headers, &headers) != nil {
 		headers = nil
 	}
 	return eventscore.Message{Headers: headers, Payload: body}, nil
